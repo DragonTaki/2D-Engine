@@ -7,7 +7,7 @@
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
-namespace Engine.UI.Constants
+namespace Engine.UI.Constants.Events
 {
     /// <summary>
     /// Enumeration of mouse-related UI events for dispatching and handling.

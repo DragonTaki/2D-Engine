@@ -7,7 +7,7 @@
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
-using Engine.UI.Constants;
+using Engine.UI.Constants.Components;
 
 namespace Engine.UI.Core.Elements
 {

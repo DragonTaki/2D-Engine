@@ -11,6 +11,32 @@ using Engine.UI.Core.Interfaces;
 
 namespace Engine.UI.Core.Base
 {
+    public abstract class InitializableOnceBase : IInitializableOnce
+    {
+        #region Properties
+
+        public bool IsInitialized { get; private set; }
+
+        #endregion
+
+        #region Methods
+
+        public void Init()
+        {
+            if (IsInitialized) 
+                return;  // Skip if already initialized
+
+            IsInitialized = true;
+
+            // Call derived class implementation
+            OnInit();
+        }
+
+        protected virtual void OnInit() {}
+
+        #endregion
+    }
+    
     /// <summary>
     /// Abstract base class implementing <see cref="IInitializableOnce{TArg}"/> interface.
     /// Ensures that initialization logic only runs once per instance.
@@ -50,7 +76,7 @@ namespace Engine.UI.Core.Base
         /// This method is guaranteed to be called only once.
         /// </summary>
         /// <param name="arg">The argument required for initialization.</param>
-        protected abstract void OnInit(TArg arg);
+        protected virtual void OnInit(TArg arg) {}
 
         #endregion
     }

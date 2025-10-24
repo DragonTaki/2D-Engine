@@ -9,6 +9,13 @@
 
 namespace Engine.UI.Core.Interfaces
 {
+    public interface IInitializableOnce
+    {
+        bool IsInitialized { get; }
+
+        void Init();
+    }
+    
     /// <summary>
     /// Interface for objects that require one-time initialization.
     /// </summary>

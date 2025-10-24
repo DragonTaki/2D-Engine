@@ -12,6 +12,7 @@ using System.Collections.Generic;
 
 using Engine.UI.Core.Base;
 using Engine.UI.Core.Elements;
+using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Interfaces;
 using Engine.UI.Input;
 
@@ -63,14 +64,88 @@ namespace Engine.UI.Core.Infrastructure
         }
 
         /// <summary>
+        /// Creates a UI menu screen with a handler, compatible with the new UIContainer structure.
+        /// Automatically registers a generic factory if necessary.
+        /// </summary>
+        /// <typeparam name="TContainer">The menu type to create.</typeparam>
+        /// <typeparam name="THandler">The handler type associated with the menu.</typeparam>
+        /// <returns>An initialized menu of type TContainer.</returns>
+        public TContainer CreateScreen<TContainer, THandler>()
+            where TContainer : UIContainer<THandler>
+            where THandler : UIContainerHandler<THandler>
+        {
+            var type = typeof(TContainer);
+
+            // Auto-register factory if missing
+            if (!_factoriesWithContext.ContainsKey(type))
+            {
+                RegisterFactory<TContainer, THandler>();
+            }
+
+            return Create<TContainer, THandler>();
+        }
+
+        /// <summary>
+        /// Internal creation logic for menus with only a handler.
+        /// </summary>
+        public TContainer Create<TContainer, THandler>()
+            where TContainer : UIContainer<THandler>
+            where THandler : UIContainerHandler<THandler>
+        {
+            // Resolve instances from DI container
+            var menu = _sp.GetRequiredService<TContainer>();
+            var handler = _sp.GetRequiredService<THandler>();
+
+            // Initialize handler if implements IInitializableOnce
+            if (handler is IInitializableOnce<(IUiFactory, UIContainer<THandler>)> hInit)
+                hInit.Init((this, menu));
+
+            // Initialize menu with factory and handler
+            menu.Init((this, handler));
+
+            return menu;
+        }
+
+        /// <summary>
+        /// Registers a factory for creating UI menus that require a handler (new UIContainer system).
+        /// </summary>
+        /// <typeparam name="TContainer">The menu type to register.</typeparam>
+        /// <typeparam name="THandler">The handler type associated with the menu.</typeparam>
+        public void RegisterFactory<TContainer, THandler>()
+            where TContainer : UIContainer<THandler>
+            where THandler : UIContainerHandler<THandler>
+        {
+            var type = typeof(TContainer);
+
+            if (_factoriesWithContext.ContainsKey(type))
+                return;
+
+            _factoriesWithContext[type] = ctx =>
+            {
+                var factory = (IUiFactory)ctx;
+                var menu = _sp.GetRequiredService<TContainer>();
+                var handler = _sp.GetRequiredService<THandler>();
+
+                // Initialize handler if necessary
+                if (handler is IInitializableOnce<(IUiFactory, TContainer)> hInit)
+                    hInit.Init((factory, menu));
+
+                // Initialize menu with factory + handler
+                menu.Init((factory, handler));
+
+                return menu;
+            };
+        }
+
+        /// <summary>
         /// Creates a UI screen, automatically registering a generic factory if necessary.
         /// </summary>
         /// <typeparam name="TScreen">The screen type to create.</typeparam>
         /// <typeparam name="THandler">The handler type associated with the screen.</typeparam>
         /// <typeparam name="TRenderer">The renderer type associated with the screen.</typeparam>
         /// <returns>An initialized screen of type TScreen.</returns>
-        public TScreen CreateScreen<TScreen, THandler, TRenderer>()
-            where TScreen : InitializableOnceElement<(IUiFactory, THandler, TRenderer)>
+        public TScreen CreateScreen<TScreen, THandler, TRenderer>()  //OLD
+            where TScreen : UIElement, IInitializableOnce<(IUiFactory, THandler, TRenderer)>
             where THandler : class
             where TRenderer : class
         {
@@ -79,11 +154,11 @@ namespace Engine.UI.Core.Infrastructure
             // If factory is not registered, auto-register generic factory
             if (!_factoriesWithContext.ContainsKey(type))
             {
-                RegisterFactory<TScreen, THandler, TRenderer>();
+                RegisterFactoryOLD<TScreen, THandler, TRenderer>();
             }
 
             // Use generic factory to create
-            return Create<TScreen, THandler, TRenderer>();
+            return CreateOLD<TScreen, THandler, TRenderer>();
         }
 
         /// <summary>
@@ -93,8 +168,8 @@ namespace Engine.UI.Core.Infrastructure
         /// <typeparam name="THandler">The handler type.</typeparam>
         /// <typeparam name="TRenderer">The renderer type.</typeparam>
         /// <returns>An initialized screen instance.</returns>
-        public TScreen Create<TScreen, THandler, TRenderer>()
-            where TScreen : InitializableOnceElement<(IUiFactory, THandler, TRenderer)>
+        public TScreen CreateOLD<TScreen, THandler, TRenderer>()  // OLD
+            where TScreen : UIElement, IInitializableOnce<(IUiFactory, THandler, TRenderer)>
             where THandler : class
             where TRenderer : class
         {
@@ -111,13 +186,13 @@ namespace Engine.UI.Core.Infrastructure
 
             return screen;
         }
-        
+
         /// <summary>
         /// Registers a factory method for creating a UIElement of type T using this factory.
         /// </summary>
         /// <typeparam name="T">The UIElement type to register.</typeparam>
         /// <param name="factory">The factory method accepting an IUiFactory and returning an instance of T.</param>
-        public void RegisterFactory<T>(Func<IUiFactory, T> factory) where T : UIElement
+        public void RegisterFactory<T>(Func<IUiFactory, T> factory) where T : UIElement  //保留第一個簡單版
         {
             _factories[typeof(T)] = factory;
         }
@@ -127,7 +202,7 @@ namespace Engine.UI.Core.Infrastructure
         /// </summary>
         /// <typeparam name="T">The UIElement type to register.</typeparam>
         /// <param name="factory">The factory method accepting an IUiFactoryContext and returning an instance of T.</param>
-        public void RegisterFactory<T>(Func<IUiFactoryContext, T> factory) where T : UIElement
+        public void RegisterFactory<T>(Func<IUiFactoryContext, T> factory) where T : UIElement  //移除第二個舊 context 版本因為新版 UIContainer 已接手這類用途
         {
             _factoriesWithContext[typeof(T)] = ctx => factory(ctx);
         }
@@ -152,8 +227,8 @@ namespace Engine.UI.Core.Infrastructure
         /// <summary>
         /// Registers a default factory for a screen, handler, and renderer combination.
         /// </summary>
-        private void RegisterFactory<TScreen, THandler, TRenderer>()
-            where TScreen : InitializableOnceElement<(IUiFactory, THandler, TRenderer)>
+        private void RegisterFactoryOLD<TScreen, THandler, TRenderer>()
+            where TScreen : UIElement, IInitializableOnce<(IUiFactory, THandler, TRenderer)>
             where THandler : class
             where TRenderer : class
         {

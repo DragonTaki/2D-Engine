@@ -53,7 +53,7 @@ namespace Engine.UI.Input
         {
             _dragStarted = false;
             _hasDragged = false;
-            Console.WriteLine($"[MouseDown] MouseDown start");
+            //Console.WriteLine($"[MouseDown] MouseDown start");
             
             bool handled = false;
 
@@ -68,7 +68,7 @@ namespace Engine.UI.Input
             }
 
             _pressedElement = Root.HitTestDeep(e.Location);
-            Console.WriteLine($"[MouseDown] _pressedElement = {_pressedElement?.GetType().Name}");
+            //Console.WriteLine($"[MouseDown] _pressedElement = {_pressedElement?.GetType().Name}");
 
             // Process UI mouse event first
             if (!handled && _pressedElement != null)
@@ -83,7 +83,7 @@ namespace Engine.UI.Input
         /// <summary>Handle MouseMove: update scroll and forward to UI.</summary>
         public bool OnMouseMove(MouseEventArgs e)
         {
-            Console.WriteLine($"[MouseMove] _dragStarted = {_dragStarted}, _hasDragged = {_hasDragged}");
+            //Console.WriteLine($"[MouseMove] _dragStarted = {_dragStarted}, _hasDragged = {_hasDragged}");
             bool handled = false;
 
             // Event _handlers first, then we know if is dragging or not
@@ -127,7 +127,7 @@ namespace Engine.UI.Input
                 h.OnMouseUp(e);
 
             bool blockClick = SuppressUIWhenDragging && _dragStarted && _hasDragged;
-            Console.WriteLine($"[MouseUp] _pressedElement = {_pressedElement?.GetType().Name}, blockClick = {blockClick}");
+            //Console.WriteLine($"[MouseUp] _pressedElement = {_pressedElement?.GetType().Name}, blockClick = {blockClick}");
 
             if (_pressedElement != null)
             {

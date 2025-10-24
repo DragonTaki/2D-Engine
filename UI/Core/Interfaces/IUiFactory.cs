@@ -11,6 +11,7 @@ using System;
 
 using Engine.UI.Core.Base;
 using Engine.UI.Core.Elements;
+using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Infrastructure;
 
 namespace Engine.UI.Core.Interfaces
@@ -43,10 +44,13 @@ namespace Engine.UI.Core.Interfaces
         /// <typeparam name="THandler">The handler type associated with the screen.</typeparam>
         /// <typeparam name="TRenderer">The renderer type associated with the screen.</typeparam>
         /// <returns>The instantiated and initialized screen of type TScreen.</returns>
-        TScreen CreateScreen<TScreen, THandler, TRenderer>()
-            where TScreen : InitializableOnceElement<(IUiFactory, THandler, TRenderer)>
+        TScreen CreateScreen<TScreen, THandler, TRenderer>()  //OLD
+            where TScreen : UIElement, IInitializableOnce<(IUiFactory, THandler, TRenderer)>
             where THandler : class
             where TRenderer : class;
+        TContainer CreateScreen<TContainer, THandler>()
+            where TContainer : UIContainer<THandler>
+            where THandler : UIContainerHandler<THandler>;
 
         /// <summary>
         /// Creates an InitializableOnceElement screen with its handler and renderer.
@@ -56,8 +60,11 @@ namespace Engine.UI.Core.Interfaces
         /// <typeparam name="THandler">The handler type associated with the screen.</typeparam>
         /// <typeparam name="TRenderer">The renderer type associated with the screen.</typeparam>
         /// <returns>The instantiated and initialized screen of type TScreen.</returns>
-        TScreen Create<TScreen, THandler, TRenderer>()
-            where TScreen : InitializableOnceElement<(IUiFactory, THandler, TRenderer)>
+        TContainer Create<TContainer, THandler>()
+            where TContainer : UIContainer<THandler>
+            where THandler : UIContainerHandler<THandler>;
+        TScreen CreateOLD<TScreen, THandler, TRenderer>()  //OLD
+            where TScreen : UIElement, IInitializableOnce<(IUiFactory, THandler, TRenderer)>
             where THandler : class
             where TRenderer : class;
 
@@ -67,7 +74,7 @@ namespace Engine.UI.Core.Interfaces
         /// </summary>
         /// <typeparam name="T">The type of UIElement to register the factory for.</typeparam>
         /// <param name="factory">The factory function to create the UIElement.</param>
-        void RegisterFactory<T>(Func<IUiFactoryContext, T> factory) where T : UIElement;
+        void RegisterFactory<T>(Func<IUiFactoryContext, T> factory) where T : UIElement;  //OLD
 
         /// <summary>
         /// Clears the cached factory for the specified UIElement type.

@@ -13,6 +13,7 @@ using System.Linq;
 
 using Engine.UI.Core.Base;
 using Engine.UI.Core.Elements;
+using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Interfaces;
 
 namespace Engine.UI.Core.Infrastructure
@@ -61,10 +62,46 @@ namespace Engine.UI.Core.Infrastructure
         }
 
         /// <summary>
+        /// 顯示指定畫面（新版：僅使用 factory + handler）
+        /// </summary>
+        public TScreen Show<TScreen, THandler>(bool forceReload = false)
+            where TScreen : UIContainer<THandler>
+            where THandler : UIContainerHandler<THandler>
+        {
+            if (_rootElement == null)
+                throw new InvalidOperationException("NavigationManager not initialized with root element.");
+
+            ClearNonPersistentChildren(_rootElement);
+
+            var screenType = typeof(TScreen);
+            UIElement screen;
+
+            if (forceReload)
+            {
+                // 若強制重建，則卸載舊的
+                UnloadScreen<TScreen>();
+            }
+
+            if (!_screens.TryGetValue(screenType, out screen))
+            {
+                // 延遲建立：透過 UiFactory 自動建立 screen + handler
+                screen = _factory.CreateScreen<TScreen, THandler>();
+                _screens[screenType] = screen;
+            }
+
+            screen.IsVisible = true;
+
+            if (!_rootElement.Children.Contains(screen))
+                _rootElement.AddChild(screen);
+
+            return (TScreen)screen;
+        }
+
+        /// <summary>
         /// 顯示指定畫面，支援延遲建立與重建
         /// </summary>
-        public TScreen Show<TScreen, THandler, TRenderer>(bool forceReload = false)
-            where TScreen : InitializableOnceElement<(IUiFactory, THandler, TRenderer)>
+        public TScreen Show<TScreen, THandler, TRenderer>(bool forceReload = false)  //OLD
+            where TScreen : UIElement, IInitializableOnce<(IUiFactory, THandler, TRenderer)>
             where THandler : class
             where TRenderer : class
         {

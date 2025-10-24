@@ -3,11 +3,10 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/15
-// Update Date: 2025/05/15
-// Version: v1.0
+// Update Date: 2025/10/24
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
-using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -17,7 +16,9 @@ using System.Windows.Forms;
 using Engine.Geometry;
 using Engine.Mathematics;
 using Engine.Physics;
-using Engine.UI.Constants;
+using Engine.UI.Constants.Components;
+using Engine.UI.Constants.Core;
+using Engine.UI.Constants.Events;
 using Engine.UI.Core.Interfaces;
 using Engine.UI.Input;
 using Engine.UI.Models;
@@ -26,50 +27,57 @@ namespace Engine.UI.Core.Elements
 {
     public class UIElement : IUpdatable, IDrawable, IInputHandler
     {
+        #region Identity
+
         private static long s_nextId = 0;
 
-        /// <summary>
-        /// Unique entity ID for each UI element, auto-incremented.
-        /// Can be used to track or identify specific UI elements.
-        /// </summary>
+        /// <summary>Unique ID for tracking elements</summary>
         public long InstanceId { get; }
 
+        /// <summary>Optional type classification</summary>
+        public UIElementType ElementType { get; set; } = UIElementType.Generic;
+
+        /// <summary>Whether element persists when parent clears children</summary>
+        public bool IsPersistent { get; set; } = false;
+
         /// <summary>
-        /// Parent node: if null, it means the top node of the UI hierarchy.
+        /// Tracks whether this element has been initialized.
         /// </summary>
+        public bool IsInitialized { get; protected set; }
+
+        #endregion
+
+        #region Hierarchy
+
 #nullable enable
+        /// <summary>Parent UI element, null if root</summary>
         public UIElement? Parent { get; set; }
 #nullable disable
 
-        /// <summary>
-        /// The collection of all child nodes. The logical children of this UI element.
-        /// </summary>
+        /// <summary>Child elements</summary>
         public List<UIElement> Children { get; } = new();
 
-        /// <summary>
-        /// Whether the child nodes need to be reordered.
-        /// </summary>
         private bool _isChildrenSortedDirty = true;
-
-        /// <summary>
-        /// Cache sorted child nodes (by ZIndex).
-        /// </summary>
         private List<UIElement> _sortedChildrenAsc;
         private List<UIElement> _sortedChildrenDesc;
 
-        /// <summary>
-        /// The position of the component relative to the parent node.
-        /// </summary>
+        #endregion
+
+        #region Layout & Position
+
+        /// <summary>Relative position to parent</summary>
         public virtual UIPosition LocalPosition { get; set; } = new UIPosition(Vector2F.Zero);
 
-        /// <summary>
-        /// The width and height of the UI element.
-        /// </summary>
+        /// <summary>Size (Width, Height)</summary>
         public virtual Vector2F Size { get; set; } = Vector2F.Zero;
 
-        /// <summary>
-        /// The actual display area (position + size) of this element.
-        /// </summary>
+        /// <summary>Layout configuration (relative positioning rules)</summary>
+        public UILayout LayoutRules { get; set; } = new UILayout();
+
+        // Cached final layout (absolute position and size)
+        public LayoutF Bounds { get; protected set; } = LayoutF.Zero;
+
+        /// <summary>Actual layout (position + size)</summary>
         public virtual LayoutF Layout
         {
             get => new LayoutF(LocalPosition.Current, Size);
@@ -80,17 +88,16 @@ namespace Engine.UI.Core.Elements
             }
         }
 
-        /// <summary>
-        /// Controls the priority of drawing and input event handling of components in the parent node.
-        /// The higher value means the higher layer, which will be drawn and receive input first.
-        /// </summary>
+        /// <summary>Indicates whether layout has been calculated</summary>
+        protected bool _layoutDirty = true;
+
+        #endregion
+
+        #region Sorting / ZIndex
+
         private int _zIndex = 0;
 
-        /// <summary>
-        /// Controls the priority of drawing and input event handling of components in the parent node.
-        /// The higher value means the higher layer, which will be drawn and receive input first.
-        /// When modified, parent is notified to reorder its child nodes.
-        /// </summary>
+        /// <summary>Controls draw/input order in parent</summary>
         public int ZIndex
         {
             get => _zIndex;
@@ -104,55 +111,30 @@ namespace Engine.UI.Core.Elements
             }
         }
 
-        /// <summary>
-        /// Whether this element should be kept when its parent's children are cleared.
-        /// Useful for long-lived elements like overlay layers, backgrounds, or root HUDs.
-        /// </summary>
-        public bool IsPersistent { get; set; } = false;
+        #endregion
 
-        /// <summary>
-        /// Optional UI type classification, useful for filtering or managing cleanup logic.
-        /// </summary>
-        public UIElementType ElementType { get; set; } = UIElementType.Generic;
+        #region Visibility / Interaction
 
-        /// <summary>
-        /// Is it logically visible (use for UI display and HitTest).
-        /// `IsVisible = false` means that the object is not drawn and cannot be clicked.
-        /// </summary>
         public bool IsVisible { get; set; } = true;
-
-        /// <summary>
-        /// Whether it can interact with the mouse (click, drag, etc.) or keybord.
-        /// </summary>
         public bool IsEnabled { get; set; } = true;
 
-        /// <summary>
-        /// Whether it can interact with the mouse (click, drag, etc.) or keybord.
-        /// </summary>
         public virtual bool IsInteractable => IsVisible && IsEnabled;
-
-        /// <summary>
-        /// Is it still possible to HitTest even if `IsVisible == false` (e.g. transparent mask).
-        /// </summary>
         public virtual bool AllowHitWhenInvisible => false;
-
-        /// <summary>
-        /// Only controls whether the element is rendered (can be overridden).
-        /// When `IsVisible = false`, it will not be drawn automatically, but some objects can be forced not to be drawn.
-        /// </summary>
         public virtual bool DisableRender => !IsVisible;
 
-        /// <summary>
-        /// Optional physics animation controller for animating position, velocity, elasticity, and other effects.
-        /// </summary>
+        #endregion
+
+        #region Physics
+
 #nullable enable
         public virtual Physics2D? Physics { get; set; }
 #nullable disable
 
+        #endregion
 
-        /// <summary>
-        /// Tracks whether this element has been disposed.
-        /// </summary>
+
+        #region Constructor / Dispose
+
         private bool _disposed = false;
 
         public UIElement(int zIndex = 0, bool isPersistent = false, UIElementType type = UIElementType.Generic)
@@ -163,41 +145,43 @@ namespace Engine.UI.Core.Elements
             ElementType = type;
         }
 
-        /// <summary>
-        /// Calculate absolute coordinates: Base + offsets of all ancestors
-        /// </summary>
-        public Vector2F GetBaseAbsolutePosition()
+        public virtual void Dispose()
         {
-            Vector2F pos = LocalPosition.Base;
-            while (Parent != null)
-            {
-                pos += Parent.LocalPosition.Base;
-                Parent = Parent.Parent;
-            }
-            return pos;
+            if (_disposed) return;
+
+            // Dispose children
+            foreach (var child in Children.ToList())
+                child.Dispose();
+
+            RemoveAllChild(includePersistent: true);
+            Parent?.RemoveChild(this);
+
+            DisposeUI();
+            _disposed = true;
         }
 
-        /// <summary>
-        /// Get absolute position of this UI element.
-        /// </summary>
-        /// <returns>Absolute position of this UI element.</returns>
+        public virtual void DisposeUI() { }
+        public bool IsDisposed => _disposed;
+
+        #endregion
+
+        #region Position Utilities
+
+        /// <summary>Get absolute position by summing ancestors</summary>
         public Vector2F GetCurrentAbsolutePosition()
         {
             Vector2F accumulated = LocalPosition.Current;
-
 #nullable enable
             UIElement? current = this.Parent;
 #nullable disable
 
             while (current != null)
             {
-                // Once a parent object with Physics2D is encountered, the position is the absolute anchor point and recursion stops
                 if (current.Physics != null)
                 {
                     accumulated += current.Physics.Position.Current;
                     break;
                 }
-
                 accumulated += current.LocalPosition.Current;
                 current = current.Parent;
             }
@@ -205,14 +189,124 @@ namespace Engine.UI.Core.Elements
             return accumulated;
         }
 
-        /// <summary>
-        /// Get absolute bounds of this UI element.
-        /// </summary>
-        /// <returns>Absolute bounds of this UI element.</returns>
+        /// <summary>Get absolute bounds</summary>
         public LayoutF GetCurrentAbsoluteBounds()
         {
             return new LayoutF(GetCurrentAbsolutePosition(), Size);
         }
+
+        /// <summary>
+        /// Recalculates element position and size based on parent bounds and layout rules.
+        /// </summary>
+        public virtual void UpdateLayout()
+        {
+            if (Parent == null || LayoutRules.IgnoreParentLayout)
+                return;
+
+            var parentBounds = Parent.GetCurrentAbsoluteBounds();
+            var newPos = LocalPosition.Current;
+            var newSize = Size;
+
+            var margin = LayoutRules.Margin;
+            var anchor = LayoutRules.Anchor;
+
+            // Compute size if percentage set
+            if (LayoutRules.SizePercent != null)
+            {
+                var percent = LayoutRules.SizePercent;
+                newSize = new Vector2F(parentBounds.Size.X * percent.X, parentBounds.Size.Y * percent.Y);
+            }
+
+            // Compute position
+            float x = newPos.X, y = newPos.Y;
+
+            if (anchor.HasFlag(Anchor.Left))
+                x = margin.Left;
+            if (anchor.HasFlag(Anchor.Right))
+                x = parentBounds.Size.X - newSize.X - margin.Right;
+            if (anchor.HasFlag(Anchor.CenterX))
+                x = (parentBounds.Size.X - newSize.X) / 2f;
+
+            if (anchor.HasFlag(Anchor.Top))
+                y = margin.Top;
+            if (anchor.HasFlag(Anchor.Bottom))
+                y = parentBounds.Size.Y - newSize.Y - margin.Bottom;
+            if (anchor.HasFlag(Anchor.CenterY))
+                y = (parentBounds.Size.Y - newSize.Y) / 2f;
+
+            LocalPosition = new UIPosition(new Vector2F(x, y));
+            Size = newSize;
+            _layoutDirty = false;
+            Bounds = new LayoutF(GetCurrentAbsolutePosition(), Size);
+
+            // Apply recursively
+            foreach (var child in Children)
+                if (child.LayoutRules.AutoUpdate)
+                    child.UpdateLayout();
+        }
+
+        #endregion
+
+
+        #region Child Management
+
+        public virtual void AddChild(UIElement child)
+        {
+            child.Parent = this;
+            Children.Add(child);
+            child.OnAddedToParent();
+            _isChildrenSortedDirty = true;
+        }
+
+        protected virtual void OnAddedToParent()
+        {
+            if (Physics != null)
+                Physics.Position.Current = GetCurrentAbsolutePosition();
+        }
+
+        public virtual void RemoveChild(UIElement child)
+        {
+            if (Children.Remove(child))
+            {
+                child.Parent = null;
+                _isChildrenSortedDirty = true;
+            }
+        }
+
+        public void NotifyChildOrderChanged() => _isChildrenSortedDirty = true;
+
+        public IReadOnlyList<UIElement> GetSortedChildrenByZIndex(bool descending = false)
+        {
+            if (_isChildrenSortedDirty || _sortedChildrenAsc == null || _sortedChildrenDesc == null)
+            {
+                _sortedChildrenAsc = Children.OrderBy(c => c.ZIndex).ToList();
+                _sortedChildrenDesc = Children.OrderByDescending(c => c.ZIndex).ToList();
+                _isChildrenSortedDirty = false;
+            }
+
+            return descending ? _sortedChildrenDesc : _sortedChildrenAsc;
+        }
+
+        public virtual void RemoveAllChild(
+            bool includePersistent = false,
+            List<UIElementType> onlyTypes = null,
+            List<UIElementType> excludeTypes = null)
+        {
+            for (int i = Children.Count - 1; i >= 0; i--)
+            {
+                var child = Children[i];
+                if (!includePersistent && child.IsPersistent) continue;
+                if (onlyTypes != null && !onlyTypes.Contains(child.ElementType)) continue;
+                if (excludeTypes != null && excludeTypes.Contains(child.ElementType)) continue;
+
+                child.Parent = null;
+                Children.RemoveAt(i);
+            }
+        }
+
+        #endregion
+
+        #region HitTest / Input
 
         /// <summary>
         /// Checks if a screen-space point is within the bounds of this UI element.
@@ -228,123 +322,33 @@ namespace Engine.UI.Core.Elements
                 screenPoint.Y <= absPos.Y + Size.Y;
         }
 
+        public virtual bool HitTest(PointF point)
+        {
+            if (!IsEnabled) return false;
+            if (!IsVisible && !AllowHitWhenInvisible) return false;
+            return GetCurrentAbsoluteBounds().Contains(point);
+        }
+
         public UIElement GetRoot()
         {
             UIElement node = this;
             while (node.Parent != null)
-            {
                 node = node.Parent;
-            }
             return node;
         }
 
         /// <summary>
-        /// Gets a collection of child nodes sorted by ZIndex, re-sorting only when data changes.
+        /// Starting from this element, search sub-elements depth-first to find the top-level UIElement that hits the point
         /// </summary>
-        public IReadOnlyList<UIElement> GetSortedChildrenByZIndex(bool descending = false)
-        {
-            if (_isChildrenSortedDirty || _sortedChildrenAsc == null || _sortedChildrenDesc == null)
-            {
-                _sortedChildrenAsc = Children.OrderBy(c => c.ZIndex).ToList();
-                _sortedChildrenDesc = Children.OrderByDescending(c => c.ZIndex).ToList();
-                _isChildrenSortedDirty = false;
-            }
-
-            return descending ? _sortedChildrenDesc : _sortedChildrenAsc;
-        }
-
-        public virtual void AddChild(UIElement child)
-        {
-            child.Parent = this;
-            Children.Add(child);
-            // Update child's phisics2D absolute position
-            child.OnAddedToParent();
-
-            _isChildrenSortedDirty = true;
-        }
-
-        protected virtual void OnAddedToParent()
-        {
-            if (Physics != null)
-                Physics.Position = GetCurrentAbsolutePosition();
-        }
-
-        public virtual void RemoveChild(UIElement child)
-        {
-            if (Children.Remove(child))
-            {
-                child.Parent = null;
-                _isChildrenSortedDirty = true;
-            }
-        }
-
-        /// <summary>
-        /// When the ZIndex changes, this method should be called manually to invalidate the sort cache.
-        /// </summary>
-        public void NotifyChildOrderChanged()
-        {
-            _isChildrenSortedDirty = true;
-        }
-
-        /// <summary>
-        /// Removes all children based on optional filtering rules.
-        /// </summary>
-        /// <param name="includePersistent">If true, persistent elements will also be removed.</param>
-        /// <param name="onlyTypes">Optional: only remove children with specific element types.</param>
-        /// <param name="excludeTypes">Optional: skip removal for children with these element types.</param>
-        public virtual void RemoveAllChild(
-            bool includePersistent = false,
-            List<UIElementType> onlyTypes = null,
-            List<UIElementType> excludeTypes = null)
-        {
-            for (int i = Children.Count - 1; i >= 0; i--)
-            {
-                var child = Children[i];
-
-                if (!includePersistent && child.IsPersistent)
-                    continue;
-
-                if (onlyTypes != null && !onlyTypes.Contains(child.ElementType))
-                    continue;
-
-                if (excludeTypes != null && excludeTypes.Contains(child.ElementType))
-                    continue;
-
-                child.Parent = null;
-                Children.RemoveAt(i);
-            }
-        }
-
-        /// <summary>
-        /// Determines whether the given point is within the visible area of ​​this UI element.
-        /// </summary>
-        public virtual bool HitTest(PointF point)
-        {
-            if (!IsEnabled)
-                return false;
-
-            // Skip if it is not visible and transparent hits are not allowed
-            if (!IsVisible && !AllowHitWhenInvisible)
-                return false;
-
-            return GetCurrentAbsoluteBounds().Contains(point);
-        }
-
-        /// <summary>
-        /// Starting from this element, search the sub-elements depth-first to find the top-level UIElement that hits the point
-        /// </summary>
-#nullable enable
+        #nullable enable
         public UIElement? HitTestDeep(PointF point, bool isRootCall = true)
-#nullable disable
+        #nullable disable
         {
-            //Console.WriteLine($"[HitTestDeep] Checking: {this.GetType().Name}");
-            // If no hit, return `null`
-
             // Check root
             if (isRootCall && this.GetRoot().ElementType != UIElementType.Root)
                 return null;
 
-            // Check ancestors
+            // Check ancestors visibility
             var current = this.Parent;
             while (current != null)
             {
@@ -352,59 +356,21 @@ namespace Engine.UI.Core.Elements
                     return null;
                 current = current.Parent;
             }
-            var root = this.GetRoot();
 
-            // Search from the last child element forward (elements with higher ZIndex are at the back)
+            // Check children last to first (higher ZIndex first)
             foreach (var child in GetSortedChildrenByZIndex(descending: true))
             {
-                //Console.WriteLine($"[HitTestDeep] Checking child deep: {child.GetType().Name}");
                 var hit = child.HitTestDeep(point);
                 if (hit != null && hit.IsInteractable)
-                {
-                    //Console.WriteLine($"[HitTestDeep] Hit child: {hit.GetType().Name}");
                     return hit;
-                }
             }
 
-            // Check self in the end
+            // Check self
             if (HitTest(point))
-            {
                 return this;
-            }
 
-            // If none of the child elements are hit, return self
-            //Console.WriteLine($"[HitTestDeep] Child and this no hit: {this.GetType().Name}");
             return null;
         }
-
-        public virtual void Update()
-        {
-            Physics?.SmoothUpdate();
-            OnUpdate();
-
-            foreach (var child in Children)
-                child.Update();
-        }
-
-        protected virtual void OnUpdate() { }
-
-        public virtual void Draw(Graphics g)
-        {
-            if (DisableRender)
-                return;
-
-            if (IsDisposed)
-                return;
-            
-            OnDraw(g);
-
-            foreach (var child in GetSortedChildrenByZIndex()
-                .Where(c => !c.DisableRender))
-                if (child.IsVisible)
-                    child.Draw(g);
-        }
-
-        protected virtual void OnDraw(Graphics g) { }
 
         // Mouse event handling
         protected bool PropagateMouseEvent(MouseEventArgs e, UIEventType eventName)
@@ -503,48 +469,53 @@ namespace Engine.UI.Core.Elements
             return false;
         }
 
+        #endregion
+
+        #region Update / Draw
+
+        public void Init()
+        {
+            if (IsInitialized)
+                return;
+            IsInitialized = true;
+            OnInit();
+        }
+
+        protected virtual void OnInit() { }
+
+        public virtual void Update()
+        {
+            Physics?.SmoothUpdate();
+            OnUpdate();
+            foreach (var child in Children) child.Update();
+        }
+
+        protected virtual void OnUpdate() { }
+
+        public virtual void Draw(Graphics g)
+        {
+            if (_layoutDirty)
+                UpdateLayout();
+
+            if (DisableRender || IsDisposed)
+                return;
+
+            OnDraw(g);
+
+            foreach (var child in GetSortedChildrenByZIndex(descending: true)
+                .Where(c => !c.DisableRender && c.IsVisible))
+                child.Draw(g);
+        }
+
+        protected virtual void OnDraw(Graphics g) { }
+
         public virtual void EndFrame()
         {
-            // Optionally override in subclass
             foreach (var child in Children)
-            {
                 if (child.IsVisible)
-                {
                     child.EndFrame();
-                }
-            }
         }
 
-        /// <summary>
-        /// Releases resources used by this element.
-        /// Removes all child elements and clears internal state.
-        /// </summary>
-        public virtual void Dispose()
-        {
-            if (_disposed)
-                return;  // Already disposed
-
-            // Dispose all children first
-            foreach (var child in Children)
-            {
-                child.Dispose();
-            }
-
-            // Remove all child elements, including persistent ones
-            RemoveAllChild(includePersistent: true);
-
-            Parent?.RemoveChild(this);
-
-            DisposeUI();
-
-            // Mark as disposed
-            _disposed = true;
-        }
-
-        /// <summary>
-        /// 供子類覆寫，用於釋放自定義資源（非子 UI 元素）
-        /// </summary>
-        public virtual void DisposeUI() { }
-        public bool IsDisposed => _disposed;
+        #endregion
     }
 }

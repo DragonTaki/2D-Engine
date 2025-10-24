@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/16
-// Update Date: 2025/05/16
-// Version: v1.0
+// Update Date: 2025/10/24
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System.Drawing;
@@ -64,6 +64,11 @@ namespace Engine.Geometry
         public LayoutF(SizeF position, SizeF size)
             : this((Vector2F)position, (Vector2F)size) { }
 
+        /// <summary>
+        /// Represents an empty layout at (0,0) with zero size.
+        /// </summary>
+        public static readonly LayoutF Zero = new LayoutF(Vector2F.Zero, Vector2F.Zero);
+
         // Optionally, helper properties or methods
         public Vector2F Center => new Vector2F(Position.X + Size.X / 2f, Position.Y + Size.Y / 2f);
 
@@ -73,6 +78,16 @@ namespace Engine.Geometry
         public bool Contains(Vector2F point) =>
             point.X >= Position.X && point.X <= Position.X + Size.X &&
             point.Y >= Position.Y && point.Y <= Position.Y + Size.Y;
+
+        /// <summary>
+        /// Implicit conversion from RectangleF to LayoutF.
+        /// Allows automatic conversion when assigning RectangleF to LayoutF.
+        /// </summary>
+        /// <param name="rect">The RectangleF to convert.</param>
+        public static implicit operator LayoutF(RectangleF rect)
+        {
+            return new LayoutF(rect.X, rect.Y, rect.Width, rect.Height);
+        }
 
         public RectangleF ToRectangleF()
         {

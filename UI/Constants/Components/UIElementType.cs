@@ -7,7 +7,7 @@
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
-namespace Engine.UI.Constants
+namespace Engine.UI.Constants.Components
 {
     public enum UIElementType
     {

@@ -13,7 +13,7 @@ using System.Windows.Forms;
 
 using Engine.Mathematics;
 using Engine.Physics;
-using Engine.UI.Constants;
+using Engine.UI.Constants.Components;
 using Engine.UI.Input;
 using Engine.UI.Models;
 using static Engine.UI.Input.ScrollInputHandler;
