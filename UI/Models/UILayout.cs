@@ -18,7 +18,7 @@ namespace Engine.UI.Models
     public class UILayout
     {
         /// <summary>Anchor defines which edges are locked to parent.</summary>
-        public Anchor Anchor { get; set; } = Anchor.TopLeft;
+        public Anchor Anchor { get; set; } = Anchor.None;
 
         /// <summary>Optional margin space between element and parent edges.</summary>
         public PaddingF Margin { get; set; } = PaddingF.Zero;

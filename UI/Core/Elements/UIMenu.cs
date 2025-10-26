@@ -40,7 +40,7 @@ namespace Engine.UI.Core.Elements
         public float ButtonSpacing { get; set; } = 10f;
         protected float ButtonMargin = 5.0f;
         public bool IsVerticalLayout { get; set; } = true;
-        public UITextBox TitleText { get; set; }
+
         #endregion
 
         #region Constructor
@@ -77,6 +77,7 @@ namespace Engine.UI.Core.Elements
             UpdateScrollContentHeight();
 
             _menuRenderer = CreateMenuRenderer();
+            if (_menuRenderer == null) throw new Exception("_menuRenderer is null!");
         }
 
         public virtual void BuildScrollContainer()
@@ -84,6 +85,7 @@ namespace Engine.UI.Core.Elements
             ScrollContainer = _factory.CreateScrollContainer();
             ScrollContainer.Layout = MenuDefaults.Scroll.Layout;
             ScrollContainer.OverscrollLimit = MenuDefaults.Scroll.OverscrollLimit;
+            ScrollContainer.VerticalAlignment = ScrollAlignment.Bottom;
             AddChild(ScrollContainer);
         }
 
@@ -101,7 +103,7 @@ namespace Engine.UI.Core.Elements
         {
             if (Buttons.Count == 0) return;
             var buttonHeight = Buttons[0].Size.Y;
-            ScrollContainer.ContentHeight = Buttons.Count * (buttonHeight + ButtonMargin);
+            ScrollContainer.ContentHeight = Buttons.Count * (buttonHeight + ButtonSpacing) - ButtonSpacing;
         }
 
         public List<UIButton> GetVisibleButtons()
@@ -139,7 +141,7 @@ namespace Engine.UI.Core.Elements
                 offset += IsVerticalLayout ? btn.Size.Y + ButtonSpacing : btn.Size.X + ButtonSpacing;
             }
         }
-        
+
         public RectangleF GetAbsClipRect() => ScrollContainer.GetAbsClippingRect();
 
         protected virtual UIMenuRenderer<THandler> CreateMenuRenderer()
@@ -151,7 +153,9 @@ namespace Engine.UI.Core.Elements
 
         protected override void OnDraw(Graphics g)
         {
-            _menuRenderer.Draw(g);
+            if (_menuRenderer == null) throw new Exception("_menuRenderer is null!");
+            //_menuRenderer.Draw(g);
+            _menuRenderer.Render(g, this); 
         }
         
         #endregion

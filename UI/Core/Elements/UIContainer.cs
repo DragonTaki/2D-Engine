@@ -29,6 +29,7 @@ namespace Engine.UI.Core.Elements
 
         protected IUiFactory _factory;
         protected THandler _handler;
+        public THandler Handler => _handler;
         protected UIContainerRenderer<THandler> _renderer;
         protected readonly List<Action> _pendingActions = new();
 
@@ -70,7 +71,6 @@ namespace Engine.UI.Core.Elements
             BuildUIObjects();
 
             _renderer = CreateRenderer();
-    if (_renderer == null) throw new Exception("_renderer is null!");
         }
 
         protected virtual void BuildUIObjects() {}
@@ -105,7 +105,7 @@ namespace Engine.UI.Core.Elements
 
         protected override void OnDraw(Graphics g)
         {
-            _renderer.Draw(g);
+            _renderer.Render(g, this);
         }
 
         #endregion

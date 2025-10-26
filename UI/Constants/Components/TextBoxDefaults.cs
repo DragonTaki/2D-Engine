@@ -1,9 +1,9 @@
 /* ----- ----- ----- ----- */
-// MenuDefaults.cs
+// TextBoxDefaults.cs
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
-// Create Date: 2025/10/24
-// Update Date: 2025/10/24
+// Create Date: 2025/10/25
+// Update Date: 2025/10/25
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
@@ -13,9 +13,9 @@ using Engine.UI.Constants.Core;
 
 namespace Engine.UI.Constants.Components
 {
-    public static class MenuDefaults
+    public static class TextBoxDefaults
     {
-        // Menu 整體大小與位置
+        // TextBox 整體大小與位置
         public static readonly Vector2F Position = BaseDefaults.Position;
 
         public static readonly Vector2F Size = BaseDefaults.Size;
@@ -44,22 +44,6 @@ namespace Engine.UI.Constants.Components
             public static readonly PaddingF Padding = ScrollContainerDefaults.Padding;
 
             public const float OverscrollLimit = ScrollContainerDefaults.DefaultOverscrollLimit;
-        }
-
-        // 按鈕預設值
-        public static class Button
-        {
-            public static readonly Vector2F Position = ButtonDefaults.Position;
-
-            public static readonly Vector2F Size = ButtonDefaults.Size;
-
-            public static readonly LayoutF Layout = new LayoutF(Position, Size);
-
-            public const float Margin = ButtonDefaults.Margin;
-
-            public static readonly Anchor Anchor = ButtonDefaults.Anchor;
-
-            public static readonly PaddingF Padding = ButtonDefaults.Padding;
         }
     }
 }

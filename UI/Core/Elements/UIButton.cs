@@ -53,6 +53,12 @@ namespace Engine.UI.Core.Elements
 
         #endregion
 
+        protected override void OnInit()
+        {
+            LocalPosition = ButtonDefaults.Position;
+            Size = ButtonDefaults.Size;
+        }
+
         #region Mouse Handling
 
         public override bool HandleMouseClick(MouseEventArgs e)

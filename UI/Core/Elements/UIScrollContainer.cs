@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/14
-// Update Date: 2025/05/14
-// Version: v1.0
+// Update Date: 2025/10/25
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -20,6 +20,15 @@ using static Engine.UI.Input.ScrollInputHandler;
 
 namespace Engine.UI.Core.Elements
 {
+    /// <summary>
+    /// Defines vertical alignment behavior for scroll content.
+    /// </summary>
+    public enum ScrollAlignment
+    {
+        Top,
+        Bottom
+    }
+
     /// <summary>
     /// Provides a reusable vertical scroll container that supports dragging, scrolling, inertia, and edge elasticity.
     /// </summary>
@@ -84,12 +93,26 @@ namespace Engine.UI.Core.Elements
         /// <summary>
         /// Total content height of the scrollable area.
         /// </summary>
-        public float ContentHeight { get; set; }
-        
+        private float _contentHeight;
+        public float ContentHeight
+        {
+            get => _contentHeight;
+            set
+            {
+                _contentHeight = value;
+                ApplyAlignment();
+            }
+        }
+
         /// <summary>
         /// Maximum overscroll allowed at edges.
         /// </summary>
         public float OverscrollLimit { get; set; } = 40.0f;
+
+        /// <summary>
+        /// Defines how content is aligned vertically when initialized or refreshed.
+        /// </summary>
+        public ScrollAlignment VerticalAlignment { get; set; } = ScrollAlignment.Top;
 
         /// <summary>
         /// Base horizontal scroll offset.
@@ -190,10 +213,21 @@ namespace Engine.UI.Core.Elements
         #region Public Methods
 
         /// <summary>
+        /// Scrolls the content to the bottom edge.
+        /// </summary>
+        public void ScrollToBottom()
+        {
+            ScrollY = 0;
+            //Physics.Position.Current = Physics.Position.Base;
+            //Physics.Velocity.Current = Vector2F.Zero;
+        }
+
+        /// <summary>
         /// Updates scroll container every frame. Handles overscroll, inertia, and rebound behavior.
         /// </summary>
         public override void Update()
         {
+            //Console.WriteLine($"ScrollY: {ScrollY}, gap: {-(ContentHeight - Size.Y)}, Physics.Position.Base: {Physics.Position.Base}, Physics.Position.Current: {Physics.Position.Current}, Physics.Position.Target: {Physics.Position.Target}");
             // If content fits within viewport, return to base position
             if (!OverContent)
             {
@@ -212,35 +246,53 @@ namespace Engine.UI.Core.Elements
             // Content is bigger than viewpoint
             else
             {
-                // Case A: Scrolling up
-                if (ScrollVelocity < 0)
+                //Console.WriteLine($"ScrollY: {ScrollY}, gap: {-(ContentHeight - Size.Y)}");
+                // Moved
+                if (ScrollY != 0)
                 {
-                    if (ScrollY <= OverscrollLimit)
+                    if (VerticalAlignment == ScrollAlignment.Top)
                     {
-                        // Beyond the bottom, rebound to MaxScrollY
-                        Physics.Position.Target = Physics.Position.Base + OverscrollLimit;
-                        Physics.Position.HasTarget = true;
+                        if (ScrollY > 0)
+                        {
+                            Physics.Position.Target = Physics.Position.Base;
+                            Physics.Position.HasTarget = true;
+                        }
+                        else if (ScrollY < -(ContentHeight - Size.Y))
+                        {
+                            Physics.Position.Target = Physics.Position.Base - new Vector2F(0, ContentHeight - Size.Y);
+                            Physics.Position.HasTarget = true;
+                        }
+                        else
+                        {
+                            //Physics.Position.Target = Physics.Position.Current;
+                            Physics.Position.HasTarget = false;
+                        }
                     }
                     else
                     {
-                        // Apply target position based on velocity
-                        ApplyVelocityBasedTarget(ScrollVelocity);
+                        if (ScrollY > 0)
+                        {
+                            Console.WriteLine($"過低");
+                            Physics.Position.Target = Physics.Position.Base;
+                            Physics.Position.HasTarget = true;
+                        }
+                        else if (ScrollY < -(ContentHeight - Size.Y))
+                        {
+                            Console.WriteLine($"過高");
+                            Physics.Position.Target = Physics.Position.Base - new Vector2F(0, ContentHeight - Size.Y);
+                            Physics.Position.HasTarget = true;
+                        }
+                        else
+                        {
+                            //Physics.Position.Target = Physics.Position.Current;
+                            Physics.Position.HasTarget = false;
+                        }
                     }
                 }
-                // Case B: Scrolling down
-                else if (ScrollVelocity > 0)
+                // Already back to base position
+                else
                 {
-                    if (ScrollY >= 0)
-                    {
-                        // Over the top, rebound to 0
-                        Physics.Position.Target = Physics.Position.Base;
-                        Physics.Position.HasTarget = true;
-                    }
-                    else
-                    {
-                        // Apply target position based on velocity
-                        ApplyVelocityBasedTarget(ScrollVelocity);
-                    }
+                    Physics.Position.HasTarget = false;
                 }
             }
         }
@@ -331,6 +383,43 @@ namespace Engine.UI.Core.Elements
             // Apply target offset depending on scroll direction
             Physics.Position.Target = Physics.Position.Current + targetOffset;
             Physics.Position.HasTarget = true;
+        }
+
+        /// <summary>
+        /// Applies current alignment mode (Top or Bottom) when content size changes.
+        /// </summary>
+        private void ApplyAlignment()
+        {
+            if (!OverContent)
+            {
+                // Content smaller than viewport: Reset to top
+                ScrollY = 0;
+                return;
+            }
+
+            switch (VerticalAlignment)
+            {
+                case ScrollAlignment.Top:
+                    Physics.Position.Target = new Vector2F(Physics.Position.Base.X, GetCurrentAbsolutePosition().Y);
+                    ScrollY = 0;
+                    break;
+
+                case ScrollAlignment.Bottom:
+                    float absTopY = GetCurrentAbsolutePosition().Y;
+                    float gapY = - Math.Max(0, ContentHeight - Size.Y);
+                    float absGapY = absTopY + gapY;
+                    Physics.Position.Target = new Vector2F(Physics.Position.Base.X, absGapY);
+                    
+                    ScrollY = 0;
+                    //Physics.Position.Current = Physics.Position.Base;
+                    Physics.Position.Current = Physics.Position.Target;
+                    Physics.Position.HasTarget = false;
+                    Console.WriteLine($"absTopY: {absTopY}, gapY: {gapY}, absGapY: {absGapY}, Physics.Position.Base: {Physics.Position.Base}, Physics.Position.Current: {Physics.Position.Current}, Physics.Position.Target: {Physics.Position.Target}");
+                    break;
+            }
+
+            // Synchronize Physics state immediately
+            //Physics.Position.Current = Physics.Position.Base + new Vector2F(0, ScrollY);
         }
 
         /// <summary>

@@ -9,12 +9,13 @@
 
 using System.Drawing;
 using System.Drawing.Drawing2D;
+
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
 
 namespace Engine.UI.Core.Renderers
 {
-    public class UIContainerRenderer<THandler>
+    public class UIContainerRenderer<THandler> : UIRenderer
         where THandler : UIContainerHandler<THandler>
     {
         protected UIContainer<THandler> Container;
@@ -24,9 +25,9 @@ namespace Engine.UI.Core.Renderers
             Container = container;
         }
 
-        public virtual void Draw(Graphics g)
+        public override void Render(Graphics g, UIElement element)
         {
-            g.SmoothingMode = SmoothingMode.AntiAlias;
+            //
         }
     }
 }

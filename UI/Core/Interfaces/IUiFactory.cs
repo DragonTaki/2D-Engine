@@ -23,6 +23,8 @@ namespace Engine.UI.Core.Interfaces
     /// </summary>
     public interface IUiFactory
     {
+        IServiceProvider ServiceProvider { get; }
+        
         /// <summary>
         /// Creates a new UIScrollContainer using the registered scroll input handler.
         /// </summary>

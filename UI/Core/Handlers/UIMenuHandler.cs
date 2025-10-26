@@ -16,15 +16,23 @@ namespace Engine.UI.Core.Handlers
     public abstract class UIMenuHandler<THandler> : UIContainerHandler<THandler>
         where THandler : UIMenuHandler<THandler>
     {
-        //protected IUiFactory _factory;
         protected UIMenu<THandler> _menu;
-        //protected NavigationManager _navigationManager;
 
-        protected virtual void OnInit((IUiFactory, UIMenu<THandler>) arg)
+        protected override void OnInit((IUiFactory, UIContainer<THandler>) arg)
         {
             _factory = arg.Item1;
-            _menu = arg.Item2;
+
+            if (arg.Item2 is UIMenu<THandler> menu)
+            {
+                _menu = menu;
+                OnMenuInit((_factory, menu));
+            }
+
             _navigationManager = _factory.Resolve<NavigationManager>();
+
+            OnMenuInit(arg);
         }
+
+        protected virtual void OnMenuInit((IUiFactory, UIContainer<THandler>) arg) { }
     }
 }

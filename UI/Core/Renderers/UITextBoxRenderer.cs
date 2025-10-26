@@ -15,41 +15,42 @@ using Chinese_Chess_v3.Game.Constants.UI;
 using Engine.Styles;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
+using Engine.UI.Elements;
 
 namespace Engine.UI.Core.Renderers
 {
-    public class UIMenuRenderer<THandler> : UIRenderer
-        where THandler : UIMenuHandler<THandler>
+    public class UITextBoxRenderer<THandler> : UIRenderer
+        where THandler : UITextBoxHandler<THandler>
     {
-        protected UIMenu<THandler> Menu;
+        protected UITextBox<THandler> TextBox;
         protected CompositeRenderer _composite;
 
-        public UIMenuRenderer(UIMenu<THandler> menu)
+        public UITextBoxRenderer(UITextBox<THandler> textBox)
         {
-            Menu = menu;
+            TextBox = textBox;
             _composite = new CompositeRenderer()
                 .Add(new Outline(this))
-                .Add(new Buttons(this));
+                .Add(new Labels(this));
         }
 
         public override void Render(Graphics g, UIElement element)
         {
-            _composite.Render(g, Menu);
+            _composite.Render(g, TextBox);
         }
 
         private class Outline : UIRenderer
         {
-            private readonly UIMenuRenderer<THandler> _parent;
-            public Outline(UIMenuRenderer<THandler> parent) => _parent = parent;
+            private readonly UITextBoxRenderer<THandler> _parent;
+            public Outline(UITextBoxRenderer<THandler> parent) => _parent = parent;
             public override void Render(Graphics g, UIElement element)
             {
-                using (Pen debugPen = new Pen(Color.FromArgb(100, 128, 128, 128), 4))
+                using (Pen debugPen = new Pen(Color.Red))//Color.FromArgb(100, 128, 128, 128), 4))
                 {
-                    debugPen.DashStyle = DashStyle.Dash;
+                    debugPen.DashStyle = DashStyle.Solid;
 
                     // 使用 UIElement 提供的絕對邊界
-                    var menu = _parent.Menu;
-                    var bounds = menu.GetCurrentAbsoluteBounds();
+                    var textBox = _parent.TextBox;
+                    var bounds = textBox.GetCurrentAbsoluteBounds();
 
                     // 可以加入 margin
                     float margin = 3.0f;
@@ -65,22 +66,21 @@ namespace Engine.UI.Core.Renderers
             }
         }
 
-        private class Buttons : UIRenderer
+        private class Labels : UIRenderer
         {
-            private readonly UIMenuRenderer<THandler> _parent;
-            public Buttons(UIMenuRenderer<THandler> parent) => _parent = parent;
+            private readonly UITextBoxRenderer<THandler> _parent;
+            public Labels(UITextBoxRenderer<THandler> parent) => _parent = parent;
             public override void Render(Graphics g, UIElement element)
             {
                 // 取得可見按鈕
-                var menu = _parent.Menu;
-                var buttons = menu.GetVisibleButtons();
-                var clip = menu.GetAbsClipRect();
+                var textBox = _parent.TextBox;
+                var labels = textBox.GetVisibleLines();
+                var clip = textBox.GetAbsClipRect();
 
                 g.SetClip(clip);
-                foreach (var button in buttons)
+                foreach (var label in labels)
                 {
-                    IButtonDrawStyle style = button.Style ?? UILayoutStyles.MainMenu.Button.Style;
-                    style.Draw(g, button.Text, button.GetCurrentAbsolutePosition(), button.Size);
+                    label.Draw(g);
                 }
                 g.ResetClip();
             }

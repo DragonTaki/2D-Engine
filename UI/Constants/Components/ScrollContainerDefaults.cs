@@ -15,11 +15,11 @@ namespace Engine.UI.Constants.Components
 {
     public static class ScrollContainerDefaults
     {
-        public static readonly Vector2F Size = BaseDefaults.Size;
-
         public static readonly Vector2F Position = BaseDefaults.Position;
 
-        public static readonly LayoutF Layout = new LayoutF(Size, Position);
+        public static readonly Vector2F Size = BaseDefaults.Size;
+
+        public static readonly LayoutF Layout = new LayoutF(Position, Size);
 
         public const float Margin = 10.0f;
 

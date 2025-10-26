@@ -7,6 +7,7 @@
 // Version: v1.1
 /* ----- ----- ----- ----- */
 
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -241,7 +242,7 @@ namespace Engine.UI.Core.Elements
 
             // Apply recursively
             foreach (var child in Children)
-                if (child.LayoutRules.AutoUpdate)
+                if (child.LayoutRules.AutoUpdate && child._layoutDirty)
                     child.UpdateLayout();
         }
 
@@ -500,6 +501,7 @@ namespace Engine.UI.Core.Elements
             if (DisableRender || IsDisposed)
                 return;
 
+            //Console.WriteLine($"OnDraw called: {this.GetType().Name}");
             OnDraw(g);
 
             foreach (var child in GetSortedChildrenByZIndex(descending: true)

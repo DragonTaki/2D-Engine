@@ -10,8 +10,9 @@
 using System.Drawing;
 
 using Engine.UI.Core.Elements;
+using Engine.UI.Core.Renderers;
 
-public class UIScrollContainerRenderer
+public class UIScrollContainerRenderer : UIRenderer
 {
     protected UIScrollContainer ScrollContainer;
 
@@ -23,8 +24,11 @@ public class UIScrollContainerRenderer
     /// <summary>
     /// Draw the scroll container background and optionally visual scroll indicators.
     /// </summary>
-    public virtual void Draw(Graphics g)
+    public override void Render(Graphics g, UIElement element)
     {
+        if (ScrollContainer == null)
+            return;
+
         var rect = ScrollContainer.GetAbsClippingRect();
 
         // Example: Draw semi-transparent background

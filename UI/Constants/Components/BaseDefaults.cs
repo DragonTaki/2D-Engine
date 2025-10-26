@@ -15,15 +15,15 @@ namespace Engine.UI.Constants.Components
 {
     public static class BaseDefaults
     {
-        public static readonly Vector2F Size = new Vector2F(500, 500);
-
         public static readonly Vector2F Position = new Vector2F(0, 0);
 
-        public static readonly LayoutF Layout = new LayoutF(Size, Position);
+        public static readonly Vector2F Size = new Vector2F(500, 500);
+
+        public static readonly LayoutF Layout = new LayoutF(Position, Size);
 
         public const float Margin = 5.0f;
 
-        public static readonly Anchor Anchor = Anchor.TopLeft | Anchor.StretchX;
+        public static readonly Anchor Anchor = Anchor.None | Anchor.None;
 
         public static readonly PaddingF Padding = new PaddingF(10);
     }

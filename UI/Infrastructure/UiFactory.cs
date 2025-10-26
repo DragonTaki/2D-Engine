@@ -30,6 +30,7 @@ namespace Engine.UI.Core.Infrastructure
     public class UiFactory : IUiFactory
     {
         private readonly IServiceProvider _sp;
+        public IServiceProvider ServiceProvider => _sp;
 
         // Dictionary storing registered factories for type T without context
         private readonly Dictionary<Type, Func<IUiFactory, UIElement>> _factories = new();
