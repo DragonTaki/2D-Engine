@@ -213,16 +213,6 @@ namespace Engine.UI.Core.Elements
         #region Public Methods
 
         /// <summary>
-        /// Scrolls the content to the bottom edge.
-        /// </summary>
-        public void ScrollToBottom()
-        {
-            ScrollY = 0;
-            //Physics.Position.Current = Physics.Position.Base;
-            //Physics.Velocity.Current = Vector2F.Zero;
-        }
-
-        /// <summary>
         /// Updates scroll container every frame. Handles overscroll, inertia, and rebound behavior.
         /// </summary>
         public override void Update()
@@ -250,43 +240,19 @@ namespace Engine.UI.Core.Elements
                 // Moved
                 if (ScrollY != 0)
                 {
-                    if (VerticalAlignment == ScrollAlignment.Top)
+                    if (ScrollY > 0)
                     {
-                        if (ScrollY > 0)
-                        {
-                            Physics.Position.Target = Physics.Position.Base;
-                            Physics.Position.HasTarget = true;
-                        }
-                        else if (ScrollY < -(ContentHeight - Size.Y))
-                        {
-                            Physics.Position.Target = Physics.Position.Base - new Vector2F(0, ContentHeight - Size.Y);
-                            Physics.Position.HasTarget = true;
-                        }
-                        else
-                        {
-                            //Physics.Position.Target = Physics.Position.Current;
-                            Physics.Position.HasTarget = false;
-                        }
+                        Physics.Position.Target = Physics.Position.Base;
+                        Physics.Position.HasTarget = true;
+                    }
+                    else if (ScrollY < -(ContentHeight - Size.Y))
+                    {
+                        Physics.Position.Target = Physics.Position.Base - new Vector2F(0, ContentHeight - Size.Y);
+                        Physics.Position.HasTarget = true;
                     }
                     else
                     {
-                        if (ScrollY > 0)
-                        {
-                            Console.WriteLine($"過低");
-                            Physics.Position.Target = Physics.Position.Base;
-                            Physics.Position.HasTarget = true;
-                        }
-                        else if (ScrollY < -(ContentHeight - Size.Y))
-                        {
-                            Console.WriteLine($"過高");
-                            Physics.Position.Target = Physics.Position.Base - new Vector2F(0, ContentHeight - Size.Y);
-                            Physics.Position.HasTarget = true;
-                        }
-                        else
-                        {
-                            //Physics.Position.Target = Physics.Position.Current;
-                            Physics.Position.HasTarget = false;
-                        }
+                        Physics.Position.HasTarget = false;
                     }
                 }
                 // Already back to base position
@@ -406,20 +372,16 @@ namespace Engine.UI.Core.Elements
 
                 case ScrollAlignment.Bottom:
                     float absTopY = GetCurrentAbsolutePosition().Y;
-                    float gapY = - Math.Max(0, ContentHeight - Size.Y);
+                    float gapY = -(ContentHeight - Size.Y);
                     float absGapY = absTopY + gapY;
+                    ScrollY = gapY;
                     Physics.Position.Target = new Vector2F(Physics.Position.Base.X, absGapY);
                     
-                    ScrollY = 0;
-                    //Physics.Position.Current = Physics.Position.Base;
-                    Physics.Position.Current = Physics.Position.Target;
-                    Physics.Position.HasTarget = false;
-                    Console.WriteLine($"absTopY: {absTopY}, gapY: {gapY}, absGapY: {absGapY}, Physics.Position.Base: {Physics.Position.Base}, Physics.Position.Current: {Physics.Position.Current}, Physics.Position.Target: {Physics.Position.Target}");
+                    //Physics.Position.Current = Physics.Position.Target;
+                    //Console.WriteLine($"absTopY: {absTopY}, gapY: {gapY}, absGapY: {absGapY}, Physics.Position.Base: {Physics.Position.Base}, Physics.Position.Current: {Physics.Position.Current}, Physics.Position.Target: {Physics.Position.Target}");
                     break;
             }
-
-            // Synchronize Physics state immediately
-            //Physics.Position.Current = Physics.Position.Base + new Vector2F(0, ScrollY);
+            Physics.Position.HasTarget = false;
         }
 
         /// <summary>

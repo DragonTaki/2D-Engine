@@ -10,9 +10,6 @@
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
-using Chinese_Chess_v3.Game.Constants.UI;
-
-using Engine.Styles;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
 using Engine.UI.Elements;
@@ -44,7 +41,7 @@ namespace Engine.UI.Core.Renderers
             public Outline(UITextBoxRenderer<THandler> parent) => _parent = parent;
             public override void Render(Graphics g, UIElement element)
             {
-                using (Pen debugPen = new Pen(Color.Red))//Color.FromArgb(100, 128, 128, 128), 4))
+                using (Pen debugPen = new Pen(Color.FromArgb(100, 128, 128, 128), 4))
                 {
                     debugPen.DashStyle = DashStyle.Solid;
 
@@ -70,19 +67,17 @@ namespace Engine.UI.Core.Renderers
         {
             private readonly UITextBoxRenderer<THandler> _parent;
             public Labels(UITextBoxRenderer<THandler> parent) => _parent = parent;
+
             public override void Render(Graphics g, UIElement element)
             {
-                // 取得可見按鈕
                 var textBox = _parent.TextBox;
-                var labels = textBox.GetVisibleLines();
+                var labels = textBox._labels;
                 var clip = textBox.GetAbsClipRect();
 
-                g.SetClip(clip);
                 foreach (var label in labels)
                 {
-                    label.Draw(g);
+                    label.ClipRect = clip;
                 }
-                g.ResetClip();
             }
         }
     }

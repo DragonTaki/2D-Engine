@@ -88,6 +88,7 @@ namespace Engine.UI.Core.Elements
                 Size = value.Size;
             }
         }
+        public RectangleF? ClipRect { get; set; } = null;
 
         /// <summary>Indicates whether layout has been calculated</summary>
         protected bool _layoutDirty = true;

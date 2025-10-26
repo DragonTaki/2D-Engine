@@ -30,11 +30,11 @@ namespace Engine.UI.Elements
         #region Fields / Properties
 
         protected UITextBoxRenderer<THandler> _textBoxRenderer;
-        protected UIScrollContainer ScrollContainer { get; private set; }
+        public UIScrollContainer ScrollContainer { get; private set; }
 
         // 儲存所有要顯示的文字段落
-        protected readonly List<TextFragment> _fragments = new();
-        protected readonly List<UILabel> _labels = new();
+        protected List<TextFragment> _fragments = new();
+        public List<UILabel> _labels = new();
         // 可動態調整屬性
         public Font Font { get; set; } = SystemFonts.DefaultFont;
         public float LineHeight { get; set; }
@@ -158,6 +158,7 @@ namespace Engine.UI.Elements
                         TextAlign = ContentAlignment.MiddleLeft,
                     };
 
+                    label.LocalPosition.Current.Y = y;
                     ScrollContainer.AddChild(label);
                     _labels.Add(label);
 
@@ -166,9 +167,6 @@ namespace Engine.UI.Elements
             }
 
             ScrollContainer.ContentHeight = Math.Max(0, y - LineSpacing);
-
-            if (ScrollContainer.VerticalAlignment == ScrollAlignment.Bottom)
-                ScrollContainer.ScrollToBottom();
         }
 
         #endregion

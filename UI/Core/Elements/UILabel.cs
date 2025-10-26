@@ -60,7 +60,7 @@ namespace Engine.UI.Core.Elements
         public int SelectionEnd { get; private set; }
 
 #nullable enable
-        private List<TextFragment>? _fragments;
+        public List<TextFragment>? _fragments;
 #nullable disable
 
         public UILabel() : base(type: UIElementType.Label)
@@ -76,7 +76,7 @@ namespace Engine.UI.Core.Elements
         /// <summary>
         /// Returns a StringFormat configured based on alignment and wrapping options.
         /// </summary>
-        private StringFormat GetStringFormat(ContentAlignment align, bool wordWrap)
+        public StringFormat GetStringFormat(ContentAlignment align, bool wordWrap)
         {
             if (_cachedFormat != null && _lastAlign == align && _lastWrap == wordWrap)
                 return _cachedFormat;
@@ -104,7 +104,7 @@ namespace Engine.UI.Core.Elements
             return _cachedFormat;
         }
 
-        private Brush GetBrush()
+        public Brush GetBrush()
         {
             if (_cachedBrush == null || _cachedBrush.Color != ForeColor)
             {
@@ -120,6 +120,9 @@ namespace Engine.UI.Core.Elements
         /// <param name="g">Graphics context</param>
         protected override void OnDraw(Graphics g)
         {
+            if (ClipRect.HasValue)
+                g.SetClip(ClipRect.Value);
+
             RectangleF rect = GetCurrentAbsoluteBounds();
 
             if (_fragments != null && _fragments.Count > 0)
@@ -136,7 +139,16 @@ namespace Engine.UI.Core.Elements
 
             // 原本單純文字模式
             if (!string.IsNullOrEmpty(Text))
+            {
+                using (var brush = new SolidBrush(Color.FromArgb(128, Color.Red))) // 半透明紅色
+                {
+                    g.FillRectangle(brush, rect);
+                }
                 g.DrawString(Text, Font, GetBrush(), rect, GetStringFormat(TextAlign, WordWrap));
+            }
+
+            if (ClipRect.HasValue)
+                g.ResetClip();
         }
 
         /*protected override bool HandleMouseDown(MouseEventArgs e)

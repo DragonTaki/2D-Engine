@@ -59,7 +59,7 @@ namespace Engine.Physics
         #region Settings (Adjustable Parameters)
 
         private const float AccelerationLerpFactor = 0.05f;
-        private const float CalculateThreshold = 0.001f;
+        private const float CalculateThreshold = 0.01f;
 
         #endregion
 
