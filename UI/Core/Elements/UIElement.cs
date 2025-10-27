@@ -16,128 +16,22 @@ using System.Windows.Forms;
 
 using Engine.Geometry;
 using Engine.Mathematics;
-using Engine.Physics;
 using Engine.UI.Constants.Components;
 using Engine.UI.Constants.Core;
 using Engine.UI.Constants.Events;
+using Engine.UI.Core.Bases;
+using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Interfaces;
-using Engine.UI.Input;
+using Engine.UI.Core.Renderers;
 using Engine.UI.Models;
 
 namespace Engine.UI.Core.Elements
 {
-    public class UIElement : IUpdatable, IDrawable, IInputHandler
+    public abstract class UIElement : UIElementBase
     {
-        #region Identity
+        //public UIHandlerBase Handler => base.HandlerBase;
 
-        private static long s_nextId = 0;
-
-        /// <summary>Unique ID for tracking elements</summary>
-        public long InstanceId { get; }
-
-        /// <summary>Optional type classification</summary>
-        public UIElementType ElementType { get; set; } = UIElementType.Generic;
-
-        /// <summary>Whether element persists when parent clears children</summary>
-        public bool IsPersistent { get; set; } = false;
-
-        /// <summary>
-        /// Tracks whether this element has been initialized.
-        /// </summary>
-        public bool IsInitialized { get; protected set; }
-
-        #endregion
-
-        #region Hierarchy
-
-#nullable enable
-        /// <summary>Parent UI element, null if root</summary>
-        public UIElement? Parent { get; set; }
-#nullable disable
-
-        /// <summary>Child elements</summary>
-        public List<UIElement> Children { get; } = new();
-
-        private bool _isChildrenSortedDirty = true;
-        private List<UIElement> _sortedChildrenAsc;
-        private List<UIElement> _sortedChildrenDesc;
-
-        #endregion
-
-        #region Layout & Position
-
-        /// <summary>Relative position to parent</summary>
-        public virtual UIPosition LocalPosition { get; set; } = new UIPosition(Vector2F.Zero);
-
-        /// <summary>Size (Width, Height)</summary>
-        public virtual Vector2F Size { get; set; } = Vector2F.Zero;
-
-        /// <summary>Layout configuration (relative positioning rules)</summary>
-        public UILayout LayoutRules { get; set; } = new UILayout();
-
-        // Cached final layout (absolute position and size)
-        public LayoutF Bounds { get; protected set; } = LayoutF.Zero;
-
-        /// <summary>Actual layout (position + size)</summary>
-        public virtual LayoutF Layout
-        {
-            get => new LayoutF(LocalPosition.Current, Size);
-            set
-            {
-                LocalPosition = new UIPosition(value.Position);
-                Size = value.Size;
-            }
-        }
-        public RectangleF? ClipRect { get; set; } = null;
-
-        /// <summary>Indicates whether layout has been calculated</summary>
-        protected bool _layoutDirty = true;
-
-        #endregion
-
-        #region Sorting / ZIndex
-
-        private int _zIndex = 0;
-
-        /// <summary>Controls draw/input order in parent</summary>
-        public int ZIndex
-        {
-            get => _zIndex;
-            set
-            {
-                if (_zIndex != value)
-                {
-                    _zIndex = value;
-                    Parent?.NotifyChildOrderChanged();
-                }
-            }
-        }
-
-        #endregion
-
-        #region Visibility / Interaction
-
-        public bool IsVisible { get; set; } = true;
-        public bool IsEnabled { get; set; } = true;
-
-        public virtual bool IsInteractable => IsVisible && IsEnabled;
-        public virtual bool AllowHitWhenInvisible => false;
-        public virtual bool DisableRender => !IsVisible;
-
-        #endregion
-
-        #region Physics
-
-#nullable enable
-        public virtual Physics2D? Physics { get; set; }
-#nullable disable
-
-        #endregion
-
-
-        #region Constructor / Dispose
-
-        private bool _disposed = false;
+        //public UIRendererBase Renderer => base.RendererBase;
 
         public UIElement(int zIndex = 0, bool isPersistent = false, UIElementType type = UIElementType.Generic)
         {
@@ -147,7 +41,22 @@ namespace Engine.UI.Core.Elements
             ElementType = type;
         }
 
-        public virtual void Dispose()
+        public virtual void Init()
+        {
+            //Console.WriteLine($"[UIElement]Init no generic Current type: {this?.GetType().FullName ?? "null"}, IsInitialized: {IsInitialized}");
+            if (IsInitialized) return;
+            IsInitialized = true;
+
+            OnInit();
+        }
+
+        protected virtual void BeforeInit() { }
+
+        protected virtual void OnInit() { }
+
+        protected virtual void AfterInit() { }
+
+        public override void Dispose()
         {
             if (_disposed) return;
 
@@ -165,8 +74,6 @@ namespace Engine.UI.Core.Elements
         public virtual void DisposeUI() { }
         public bool IsDisposed => _disposed;
 
-        #endregion
-
         #region Position Utilities
 
         /// <summary>Get absolute position by summing ancestors</summary>
@@ -174,7 +81,7 @@ namespace Engine.UI.Core.Elements
         {
             Vector2F accumulated = LocalPosition.Current;
 #nullable enable
-            UIElement? current = this.Parent;
+            UIElementBase? current = this.Parent;
 #nullable disable
 
             while (current != null)
@@ -192,7 +99,7 @@ namespace Engine.UI.Core.Elements
         }
 
         /// <summary>Get absolute bounds</summary>
-        public LayoutF GetCurrentAbsoluteBounds()
+        public override LayoutF GetCurrentAbsoluteBounds()
         {
             return new LayoutF(GetCurrentAbsolutePosition(), Size);
         }
@@ -200,7 +107,7 @@ namespace Engine.UI.Core.Elements
         /// <summary>
         /// Recalculates element position and size based on parent bounds and layout rules.
         /// </summary>
-        public virtual void UpdateLayout()
+        public override void UpdateLayout()
         {
             if (Parent == null || LayoutRules.IgnoreParentLayout)
                 return;
@@ -243,7 +150,7 @@ namespace Engine.UI.Core.Elements
 
             // Apply recursively
             foreach (var child in Children)
-                if (child.LayoutRules.AutoUpdate && child._layoutDirty)
+                if (child.LayoutRules.AutoUpdate && child.LayoutDirty)
                     child.UpdateLayout();
         }
 
@@ -252,7 +159,7 @@ namespace Engine.UI.Core.Elements
 
         #region Child Management
 
-        public virtual void AddChild(UIElement child)
+        public override void AddChild(UIElementBase child)
         {
             child.Parent = this;
             Children.Add(child);
@@ -260,13 +167,13 @@ namespace Engine.UI.Core.Elements
             _isChildrenSortedDirty = true;
         }
 
-        protected virtual void OnAddedToParent()
+        public override void OnAddedToParent()
         {
             if (Physics != null)
                 Physics.Position.Current = GetCurrentAbsolutePosition();
         }
 
-        public virtual void RemoveChild(UIElement child)
+        public override void RemoveChild(UIElementBase child)
         {
             if (Children.Remove(child))
             {
@@ -275,9 +182,9 @@ namespace Engine.UI.Core.Elements
             }
         }
 
-        public void NotifyChildOrderChanged() => _isChildrenSortedDirty = true;
+        public override void NotifyChildOrderChanged() => _isChildrenSortedDirty = true;
 
-        public IReadOnlyList<UIElement> GetSortedChildrenByZIndex(bool descending = false)
+        public IReadOnlyList<UIElementBase> GetSortedChildrenByZIndex(bool descending = false)
         {
             if (_isChildrenSortedDirty || _sortedChildrenAsc == null || _sortedChildrenDesc == null)
             {
@@ -331,20 +238,20 @@ namespace Engine.UI.Core.Elements
             return GetCurrentAbsoluteBounds().Contains(point);
         }
 
-        public UIElement GetRoot()
+        public override UIElementBase GetRoot()
         {
-            UIElement node = this;
+            UIElementBase node = this;
             while (node.Parent != null)
                 node = node.Parent;
-            return node;
+            return (UIElementBase)node;
         }
 
         /// <summary>
         /// Starting from this element, search sub-elements depth-first to find the top-level UIElement that hits the point
         /// </summary>
-        #nullable enable
-        public UIElement? HitTestDeep(PointF point, bool isRootCall = true)
-        #nullable disable
+#nullable enable
+        public override UIElementBase? HitTestDeep(PointF point, bool isRootCall = true)
+#nullable disable
         {
             // Check root
             if (isRootCall && this.GetRoot().ElementType != UIElementType.Root)
@@ -384,11 +291,11 @@ namespace Engine.UI.Core.Elements
             {
                 bool handled = eventName switch
                 {
-                    UIEventType.MouseClick => child.OnMouseClick(e),
                     UIEventType.MouseDown => child.OnMouseDown(e),
                     UIEventType.MouseMove => child.OnMouseMove(e),
                     UIEventType.MouseUp => child.OnMouseUp(e),
                     UIEventType.MouseWheel => child.OnMouseWheel(e),
+                    UIEventType.MouseClick => child.OnMouseClick(e),
                     _ => false
                 };
 
@@ -414,87 +321,54 @@ namespace Engine.UI.Core.Elements
             // Self handling
             return eventName switch
             {
-                UIEventType.MouseClick => HandleMouseClick(e),
-                UIEventType.MouseDown => HandleMouseDown(e),
-                UIEventType.MouseMove => HandleMouseMove(e),
-                UIEventType.MouseUp => HandleMouseUp(e),
-                UIEventType.MouseWheel => HandleMouseWheel(e),
+                UIEventType.MouseDown => HandlerBase?.HandleMouseDown(e) ?? false,
+                UIEventType.MouseMove => HandlerBase?.HandleMouseMove(e) ?? false,
+                UIEventType.MouseUp => HandlerBase?.HandleMouseUp(e) ?? false,
+                UIEventType.MouseWheel => HandlerBase?.HandleMouseWheel(e) ?? false,
+                UIEventType.MouseClick => HandlerBase?.HandleMouseClick(e) ?? false,
                 _ => false
             };
         }
 
-        public virtual bool OnMouseDown(MouseEventArgs e)
+        public override bool OnMouseDown(MouseEventArgs e)
         {
             return PropagateMouseEvent(e, UIEventType.MouseDown);
         }
-        protected virtual bool HandleMouseDown(MouseEventArgs e)
-        {
-            return false; // The default is not to process, and the subclass can return true to indicate successful processing
-        }
 
-        public virtual bool OnMouseMove(MouseEventArgs e)
+        public override bool OnMouseMove(MouseEventArgs e)
         {
             return PropagateMouseEvent(e, UIEventType.MouseMove);
         }
-        protected virtual bool HandleMouseMove(MouseEventArgs e)
-        {
-            return false;
-        }
 
-        public virtual bool OnMouseUp(MouseEventArgs e)
+        public override bool OnMouseUp(MouseEventArgs e)
         {
             return PropagateMouseEvent(e, UIEventType.MouseUp);
         }
-        protected virtual bool HandleMouseUp(MouseEventArgs e)
-        {
-            return false;
-        }
 
-        public virtual bool OnMouseWheel(MouseEventArgs e)
+        public override bool OnMouseWheel(MouseEventArgs e)
         {
             return PropagateMouseEvent(e, UIEventType.MouseWheel);
         }
-        protected virtual bool HandleMouseWheel(MouseEventArgs e)
-        {
-            return false;
-        }
 
-        public virtual bool OnMouseClick(MouseEventArgs e)
+        public override bool OnMouseClick(MouseEventArgs e)
         {
-            var uIElement = this;
             return PropagateMouseEvent(e, UIEventType.MouseClick);
-        }
-        public virtual bool HandleMouseClick(MouseEventArgs e)
-        {
-            var uIElement = this;
-            var root = this.GetRoot();
-            return false;
         }
 
         #endregion
 
         #region Update / Draw
 
-        public void Init()
-        {
-            if (IsInitialized)
-                return;
-            IsInitialized = true;
-            OnInit();
-        }
-
-        protected virtual void OnInit() { }
-
-        public virtual void Update()
+        public override void Update()
         {
             Physics?.SmoothUpdate();
-            OnUpdate();
-            foreach (var child in Children) child.Update();
+            HandlerBase?.OnUpdate();
+
+            foreach (var child in Children)
+                child.Update();
         }
 
-        protected virtual void OnUpdate() { }
-
-        public virtual void Draw(Graphics g)
+        public override void Draw(Graphics g)
         {
             if (_layoutDirty)
                 UpdateLayout();
@@ -503,22 +377,92 @@ namespace Engine.UI.Core.Elements
                 return;
 
             //Console.WriteLine($"OnDraw called: {this.GetType().Name}");
-            OnDraw(g);
+            RendererBase?.Render(g, this);
 
             foreach (var child in GetSortedChildrenByZIndex(descending: true)
                 .Where(c => !c.DisableRender && c.IsVisible))
                 child.Draw(g);
         }
 
-        protected virtual void OnDraw(Graphics g) { }
-
-        public virtual void EndFrame()
+        public override void EndFrame()
         {
+            HandlerBase?.OnEndFrame();
+
             foreach (var child in Children)
                 if (child.IsVisible)
                     child.EndFrame();
         }
 
         #endregion
+    }
+
+    public abstract class UIElement<TElement, THandler, TRenderer> : UIElement
+        where TElement : UIElement<TElement, THandler, TRenderer>
+        where THandler : UIHandler<TElement, THandler, TRenderer>
+        where TRenderer : UIRenderer<TElement, THandler, TRenderer>
+    {
+        /// <summary>
+        /// Strongly-typed handler reference.
+        /// </summary>
+        public THandler Handler
+        {
+            get => (THandler)HandlerBase;
+            protected set => HandlerBase = value;
+        }
+
+        /// <summary>
+        /// Strongly-typed renderer reference.
+        /// </summary>
+        public TRenderer Renderer
+        {
+            get => (TRenderer)RendererBase;
+            protected set => RendererBase = value;
+        }
+
+        public UIElement(int zIndex = 0, bool isPersistent = false, UIElementType type = UIElementType.Generic)
+            : base(zIndex, isPersistent, type)
+        {
+        }
+
+        public virtual void Init(IUiFactory factory, THandler handler, TRenderer renderer)
+        {
+            Console.WriteLine($"[UIElement]Init 3 generic Current type: {this?.GetType().FullName ?? "null"}, IsInitialized: {IsInitialized}");
+            if (IsInitialized) return;
+            IsInitialized = true;
+            _factory = factory;
+
+            BeforeInit(factory);
+
+            // 綁定 Handler
+            Handler = handler;
+            Handler.Element = (TElement)(object)this;
+            Console.WriteLine($"[UIElement]Handler type: {Handler?.GetType().FullName ?? "null"}");
+
+            // 綁定 Renderer
+            Renderer = renderer;
+            Renderer.Element = (TElement)(object)this;
+            Console.WriteLine($"[UIElement]Renderer type: {Renderer?.GetType().FullName ?? "null"}");
+
+            base.Init();
+
+            OnInit(factory);
+            AfterInit(factory);
+        }
+
+        /// <summary>可覆寫做初始化前的屬性設定</summary>
+        protected virtual void BeforeInit(IUiFactory factory) { }
+
+        /// <summary>元素專屬初始化，子類必覆寫或呼叫 base</summary>
+        protected virtual void OnInit(IUiFactory factory) { }
+
+        /// <summary>可覆寫做初始化後操作，例如子元素或事件註冊</summary>
+        protected virtual void AfterInit(IUiFactory factory) { }
+
+        protected virtual TRenderer CreateRenderer(Func<TRenderer> factory)
+        {
+            var renderer = factory();
+            renderer.Element = (TElement)(object)this;  // this 是 UIElementBase
+            return renderer;
+        }
     }
 }

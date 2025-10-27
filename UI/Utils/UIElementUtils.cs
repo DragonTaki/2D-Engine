@@ -10,7 +10,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-
+using Engine.UI.Core.Bases;
 using Engine.UI.Core.Elements;
 
 namespace Engine.UI.Utils
@@ -29,7 +29,8 @@ namespace Engine.UI.Utils
         /// <typeparam name="T">Type of UIElement (or derived type)</typeparam>
         /// <param name="elements">Enumerable collection of UI elements to update</param>
         /// <param name="clippingRect">The clipping rectangle representing the visible viewport</param>
-        public static void UpdateVisibleState<T>(IEnumerable<T> elements, RectangleF clippingRect) where T : UIElement
+        public static void UpdateVisibleState<T>(IEnumerable<T> elements, RectangleF clippingRect)
+            where T : UIElementBase
         {
             foreach (var element in elements)
             {

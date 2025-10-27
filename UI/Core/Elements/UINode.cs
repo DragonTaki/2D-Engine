@@ -17,7 +17,7 @@ namespace Engine.UI.Core.Elements
     /// A generic node element that does not render itself and always participates in hit testing.
     /// Serves as a structural container for other UI elements in the UI hierarchy.
     /// </summary>
-    public class UINode : UIElement
+    public abstract class UINode : UIElement
     {
         #region Properties
 

@@ -24,12 +24,12 @@ namespace Engine.UI.Elements
     /// <summary>
     /// Pure Engine LoggerBox: 渲染文字、支援滾動，不依賴 WinForms 控件
     /// </summary>
-    public abstract class UITextBox<THandler> : UIContainer<THandler>
-        where THandler : UITextBoxHandler<THandler>
+    public abstract class UITextBox<TElement, THandler, TRenderer> : UIContainer<TElement, THandler, TRenderer>
+        where TElement : UITextBox<TElement, THandler, TRenderer>
+        where THandler : UITextBoxHandler<TElement, THandler, TRenderer>
+        where TRenderer : UITextBoxRenderer<TElement, THandler, TRenderer>
     {
         #region Fields / Properties
-
-        protected UITextBoxRenderer<THandler> _textBoxRenderer;
         public UIScrollContainer ScrollContainer { get; private set; }
 
         // 儲存所有要顯示的文字段落
@@ -46,37 +46,42 @@ namespace Engine.UI.Elements
 
         #region Constructor
 
-        public UITextBox()
-        {
-            LocalPosition = Vector2F.Zero;
-            Size = Vector2F.Zero;
-        }
-
-        public UITextBox(Vector2F position, Vector2F size)
-        {
-            LocalPosition.Base = position;
-            Size = size;
-        }
+        public UITextBox() { }
 
         #endregion
 
         #region Initialization
 
-        protected override void OnInit((IUiFactory, THandler) arg)
+        public override void Init(IUiFactory factory, THandler handler, TRenderer renderer)
         {
-            _factory = arg.Item1;
-            _handler = arg.Item2;
+            Console.WriteLine($"[UITextBox]Init 3 generic Current type: {this?.GetType().FullName ?? "null"}, IsInitialized: {IsInitialized}");
+            if (IsInitialized) return;
+            IsInitialized = true;
+            _factory = factory;
 
-            LocalPosition = TextBoxDefaults.Position;
-            Size = TextBoxDefaults.Size;
-            LineHeight = Font.Height;
+            BeforeInit(factory);
 
+            // 綁定 Handler
+            Handler = handler;
+            Handler.Element = (TElement)(object)this;
+            Console.WriteLine($"[UITextBox]Handler type: {Handler?.GetType().FullName ?? "null"}");
+
+            // 綁定 Renderer
+            Renderer = renderer;
+            Renderer.Element = (TElement)(object)this;
+            Console.WriteLine($"[UITextBox]Renderer type: {Renderer?.GetType().FullName ?? "null"}");
             BuildScrollContainer();
 
-            UpdateScrollContentHeight();
+            base.Init();
 
-            _textBoxRenderer = CreateTextBoxRenderer();
-            if (_textBoxRenderer == null) throw new Exception("_menuRenderer is null!");
+            OnInit(factory);
+            AfterInit(factory);
+        }
+
+        protected override void OnInit(IUiFactory factory)
+        {
+            LocalPosition = TextBoxDefaults.Position;
+            Size = TextBoxDefaults.Size;
         }
 
         protected virtual void BuildScrollContainer()
@@ -175,17 +180,6 @@ namespace Engine.UI.Elements
 
         public RectangleF GetAbsClipRect() => ScrollContainer.GetAbsClippingRect();
 
-        protected virtual UITextBoxRenderer<THandler> CreateTextBoxRenderer()
-        {
-            return new UITextBoxRenderer<THandler>(this);
-        }
-        protected override void OnDraw(Graphics g)
-        {
-            if (_textBoxRenderer == null) throw new Exception("_textBoxRenderer is null!");
-
-            _textBoxRenderer.Render(g, this); 
-        }
-
         #endregion
     }
 
@@ -194,23 +188,34 @@ namespace Engine.UI.Elements
     /// </summary>
     public class UITextLine : UIElement
     {
-        private readonly string _text;
-        private readonly Color _color;
-        private readonly Font _font;
+        public string Text { get; }
+        public Color Color { get; }
+        public Font Font { get; }
 
         public UITextLine(Geometry.LayoutF layout, string text, Color color, Font font)
         {
             Layout = layout;
-            _text = text;
-            _color = color;
-            _font = font;
+            Text = text;
+            Color = color;
+            Font = font;
+            RendererBase = new UITextLineRenderer(this);
+        }
+    }
+
+    public class UITextLineRenderer : UIRenderer<UITextLine>
+    {
+        private readonly UITextLine _element;
+
+        public UITextLineRenderer(UITextLine element)
+        {
+            _element = element;
         }
 
-        protected override void OnDraw(Graphics g)
+        protected override void OnRender(Graphics g, UITextLine element)
         {
-            var rect = GetCurrentAbsoluteBounds();
-            using var brush = new SolidBrush(_color);
-            g.DrawString(_text, _font, brush, rect.X, rect.Y);
+            var rect = element.GetCurrentAbsoluteBounds();
+            using var brush = new SolidBrush(element.Color);
+            g.DrawString(element.Text, element.Font, brush, rect.X, rect.Y);
         }
     }
 

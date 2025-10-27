@@ -11,7 +11,7 @@ using System;
 
 using Chinese_Chess_v3.Game.UI.Dialogs;
 
-using Engine.UI.Core.Base;
+using Engine.UI.Core.Bases;
 using Engine.UI.Core.Elements;
 using Engine.UI.Dialogs;
 using Engine.UI.Utils;

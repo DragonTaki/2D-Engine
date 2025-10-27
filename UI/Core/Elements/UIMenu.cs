@@ -14,10 +14,10 @@ using System.Linq;
 
 using Engine.Mathematics;
 using Engine.UI.Constants.Components;
+using Engine.UI.Core.Bases;
 using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Interfaces;
 using Engine.UI.Core.Renderers;
-using Engine.UI.Elements;
 using Engine.UI.Models;
 using Engine.UI.Utils;
 
@@ -26,16 +26,14 @@ namespace Engine.UI.Core.Elements
     /// <summary>
     /// Engine層通用 Menu
     /// </summary>
-    public abstract class UIMenu<THandler> : UIContainer<THandler>
-        where THandler : UIMenuHandler<THandler>
+    public abstract class UIMenu<TElement, THandler, TRenderer>
+    : UIContainer<TElement, THandler, TRenderer>
+    where TElement : UIMenu<TElement, THandler, TRenderer>
+    where THandler : UIMenuHandler<TElement, THandler, TRenderer>
+    where TRenderer : UIMenuRenderer<TElement, THandler, TRenderer>
     {
         #region Fields / Properties
-
-        //protected IUiFactory _factory;
-        //protected THandler _handler;
-        //protected UIMenuRenderer<THandler> _renderer;
-        protected UIMenuRenderer<THandler> _menuRenderer;
-        protected UIScrollContainer ScrollContainer { get; private set; }
+        public UIScrollContainer ScrollContainer { get; private set; }
         protected List<UIButton> Buttons { get; } = new();
         public float ButtonSpacing { get; set; } = 10f;
         protected float ButtonMargin = 5.0f;
@@ -44,17 +42,9 @@ namespace Engine.UI.Core.Elements
         #endregion
 
         #region Constructor
-        // 無參數建構子，C# 編譯器需要
-        public UIMenu()
-        {
-            LocalPosition = Vector2F.Zero; // 或暫時預設
-            Size = Vector2F.Zero;
-        }
-        public UIMenu(Vector2F position, Vector2F size)
-        {
-            LocalPosition.Base = position;
-            Size = size;
-        }
+
+        public UIMenu() { }
+
         #endregion
 
         #region Methods
@@ -62,22 +52,43 @@ namespace Engine.UI.Core.Elements
         /// <summary>
         /// 通用初始化流程
         /// </summary>
-        protected override void OnInit((IUiFactory, THandler) arg)
+        public override void Init(IUiFactory factory, THandler handler, TRenderer renderer)
         {
-            _factory = arg.Item1;
-            _handler = arg.Item2;
+            Console.WriteLine($"[UIMenu]Init 3 generic Current type: {this?.GetType().FullName ?? "null"}, IsInitialized: {IsInitialized}");
+            if (IsInitialized) return;
+            IsInitialized = true;
+            _factory = factory;
 
-            LocalPosition = MenuDefaults.Position;
-            Size = MenuDefaults.Size;
+            BeforeInit(factory);
 
+            // 綁定 Handler
+            Handler = handler;
+            Handler.Element = (TElement)(object)this;
+            Console.WriteLine($"[UIMenu]Handler type: {Handler?.GetType().FullName ?? "null"}");
+
+            // 綁定 Renderer
+            Renderer = renderer;
+            Renderer.Element = (TElement)(object)this;
+            Console.WriteLine($"[UIMenu]Renderer type: {Renderer?.GetType().FullName ?? "null"}");
             BuildScrollContainer();
 
+            base.Init();
+
+            OnInit(factory);
+            AfterInit(factory);
+        }
+
+        protected override void OnInit(IUiFactory factory)
+        {
+            LocalPosition = MenuDefaults.Position;
+            Size = MenuDefaults.Size;
+        }
+
+        protected override void AfterInit(IUiFactory factory)
+        {
             BuildButtons();
 
-            UpdateScrollContentHeight();
-
-            _menuRenderer = CreateMenuRenderer();
-            if (_menuRenderer == null) throw new Exception("_menuRenderer is null!");
+            Handler.UpdateScrollContentHeight();
         }
 
         public virtual void BuildScrollContainer()
@@ -96,14 +107,7 @@ namespace Engine.UI.Core.Elements
             button.LocalPosition = localPos;
             ScrollContainer.AddChild(button);
             Buttons.Add(button);
-            UpdateScrollContentHeight();
-        }
-
-        protected void UpdateScrollContentHeight()
-        {
-            if (Buttons.Count == 0) return;
-            var buttonHeight = Buttons[0].Size.Y;
-            ScrollContainer.ContentHeight = Buttons.Count * (buttonHeight + ButtonSpacing) - ButtonSpacing;
+            Handler.UpdateScrollContentHeight();
         }
 
         public List<UIButton> GetVisibleButtons()
@@ -118,45 +122,33 @@ namespace Engine.UI.Core.Elements
             float offset = 0f;
             foreach (var (label, onClick) in buttonDefs)
             {
-                var btn = new UIButton()
-                {
-                    Text = label,
-                    LocalPosition = new UIPosition(IsVerticalLayout ? new Vector2F(0, offset) : new Vector2F(offset, 0)),
-                };
-                btn.Action = onClick;
+                var button = _factory.CreateElement<UIButton, UIButtonHandler, UIButtonRenderer>();
 
-                Buttons.Add(btn);
-                AddChild(btn);
+                button.Text = label;
+                button.Handler.Action = onClick;
 
-                offset += IsVerticalLayout ? btn.Size.Y + ButtonSpacing : btn.Size.X + ButtonSpacing;
+                button.LocalPosition = new UIPosition(IsVerticalLayout ? new Vector2F(0, offset) : new Vector2F(offset, 0));
+
+                Buttons.Add(button);
+                AddChild(button);
+
+                offset += IsVerticalLayout ? button.Size.Y + ButtonSpacing : button.Size.X + ButtonSpacing;
             }
         }
 
         public virtual void LayoutButtons()
         {
             float offset = 0f;
-            foreach (var btn in Buttons)
+            foreach (var button in Buttons)
             {
-                btn.LocalPosition.Base = IsVerticalLayout ? new Vector2F(0, offset) : new Vector2F(offset, 0);
-                offset += IsVerticalLayout ? btn.Size.Y + ButtonSpacing : btn.Size.X + ButtonSpacing;
+                button.LocalPosition.Base = IsVerticalLayout ? new Vector2F(0, offset) : new Vector2F(offset, 0);
+                offset += IsVerticalLayout ? button.Size.Y + ButtonSpacing : button.Size.X + ButtonSpacing;
             }
         }
 
         public RectangleF GetAbsClipRect() => ScrollContainer.GetAbsClippingRect();
 
-        protected virtual UIMenuRenderer<THandler> CreateMenuRenderer()
-        {
-            return new UIMenuRenderer<THandler>(this);
-        }
-
         public IReadOnlyList<UIButton> ButtonList => Buttons;
-
-        protected override void OnDraw(Graphics g)
-        {
-            if (_menuRenderer == null) throw new Exception("_menuRenderer is null!");
-            //_menuRenderer.Draw(g);
-            _menuRenderer.Render(g, this); 
-        }
         
         #endregion
     }

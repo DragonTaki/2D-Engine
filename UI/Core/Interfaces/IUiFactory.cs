@@ -9,10 +9,11 @@
 
 using System;
 
-using Engine.UI.Core.Base;
+using Engine.UI.Core.Bases;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Infrastructure;
+using Engine.UI.Core.Renderers;
 
 namespace Engine.UI.Core.Interfaces
 {
@@ -24,12 +25,6 @@ namespace Engine.UI.Core.Interfaces
     public interface IUiFactory
     {
         IServiceProvider ServiceProvider { get; }
-        
-        /// <summary>
-        /// Creates a new UIScrollContainer using the registered scroll input handler.
-        /// </summary>
-        /// <returns>A UIScrollContainer instance.</returns>
-        UIScrollContainer CreateScrollContainer();
 
         /// <summary>
         /// Resolves a registered service or UI element from the DI container.
@@ -39,50 +34,49 @@ namespace Engine.UI.Core.Interfaces
         T Resolve<T>();
 
         /// <summary>
-        /// Creates an InitializableOnceElement screen with its handler and renderer.
-        /// Registers a default factory if none exists for this screen type.
+        /// Creates a new UIScrollContainer using the registered scroll input handler.
         /// </summary>
-        /// <typeparam name="TScreen">The screen type to create.</typeparam>
-        /// <typeparam name="THandler">The handler type associated with the screen.</typeparam>
-        /// <typeparam name="TRenderer">The renderer type associated with the screen.</typeparam>
-        /// <returns>The instantiated and initialized screen of type TScreen.</returns>
-        TScreen CreateScreen<TScreen, THandler, TRenderer>()  //OLD
-            where TScreen : UIElement, IInitializableOnce<(IUiFactory, THandler, TRenderer)>
-            where THandler : class
-            where TRenderer : class;
-        TContainer CreateScreen<TContainer, THandler>()
-            where TContainer : UIContainer<THandler>
-            where THandler : UIContainerHandler<THandler>;
+        /// <returns>A UIScrollContainer instance.</returns>
+        UIScrollContainer CreateScrollContainer();
 
-        /// <summary>
-        /// Creates an InitializableOnceElement screen with its handler and renderer.
-        /// Does not auto-register a factory; uses the registered or DI-provided instances.
-        /// </summary>
-        /// <typeparam name="TScreen">The screen type to create.</typeparam>
-        /// <typeparam name="THandler">The handler type associated with the screen.</typeparam>
-        /// <typeparam name="TRenderer">The renderer type associated with the screen.</typeparam>
-        /// <returns>The instantiated and initialized screen of type TScreen.</returns>
-        TContainer Create<TContainer, THandler>()
-            where TContainer : UIContainer<THandler>
-            where THandler : UIContainerHandler<THandler>;
-        TScreen CreateOLD<TScreen, THandler, TRenderer>()  //OLD
-            where TScreen : UIElement, IInitializableOnce<(IUiFactory, THandler, TRenderer)>
-            where THandler : class
-            where TRenderer : class;
+#nullable enable
+        UIButton CreateButton(Action? onClick = null);
+#nullable disable
 
-        /// <summary>
-        /// Registers a custom factory function for a specific UIElement type.
-        /// The factory can take a UI factory context as input and return a UIElement instance.
-        /// </summary>
-        /// <typeparam name="T">The type of UIElement to register the factory for.</typeparam>
-        /// <param name="factory">The factory function to create the UIElement.</param>
-        void RegisterFactory<T>(Func<IUiFactoryContext, T> factory) where T : UIElement;  //OLD
+#nullable enable
+        public UIButton<TEnum> CreateButton<TEnum>(Action<TEnum>? onClick = null)
+            where TEnum : Enum;
+#nullable disable
 
-        /// <summary>
-        /// Clears the cached factory for the specified UIElement type.
-        /// </summary>
-        /// <typeparam name="T">The type of UIElement to clear from cache.</typeparam>
-        void ClearCache<T>() where T : UIElement;
+        TElement CreateElement<TElement, THandler, TRenderer>()
+            where TElement : UIElement<TElement, THandler, TRenderer>, new()
+            where THandler : UIHandler<TElement, THandler, TRenderer>, new()
+            where TRenderer : UIRenderer<TElement, THandler, TRenderer>, new();
+
+        TElement CreateDIElement<TElement, THandler, TRenderer>()
+            where TElement : UIElement<TElement, THandler, TRenderer>
+            where THandler : UIHandler<TElement, THandler, TRenderer>
+            where TRenderer : UIRenderer<TElement, THandler, TRenderer>;
+
+        TElement CreateDI<TElement, THandler, TRenderer>()
+            where TElement : UIElement<TElement, THandler, TRenderer>
+            where THandler : UIHandler<TElement, THandler, TRenderer>
+            where TRenderer : UIRenderer<TElement, THandler, TRenderer>;
+
+        void RegisterFactory<T>(Func<IUiFactory, T> factory)
+            where T : UIElementBase;
+
+        void RegisterFactory<TElement, THandler, TRenderer>()
+            where TElement : UIElement<TElement, THandler, TRenderer>
+            where THandler : UIHandler<TElement, THandler, TRenderer>
+            where TRenderer : UIRenderer<TElement, THandler, TRenderer>;
+
+        void ClearCache<T>() where T : UIElementBase;
+
+        void ClearCache<TElement, THandler, TRenderer>()
+            where TElement : UIElement<TElement, THandler, TRenderer>
+            where THandler : UIHandler<TElement, THandler, TRenderer>
+            where TRenderer : UIRenderer<TElement, THandler, TRenderer>;
 
         /// <summary>
         /// Clears all registered factory caches.

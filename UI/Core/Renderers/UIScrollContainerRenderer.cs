@@ -7,40 +7,13 @@
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
-using System.Drawing;
-
 using Engine.UI.Core.Elements;
-using Engine.UI.Core.Renderers;
+using Engine.UI.Core.Handlers;
 
-public class UIScrollContainerRenderer : UIRenderer
+namespace Engine.UI.Core.Renderers
 {
-    protected UIScrollContainer ScrollContainer;
-
-    public UIScrollContainerRenderer(UIScrollContainer scrollContainer)
+    public class UIScrollContainerRenderer : UIContainerRenderer<UIScrollContainer, UIScrollContainerHandler, UIScrollContainerRenderer>
     {
-        ScrollContainer = scrollContainer;
-    }
-
-    /// <summary>
-    /// Draw the scroll container background and optionally visual scroll indicators.
-    /// </summary>
-    public override void Render(Graphics g, UIElement element)
-    {
-        if (ScrollContainer == null)
-            return;
-
-        var rect = ScrollContainer.GetAbsClippingRect();
-
-        // Example: Draw semi-transparent background
-        using (var brush = new SolidBrush(Color.FromArgb(128, 0, 0, 0)))
-        {
-            g.FillRectangle(brush, rect);
-        }
-
-        // Optional: draw border
-        using (var pen = new Pen(Color.Gray, 2))
-        {
-            g.DrawRectangle(pen, rect.X, rect.Y, rect.Width, rect.Height);
-        }
+        public UIScrollContainerRenderer() { }
     }
 }

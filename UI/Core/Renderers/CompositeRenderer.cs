@@ -9,35 +9,42 @@
 
 using System.Collections.Generic;
 using System.Drawing;
+
+using Engine.UI.Core.Bases;
 using Engine.UI.Core.Elements;
+using Engine.UI.Core.Handlers;
 
 namespace Engine.UI.Core.Renderers
 {
     /// <summary>
     /// Allows combining multiple renderers in sequential order.
     /// </summary>
-    public class CompositeRenderer : UIRenderer
+    public class CompositeRenderer<TElement, THandler, TRenderer> : UIRenderer<TElement, THandler, TRenderer>
+        where TElement : UIElement<TElement, THandler, TRenderer>
+        where THandler : UIHandler<TElement, THandler, TRenderer>
+        where TRenderer : UIRenderer<TElement, THandler, TRenderer>
     {
-        private readonly List<UIRenderer> _renderers = new();
+        private readonly List<UIRenderer<TElement, THandler, TRenderer>> _renderers = new();
+        public int ListCount => _renderers.Count;
 
         /// <summary>
         /// Adds a renderer into the composite pipeline.
         /// </summary>
-        public CompositeRenderer Add(UIRenderer renderer)
+        public CompositeRenderer<TElement, THandler, TRenderer> Add(UIRenderer<TElement, THandler, TRenderer> renderer)
         {
             if (renderer != null)
                 _renderers.Add(renderer);
             return this;
         }
 
-        public CompositeRenderer Remove(UIRenderer renderer)
+        public CompositeRenderer<TElement, THandler, TRenderer> Remove(UIRenderer<TElement, THandler, TRenderer> renderer)
         {
             if (renderer != null)
                 _renderers.Remove(renderer);
             return this;
         }
 
-        public CompositeRenderer Clear()
+        public CompositeRenderer<TElement, THandler, TRenderer> Clear()
         {
             _renderers.Clear();
             return this;
@@ -46,7 +53,7 @@ namespace Engine.UI.Core.Renderers
         /// <summary>
         /// Draws all renderers in the order they were added.
         /// </summary>
-        public override void Render(Graphics g, UIElement element)
+        protected override void OnRender(Graphics g, TElement element)
         {
             foreach (var renderer in _renderers)
                 renderer.Render(g, element);

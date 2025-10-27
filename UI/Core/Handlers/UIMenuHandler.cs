@@ -3,36 +3,29 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/24
-// Update Date: 2025/10/24
-// Version: v1.0
+// Update Date: 2025/10/27
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using Engine.UI.Core.Elements;
-using Engine.UI.Core.Infrastructure;
-using Engine.UI.Core.Interfaces;
+using Engine.UI.Core.Renderers;
 
 namespace Engine.UI.Core.Handlers
 {
-    public abstract class UIMenuHandler<THandler> : UIContainerHandler<THandler>
-        where THandler : UIMenuHandler<THandler>
+    public class UIMenuHandler<TElement, THandler, TRenderer> : UIContainerHandler<TElement, THandler, TRenderer>
+        where TElement : UIMenu<TElement, THandler, TRenderer>
+        where THandler : UIMenuHandler<TElement, THandler, TRenderer>
+        where TRenderer : UIMenuRenderer<TElement, THandler, TRenderer>
     {
-        protected UIMenu<THandler> _menu;
-
-        protected override void OnInit((IUiFactory, UIContainer<THandler>) arg)
+        public UIMenuHandler() { }
+        
+        public void UpdateScrollContentHeight()
         {
-            _factory = arg.Item1;
-
-            if (arg.Item2 is UIMenu<THandler> menu)
-            {
-                _menu = menu;
-                OnMenuInit((_factory, menu));
-            }
-
-            _navigationManager = _factory.Resolve<NavigationManager>();
-
-            OnMenuInit(arg);
+            var menu = (UIMenu<TElement, THandler, TRenderer>)Element;
+            if (menu.ButtonList.Count == 0) return;
+            var buttonHeight = menu.ButtonList[0].Size.Y;
+            menu.ScrollContainer.ContentHeight = menu.ButtonList.Count * (buttonHeight + menu.ButtonSpacing) - menu.ButtonSpacing;
         }
 
-        protected virtual void OnMenuInit((IUiFactory, UIContainer<THandler>) arg) { }
     }
 }

@@ -73,7 +73,9 @@ namespace Engine.Logging
 
     public static class AppLogger
     {
+#nullable enable
         private static Action<string>? externalLogger = null;
+#nullable disable
         private static readonly bool enableDebug = Settings.EnableDebugMode;
         private static readonly string currentUser = Settings.CurrentUser;
 

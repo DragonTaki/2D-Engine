@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/24
-// Update Date: 2025/10/24
-// Version: v1.0
+// Update Date: 2025/10/27
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System.Drawing;
@@ -15,40 +15,50 @@ using Chinese_Chess_v3.Game.Constants.UI;
 using Engine.Styles;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
+using Engine.UI.Core.Interfaces;
 
 namespace Engine.UI.Core.Renderers
 {
-    public class UIMenuRenderer<THandler> : UIRenderer
-        where THandler : UIMenuHandler<THandler>
+    public class UIMenuRenderer<TElement, THandler, TRenderer> : UIContainerRenderer<TElement, THandler, TRenderer>
+        where TElement : UIMenu<TElement, THandler, TRenderer>
+        where THandler : UIMenuHandler<TElement, THandler, TRenderer>
+        where TRenderer : UIMenuRenderer<TElement, THandler, TRenderer>
     {
-        protected UIMenu<THandler> Menu;
-        protected CompositeRenderer _composite;
+        protected CompositeRenderer<TElement, THandler, TRenderer> _composite = new();
 
-        public UIMenuRenderer(UIMenu<THandler> menu)
+        public UIMenuRenderer() { }
+
+        protected override void AfterInit()
         {
-            Menu = menu;
-            _composite = new CompositeRenderer()
-                .Add(new Outline(this))
-                .Add(new Buttons(this));
+            SetupRendererChildren();
         }
 
-        public override void Render(Graphics g, UIElement element)
+        private void SetupRendererChildren()
         {
-            _composite.Render(g, Menu);
+            if (_composite.ListCount == 0)
+            {
+                _composite
+                    .Add(new Outline())
+                    .Add(new Buttons());
+            }
         }
 
-        private class Outline : UIRenderer
+        protected override void OnRender(Graphics g, TElement element)
         {
-            private readonly UIMenuRenderer<THandler> _parent;
-            public Outline(UIMenuRenderer<THandler> parent) => _parent = parent;
-            public override void Render(Graphics g, UIElement element)
+            _composite.Render(g, element);
+        }
+
+        private class Outline : UIRenderer<TElement, THandler, TRenderer>
+        {
+            public Outline() { }
+            protected override void OnRender(Graphics g, TElement element)
             {
                 using (Pen debugPen = new Pen(Color.FromArgb(100, 128, 128, 128), 4))
                 {
                     debugPen.DashStyle = DashStyle.Dash;
 
                     // 使用 UIElement 提供的絕對邊界
-                    var menu = _parent.Menu;
+                    var menu = (UIMenu<TElement, THandler, TRenderer>)element;
                     var bounds = menu.GetCurrentAbsoluteBounds();
 
                     // 可以加入 margin
@@ -65,14 +75,13 @@ namespace Engine.UI.Core.Renderers
             }
         }
 
-        private class Buttons : UIRenderer
+        private class Buttons : UIRenderer<TElement, THandler, TRenderer>
         {
-            private readonly UIMenuRenderer<THandler> _parent;
-            public Buttons(UIMenuRenderer<THandler> parent) => _parent = parent;
-            public override void Render(Graphics g, UIElement element)
+            public Buttons() { }
+            protected override void OnRender(Graphics g, TElement element)
             {
                 // 取得可見按鈕
-                var menu = _parent.Menu;
+                var menu = (UIMenu<TElement, THandler, TRenderer>)element;
                 var buttons = menu.GetVisibleButtons();
                 var clip = menu.GetAbsClipRect();
 

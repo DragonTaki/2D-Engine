@@ -11,10 +11,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Engine.UI.Core.Base;
+using Engine.UI.Core.Bases;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Interfaces;
+using Engine.UI.Core.Renderers;
 
 namespace Engine.UI.Core.Infrastructure
 {
@@ -29,7 +30,7 @@ namespace Engine.UI.Core.Infrastructure
         private UIElement _rootElement;
 
         // 儲存已建立的畫面
-        private readonly Dictionary<Type, UIElement> _screens = new();
+        private readonly Dictionary<Type, UIElementBase> _screens = new();
 
         public NavigationManager(IUiFactory factory)
         {
@@ -62,48 +63,12 @@ namespace Engine.UI.Core.Infrastructure
         }
 
         /// <summary>
-        /// 顯示指定畫面（新版：僅使用 factory + handler）
-        /// </summary>
-        public TScreen Show<TScreen, THandler>(bool forceReload = false)
-            where TScreen : UIContainer<THandler>
-            where THandler : UIContainerHandler<THandler>
-        {
-            if (_rootElement == null)
-                throw new InvalidOperationException("NavigationManager not initialized with root element.");
-
-            ClearNonPersistentChildren(_rootElement);
-
-            var screenType = typeof(TScreen);
-            UIElement screen;
-
-            if (forceReload)
-            {
-                // 若強制重建，則卸載舊的
-                UnloadScreen<TScreen>();
-            }
-
-            if (!_screens.TryGetValue(screenType, out screen))
-            {
-                // 延遲建立：透過 UiFactory 自動建立 screen + handler
-                screen = _factory.CreateScreen<TScreen, THandler>();
-                _screens[screenType] = screen;
-            }
-
-            screen.IsVisible = true;
-
-            if (!_rootElement.Children.Contains(screen))
-                _rootElement.AddChild(screen);
-
-            return (TScreen)screen;
-        }
-
-        /// <summary>
         /// 顯示指定畫面，支援延遲建立與重建
         /// </summary>
-        public TScreen Show<TScreen, THandler, TRenderer>(bool forceReload = false)  //OLD
-            where TScreen : UIElement, IInitializableOnce<(IUiFactory, THandler, TRenderer)>
-            where THandler : class
-            where TRenderer : class
+        public TScreen Show<TScreen, THandler, TRenderer>(bool forceReload = false)
+            where TScreen : UIElement<TScreen, THandler, TRenderer>
+            where THandler : UIHandler<TScreen, THandler, TRenderer>
+            where TRenderer : UIRenderer<TScreen, THandler, TRenderer>
         {
             if (_rootElement == null)
                 throw new InvalidOperationException("NavigationManager not initialized with root element.");
@@ -111,18 +76,17 @@ namespace Engine.UI.Core.Infrastructure
             ClearNonPersistentChildren(_rootElement);
 
             var screenType = typeof(TScreen);
-            UIElement screen;
 
             if (forceReload)
             {
-                // 若強制重建，則卸載舊的
+                // 強制重建：卸載舊的
                 UnloadScreen<TScreen>();
             }
 
-            if (!_screens.TryGetValue(screenType, out screen))
+            if (!_screens.TryGetValue(screenType, out UIElementBase screen))
             {
-                // 延遲建立：透過 UiFactory 自動建立 screen + handler + renderer
-                screen = _factory.CreateScreen<TScreen, THandler, TRenderer>();
+                // 延遲建立：透過工廠建立 screen + handler + renderer
+                screen = _factory.CreateDIElement<TScreen, THandler, TRenderer>();
                 _screens[screenType] = screen;
             }
 
@@ -137,7 +101,7 @@ namespace Engine.UI.Core.Infrastructure
         /// <summary>
         /// 卸載指定畫面，釋放資源
         /// </summary>
-        public void UnloadScreen<TScreen>() where TScreen : UIElement
+        public void UnloadScreen<TScreen>() where TScreen : UIElementBase
         {
             var screenType = typeof(TScreen);
             if (_screens.TryGetValue(screenType, out var screen))
@@ -153,7 +117,7 @@ namespace Engine.UI.Core.Infrastructure
         /// <summary>
         /// 隱藏指定畫面
         /// </summary>
-        public void Hide<TScreen>() where TScreen : UIElement
+        public void Hide<TScreen>() where TScreen : UIElementBase
         {
             var screenType = typeof(TScreen);
             if (_screens.TryGetValue(screenType, out var screen))
@@ -173,7 +137,7 @@ namespace Engine.UI.Core.Infrastructure
         /// <summary>
         /// 選擇性取得已建立畫面
         /// </summary>
-        public TScreen GetScreen<TScreen>() where TScreen : UIElement
+        public TScreen GetScreen<TScreen>() where TScreen : UIElementBase
         {
             _screens.TryGetValue(typeof(TScreen), out var screen);
             return (TScreen)screen;

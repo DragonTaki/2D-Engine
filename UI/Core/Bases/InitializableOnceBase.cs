@@ -9,7 +9,7 @@
 
 using Engine.UI.Core.Interfaces;
 
-namespace Engine.UI.Core.Base
+namespace Engine.UI.Core.Bases
 {
     public abstract class InitializableOnceBase : IInitializableOnce
     {
@@ -32,7 +32,7 @@ namespace Engine.UI.Core.Base
             OnInit();
         }
 
-        protected virtual void OnInit() {}
+        protected virtual void OnInit() { }
 
         #endregion
     }
@@ -76,7 +76,7 @@ namespace Engine.UI.Core.Base
         /// This method is guaranteed to be called only once.
         /// </summary>
         /// <param name="arg">The argument required for initialization.</param>
-        protected virtual void OnInit(TArg arg) {}
+        protected virtual void OnInit(TArg arg) { }
 
         #endregion
     }

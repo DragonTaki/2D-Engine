@@ -8,26 +8,49 @@
 /* ----- ----- ----- ----- */
 
 using System.Drawing;
-using System.Drawing.Drawing2D;
 
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
 
 namespace Engine.UI.Core.Renderers
 {
-    public class UIContainerRenderer<THandler> : UIRenderer
-        where THandler : UIContainerHandler<THandler>
+    /// <summary>
+    /// Renderer for <see cref="UIContainer{THandler}"/>. Handles the drawing
+    /// of container elements, optionally delegating to child elements or applying
+    /// container-specific visual effects.
+    /// </summary>
+    /// <typeparam name="THandler">The type of container handler this renderer is associated with.</typeparam>
+    public class UIContainerRenderer<TElement, THandler, TRenderer>
+    : UIRenderer<TElement, THandler, TRenderer>
+    where TElement : UIContainer<TElement, THandler, TRenderer>
+    where THandler : UIContainerHandler<TElement, THandler, TRenderer>
+    where TRenderer : UIContainerRenderer<TElement, THandler, TRenderer>
     {
-        protected UIContainer<THandler> Container;
+        #region Constructor
 
-        public UIContainerRenderer(UIContainer<THandler> container)
-        {
-            Container = container;
-        }
+        /// <summary>
+        /// Initializes a new instance of <see cref="UIContainerRenderer{THandler}"/>.
+        /// </summary>
+        public UIContainerRenderer() : base() { }
 
-        public override void Render(Graphics g, UIElement element)
+        #endregion
+
+        #region Rendering
+
+        /// <summary>
+        /// Performs the rendering of the container and its child elements.
+        /// </summary>
+        /// <param name="g">The <see cref="Graphics"/> object to draw on.</param>
+        /// <param name="element">The UI element being rendered (should match <see cref="Container"/>).</param>
+        protected override void OnRender(Graphics g, TElement element)
         {
+            // Placeholder for rendering logic.
+            // TODO: implement container-specific drawing, e.g., background, borders.
+            // Optionally, iterate over Container.Children and invoke their renderers.
+
             //
         }
+
+        #endregion
     }
 }

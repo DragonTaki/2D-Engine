@@ -3,50 +3,58 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/24
-// Update Date: 2025/10/24
-// Version: v1.0
+// Update Date: 2025/10/27
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
-using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
 using Engine.UI.Elements;
 
 namespace Engine.UI.Core.Renderers
 {
-    public class UITextBoxRenderer<THandler> : UIRenderer
-        where THandler : UITextBoxHandler<THandler>
+    public class UITextBoxRenderer<TElement, THandler, TRenderer> : UIContainerRenderer<TElement, THandler, TRenderer>
+        where TElement : UITextBox<TElement, THandler, TRenderer>
+        where THandler : UITextBoxHandler<TElement, THandler, TRenderer>
+        where TRenderer : UITextBoxRenderer<TElement, THandler, TRenderer>
     {
-        protected UITextBox<THandler> TextBox;
-        protected CompositeRenderer _composite;
+        protected CompositeRenderer<TElement, THandler, TRenderer> _composite = new();
 
-        public UITextBoxRenderer(UITextBox<THandler> textBox)
+        public UITextBoxRenderer() { }
+        
+        protected override void AfterInit()
         {
-            TextBox = textBox;
-            _composite = new CompositeRenderer()
-                .Add(new Outline(this))
-                .Add(new Labels(this));
+            SetupRendererChildren();
         }
 
-        public override void Render(Graphics g, UIElement element)
+        private void SetupRendererChildren()
         {
-            _composite.Render(g, TextBox);
+            if (_composite.ListCount == 0)
+            {
+                _composite
+                    .Add(new Outline())
+                    .Add(new Labels());
+            }
         }
 
-        private class Outline : UIRenderer
+        protected override void OnRender(Graphics g, TElement element)
         {
-            private readonly UITextBoxRenderer<THandler> _parent;
-            public Outline(UITextBoxRenderer<THandler> parent) => _parent = parent;
-            public override void Render(Graphics g, UIElement element)
+            _composite.Render(g, element);
+        }
+
+        private class Outline : UIRenderer<TElement, THandler, TRenderer>
+        {
+            public Outline() { }
+            protected override void OnRender(Graphics g, TElement element)
             {
                 using (Pen debugPen = new Pen(Color.FromArgb(100, 128, 128, 128), 4))
                 {
                     debugPen.DashStyle = DashStyle.Solid;
 
                     // 使用 UIElement 提供的絕對邊界
-                    var textBox = _parent.TextBox;
+                    var textBox = (UITextBox<TElement, THandler, TRenderer>)element;
                     var bounds = textBox.GetCurrentAbsoluteBounds();
 
                     // 可以加入 margin
@@ -63,14 +71,12 @@ namespace Engine.UI.Core.Renderers
             }
         }
 
-        private class Labels : UIRenderer
+        private class Labels : UIRenderer<TElement, THandler, TRenderer>
         {
-            private readonly UITextBoxRenderer<THandler> _parent;
-            public Labels(UITextBoxRenderer<THandler> parent) => _parent = parent;
-
-            public override void Render(Graphics g, UIElement element)
+            public Labels() { }
+            protected override void OnRender(Graphics g, TElement element)
             {
-                var textBox = _parent.TextBox;
+                var textBox = (UITextBox<TElement, THandler, TRenderer>)element;
                 var labels = textBox._labels;
                 var clip = textBox.GetAbsClipRect();
 

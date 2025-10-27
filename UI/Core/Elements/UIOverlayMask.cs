@@ -13,6 +13,8 @@ using System.Windows.Forms;
 using Chinese_Chess_v3.Game.UI.Dialogs;
 
 using Engine.Globals;
+using Engine.UI.Core.Handlers;
+using Engine.UI.Core.Renderers;
 using Engine.UI.Dialogs;
 
 namespace Engine.UI.Core.Elements
@@ -22,7 +24,7 @@ namespace Engine.UI.Core.Elements
     /// </summary>
     public class UIOverlayMask : UIElement
     {
-        private readonly ConfirmDialog _dialog;
+        public readonly ConfirmDialog _dialog;
         public Color MaskColor { get; set; } = Color.FromArgb(120, 0, 0, 0);
 
         public UIOverlayMask(ConfirmDialog dialog)
@@ -60,20 +62,42 @@ namespace Engine.UI.Core.Elements
             return true;
         }
 
-        protected override void OnDraw(Graphics g)
+
+    }
+
+    public class UIOverlayMaskHandler : UIHandler
+    {
+        private readonly UIOverlayMask _element;
+
+        public UIOverlayMaskHandler(UIOverlayMask element)
         {
-            if (_dialog.ShowMaskEffect)
+            _element = element;
+        }
+
+        internal override bool HandleMouseDown(MouseEventArgs e) => true;
+        internal override bool HandleMouseMove(MouseEventArgs e) => true;
+        internal override bool HandleMouseUp(MouseEventArgs e) => true;
+        internal override bool HandleMouseWheel(MouseEventArgs e) => true;
+        internal override bool HandleMouseClick(MouseEventArgs e) => true;
+    }
+
+    public class UIOverlayMaskRenderer : UIRenderer<UIOverlayMask>
+    {
+        private readonly UIOverlayMask _element;
+
+        public UIOverlayMaskRenderer(UIOverlayMask element)
+        {
+            _element = element;
+        }
+
+        protected override void OnRender(Graphics g, UIOverlayMask element)
+        {
+            if (_element._dialog.ShowMaskEffect)
             {
-                using var brush = new SolidBrush(MaskColor);
+                using var brush = new SolidBrush(_element.MaskColor);
                 var bounds = new RectangleF(0, 0, GlobalWindow.Width, GlobalWindow.Height);
                 g.FillRectangle(brush, bounds);
             }
         }
-
-        protected override bool HandleMouseDown(MouseEventArgs e) => true;
-        protected override bool HandleMouseMove(MouseEventArgs e) => true;
-        protected override bool HandleMouseUp(MouseEventArgs e) => true;
-        protected override bool HandleMouseWheel(MouseEventArgs e) => true;
-        public override bool HandleMouseClick(MouseEventArgs e) => true;
     }
 }

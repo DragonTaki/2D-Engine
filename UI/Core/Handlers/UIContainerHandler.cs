@@ -7,33 +7,17 @@
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
-using Engine.UI.Core.Base;
 using Engine.UI.Core.Elements;
-using Engine.UI.Core.Infrastructure;
-using Engine.UI.Core.Interfaces;
+using Engine.UI.Core.Renderers;
 
 namespace Engine.UI.Core.Handlers
 {
-    public abstract class UIContainerHandler<THandler> : InitializableOnceBase<(IUiFactory, UIContainer<THandler>)>
-        where THandler : UIContainerHandler<THandler>
+    public abstract class UIContainerHandler<TElement, THandler, TRenderer>
+    : UIHandler<TElement, THandler, TRenderer>
+    where TElement : UIContainer<TElement, THandler, TRenderer>
+    where THandler : UIContainerHandler<TElement, THandler, TRenderer>
+    where TRenderer : UIContainerRenderer<TElement, THandler, TRenderer>
     {
-        protected IUiFactory _factory;
-        protected UIContainer<THandler> _container;
-        protected NavigationManager _navigationManager;
-
-        protected override void OnInit((IUiFactory, UIContainer<THandler>) arg)
-        {
-            _factory = arg.Item1;
-            _container = arg.Item2;
-            _navigationManager = _factory.Resolve<NavigationManager>();
-        }
-
-        #region Lifecycle
-
-        public virtual void OnEnter() {}
-
-        public virtual void OnExit() {}
-
-        #endregion
+        public UIContainerHandler() { }
     }
 }

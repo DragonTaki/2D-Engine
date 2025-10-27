@@ -8,28 +8,25 @@
 /* ----- ----- ----- ----- */
 
 using System;
-using System.Windows.Forms;
 
 using Engine.Styles;
 using Engine.UI.Constants.Components;
+using Engine.UI.Core.Handlers;
+using Engine.UI.Core.Renderers;
 using Engine.UI.Widgets;
 
 namespace Engine.UI.Core.Elements
 {
-    public class UIButton : UIElement
+    public class UIButton : UIElement<UIButton, UIButtonHandler, UIButtonRenderer>
     {
+#nullable enable
+        private Action? _pendingAction;
+#nullable disable
+
         #region Properties
 
         // 文字可讀寫
         public string Text { get; set; }
-
-        // 按鈕點擊 Action
-#nullable enable
-        public Action? Action { get; set; }
-#nullable disable
-
-        // 高亮狀態
-        public bool IsHighlighted { get; set; } = false;
 
         public IButtonDrawStyle Style { get; set; } = null;
 
@@ -37,7 +34,7 @@ namespace Engine.UI.Core.Elements
 
         #region Constructors
 
-        public UIButton() 
+        public UIButton()
             : base(zIndex: 0, isPersistent: false, type: UIElementType.Button)
         {
         }
@@ -48,7 +45,7 @@ namespace Engine.UI.Core.Elements
 #nullable disable
         {
             Text = text;
-            Action = action;
+            _pendingAction = action;
         }
 
         #endregion
@@ -57,37 +54,17 @@ namespace Engine.UI.Core.Elements
         {
             LocalPosition = ButtonDefaults.Position;
             Size = ButtonDefaults.Size;
+            Handler.Action = _pendingAction;
         }
 
-        #region Mouse Handling
-
-        public override bool HandleMouseClick(MouseEventArgs e)
-        {
-            if (!IsEnabled) return false; // 不可用時不觸發
-            Action?.Invoke();
-            return true;
-        }
-
-        #endregion
     }
-    
-    public class UIButton<TEnum> : UIButton where TEnum : Enum
+
+    public class UIButton<TEnum> : UIButton
+        where TEnum : Enum
     {
         public TEnum Type { get; }
 
-#nullable enable
-        public UIButton(string text, TEnum type, Action? action = null)
-            : base(text, action)
-#nullable disable
-        {
-            Type = type;
-        }
-
-        public UIButton(ButtonEntry<TEnum> button)
-            : this(button.Label, button.Type, button.OnClick) { }
-
-        public UIButton(string text)
-            : this(text, default, null) { }
+        public UIButton() { }
 
     }
 }
