@@ -27,12 +27,24 @@ using Engine.UI.Models;
 
 namespace Engine.UI.Core.Elements
 {
+    /// <summary>
+    /// Base class representing a generic UI element.
+    /// Provides foundational logic for layout, hierarchy, input, rendering, and lifecycle management.
+    /// </summary>
     public abstract class UIElement : UIElementBase
     {
         //public UIHandlerBase Handler => base.HandlerBase;
 
         //public UIRendererBase Renderer => base.RendererBase;
 
+        #region Constructor / Initialization
+
+        /// <summary>
+        /// Creates a new UIElement with optional ZIndex, persistence, and type.
+        /// </summary>
+        /// <param name="zIndex">Render/input order in parent container.</param>
+        /// <param name="isPersistent">Whether element persists when parent clears children.</param>
+        /// <param name="type">Optional type classification.</param>
         public UIElement(int zIndex = 0, bool isPersistent = false, UIElementType type = UIElementType.Generic)
         {
             InstanceId = Interlocked.Increment(ref s_nextId);
@@ -41,24 +53,48 @@ namespace Engine.UI.Core.Elements
             ElementType = type;
         }
 
+        /// <summary>
+        /// Initialize element. Calls pre-init, init, and post-init hooks.
+        /// </summary>
         public virtual void Init()
         {
             //Console.WriteLine($"[UIElement]Init no generic Current type: {this?.GetType().FullName ?? "null"}, IsInitialized: {IsInitialized}");
-            if (IsInitialized) return;
+            if (IsInitialized)
+                return;
             IsInitialized = true;
 
+            OnBeforeInit();
             OnInit();
+            OnAfterInit();
         }
 
-        protected virtual void BeforeInit() { }
+        /// <summary>
+        /// Called before Init for setup tasks.
+        /// </summary>
+        protected virtual void OnBeforeInit() { }
 
+        /// <summary>
+        /// Core initialization logic for this element.
+        /// </summary>
         protected virtual void OnInit() { }
 
-        protected virtual void AfterInit() { }
+        /// <summary>
+        /// Called after Init for post-processing (e.g., registering events).
+        /// </summary>
+        protected virtual void OnAfterInit() { }
 
+        #endregion
+
+        #region Dispose
+
+        /// <summary>
+        /// Dispose element and all children recursively.
+        /// </summary>
         public override void Dispose()
         {
-            if (_disposed) return;
+            if (_disposed)
+                return;
+            OnBeforeDispose();
 
             // Dispose children
             foreach (var child in Children.ToList())
@@ -67,16 +103,41 @@ namespace Engine.UI.Core.Elements
             RemoveAllChild(includePersistent: true);
             Parent?.RemoveChild(this);
 
-            DisposeUI();
+            OnDispose();
+            OnAfterDispose();
             _disposed = true;
         }
 
-        public virtual void DisposeUI() { }
-        public bool IsDisposed => _disposed;
+        /// <summary>
+        /// Hook called before disposal begins.
+        /// </summary>
+        protected virtual void OnBeforeDispose() { }
 
-        #region Position Utilities
+        /// <summary>
+        /// Core disposal logic for this element.
+        /// </summary>
+        protected virtual void OnDispose()
+        {
+            DisposeUI();
+        }
 
-        /// <summary>Get absolute position by summing ancestors</summary>
+        /// <summary>
+        /// Hook called after disposal completes.
+        /// </summary>
+        protected virtual void OnAfterDispose() { }
+
+        /// <summary>
+        /// Dispose element-specific resources.
+        /// </summary>
+        protected virtual void DisposeUI() { }
+
+        #endregion
+
+        #region Position & Layout Utilities
+
+        /// <summary>
+        /// Get absolute position by summing all ancestor positions.
+        /// </summary>
         public Vector2F GetCurrentAbsolutePosition()
         {
             Vector2F accumulated = LocalPosition.Current;
@@ -98,14 +159,17 @@ namespace Engine.UI.Core.Elements
             return accumulated;
         }
 
-        /// <summary>Get absolute bounds</summary>
+        /// <summary>
+        /// Returns absolute bounds (position + size).
+        /// </summary>
         public override LayoutF GetCurrentAbsoluteBounds()
         {
             return new LayoutF(GetCurrentAbsolutePosition(), Size);
         }
 
         /// <summary>
-        /// Recalculates element position and size based on parent bounds and layout rules.
+        /// Updates element's layout based on parent bounds and layout rules.
+        /// Also recursively updates children if AutoUpdate is enabled.
         /// </summary>
         public override void UpdateLayout()
         {
@@ -156,7 +220,6 @@ namespace Engine.UI.Core.Elements
 
         #endregion
 
-
         #region Child Management
 
         public override void AddChild(UIElementBase child)
@@ -184,6 +247,9 @@ namespace Engine.UI.Core.Elements
 
         public override void NotifyChildOrderChanged() => _isChildrenSortedDirty = true;
 
+        /// <summary>
+        /// Returns children sorted by ZIndex.
+        /// </summary>
         public IReadOnlyList<UIElementBase> GetSortedChildrenByZIndex(bool descending = false)
         {
             if (_isChildrenSortedDirty || _sortedChildrenAsc == null || _sortedChildrenDesc == null)
@@ -196,6 +262,9 @@ namespace Engine.UI.Core.Elements
             return descending ? _sortedChildrenDesc : _sortedChildrenAsc;
         }
 
+        /// <summary>
+        /// Removes all children optionally filtering by persistence or type.
+        /// </summary>
         public virtual void RemoveAllChild(
             bool includePersistent = false,
             List<UIElementType> onlyTypes = null,
@@ -215,7 +284,7 @@ namespace Engine.UI.Core.Elements
 
         #endregion
 
-        #region HitTest / Input
+        #region HitTest / Input Handling
 
         /// <summary>
         /// Checks if a screen-space point is within the bounds of this UI element.
@@ -231,6 +300,9 @@ namespace Engine.UI.Core.Elements
                 screenPoint.Y <= absPos.Y + Size.Y;
         }
 
+        /// <summary>
+        /// Check if point lies within bounds, taking visibility and enabled flags into account.
+        /// </summary>
         public virtual bool HitTest(PointF point)
         {
             if (!IsEnabled) return false;
@@ -238,6 +310,9 @@ namespace Engine.UI.Core.Elements
             return GetCurrentAbsoluteBounds().Contains(point);
         }
 
+        /// <summary>
+        /// Returns root element in hierarchy.
+        /// </summary>
         public override UIElementBase GetRoot()
         {
             UIElementBase node = this;
@@ -281,7 +356,9 @@ namespace Engine.UI.Core.Elements
             return null;
         }
 
-        // Mouse event handling
+        /// <summary>
+        /// Propagates mouse events to children and self.
+        /// </summary>
         protected bool PropagateMouseEvent(MouseEventArgs e, UIEventType eventName)
         {
             bool isInside = IsInteractable && GetCurrentAbsoluteBounds().Contains(e.Location);
@@ -357,8 +434,11 @@ namespace Engine.UI.Core.Elements
 
         #endregion
 
-        #region Update / Draw
+        #region Update / Draw / Reset
 
+        /// <summary>
+        /// Update element and children, including physics and handler updates.
+        /// </summary>
         public override void Update()
         {
             Physics?.SmoothUpdate();
@@ -368,6 +448,9 @@ namespace Engine.UI.Core.Elements
                 child.Update();
         }
 
+        /// <summary>
+        /// Draw element and children.
+        /// </summary>
         public override void Draw(Graphics g)
         {
             if (_layoutDirty)
@@ -384,6 +467,46 @@ namespace Engine.UI.Core.Elements
                 child.Draw(g);
         }
 
+        public override void RequestRedraw()
+        {
+            Parent?.RequestRedraw();  // 遞迴向上通知
+            // 或者直接觸發 Invalidate() / Refresh() 在畫布上
+        }
+
+        /// <summary>
+        /// Reset element and all children recursively.
+        /// </summary>
+        public override void Reset()
+        {
+            OnBeforeReset();    // Preliminary stage: pause state, cancel task, etc.
+
+            if (this is IResettable)
+                OnReset();      // Main reset: clear the content and reset the attributes
+
+            foreach (var child in Children)
+                child.Reset();  // Reset child elements
+
+            OnAfterReset();     // Post-stage: restart animation, rebind data, etc.
+        }
+
+        /// <summary>
+        /// Called before the reset process begins.
+        /// </summary>
+        protected virtual void OnBeforeReset() { }
+
+        /// <summary>
+        /// Performs the actual reset logic for this element.
+        /// </summary>
+        protected virtual void OnReset() { }
+
+        /// <summary>
+        /// Called after the reset process has finished.
+        /// </summary>
+        protected virtual void OnAfterReset() { }
+
+        /// <summary>
+        /// Called at end of frame for element and visible children.
+        /// </summary>
         public override void EndFrame()
         {
             HandlerBase?.OnEndFrame();
@@ -396,6 +519,11 @@ namespace Engine.UI.Core.Elements
         #endregion
     }
 
+    #region Generic Class
+
+    /// <summary>
+    /// Strongly-typed generic UIElement binding handler and renderer.
+    /// </summary>
     public abstract class UIElement<TElement, THandler, TRenderer> : UIElement
         where TElement : UIElement<TElement, THandler, TRenderer>
         where THandler : UIHandler<TElement, THandler, TRenderer>
@@ -424,6 +552,12 @@ namespace Engine.UI.Core.Elements
         {
         }
 
+        /// <summary>
+        /// Initializes element with factory, handler, and renderer.
+        /// </summary>
+        /// <param name="factory">UI factory for creating dependencies.</param>
+        /// <param name="handler">Handler instance to bind.</param>
+        /// <param name="renderer">Renderer instance to bind.</param>
         public virtual void Init(IUiFactory factory, THandler handler, TRenderer renderer)
         {
             Console.WriteLine($"[UIElement]Init 3 generic Current type: {this?.GetType().FullName ?? "null"}, IsInitialized: {IsInitialized}");
@@ -431,14 +565,14 @@ namespace Engine.UI.Core.Elements
             IsInitialized = true;
             _factory = factory;
 
-            BeforeInit(factory);
+            OnBeforeInit(factory);
 
-            // 綁定 Handler
+            // Bind Handler
             Handler = handler;
             Handler.Element = (TElement)(object)this;
             Console.WriteLine($"[UIElement]Handler type: {Handler?.GetType().FullName ?? "null"}");
 
-            // 綁定 Renderer
+            // Bind Renderer
             Renderer = renderer;
             Renderer.Element = (TElement)(object)this;
             Console.WriteLine($"[UIElement]Renderer type: {Renderer?.GetType().FullName ?? "null"}");
@@ -446,18 +580,27 @@ namespace Engine.UI.Core.Elements
             base.Init();
 
             OnInit(factory);
-            AfterInit(factory);
+            OnAfterInit(factory);
         }
 
-        /// <summary>可覆寫做初始化前的屬性設定</summary>
-        protected virtual void BeforeInit(IUiFactory factory) { }
+        /// <summary>
+        /// Called before Init for setup tasks.
+        /// </summary>
+        protected virtual void OnBeforeInit(IUiFactory factory) { }
 
-        /// <summary>元素專屬初始化，子類必覆寫或呼叫 base</summary>
+        /// <summary>
+        /// Core initialization logic for this element.
+        /// </summary>
         protected virtual void OnInit(IUiFactory factory) { }
 
-        /// <summary>可覆寫做初始化後操作，例如子元素或事件註冊</summary>
-        protected virtual void AfterInit(IUiFactory factory) { }
+        /// <summary>
+        /// Called after Init for post-processing (e.g., registering events).
+        /// </summary>
+        protected virtual void OnAfterInit(IUiFactory factory) { }
 
+        /// <summary>
+        /// Creates renderer using factory function and binds it to this element.
+        /// </summary>
         protected virtual TRenderer CreateRenderer(Func<TRenderer> factory)
         {
             var renderer = factory();
@@ -465,4 +608,6 @@ namespace Engine.UI.Core.Elements
             return renderer;
         }
     }
+
+    #endregion
 }

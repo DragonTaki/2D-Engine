@@ -12,9 +12,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-using Engine.UI.Core.Elements;
-using Engine.UI.Core.Infrastructure;
-using Engine.UI.Core.Interfaces;
 using Engine.UI.Core.Renderers;
 using Engine.UI.Elements;
 

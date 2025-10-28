@@ -9,7 +9,8 @@
 
 using System.Drawing;
 using System.Drawing.Drawing2D;
-
+using System.Linq;
+using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
 using Engine.UI.Elements;
 
@@ -77,7 +78,7 @@ namespace Engine.UI.Core.Renderers
             public override void OnRender(Graphics g, TElement element)
             {
                 var textBox = (UITextBox<TElement, THandler, TRenderer>)element;
-                var labels = textBox._labels;
+                var labels = textBox.ScrollContainer.Children.OfType<UILabel>();
                 var clip = textBox.GetAbsClipRect();
 
                 foreach (var label in labels)

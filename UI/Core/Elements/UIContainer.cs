@@ -42,9 +42,33 @@ namespace Engine.UI.Core.Elements
 
         #region Methods
 
-        protected override void AfterInit(IUiFactory factory)
+        public override void Init(IUiFactory factory, THandler handler, TRenderer renderer)
         {
+            Console.WriteLine($"[UIContainer]Init 3 generic Current type: {this?.GetType().FullName ?? "null"}, IsInitialized: {IsInitialized}");
+
+            if (IsInitialized)
+                return;
+
+            IsInitialized = true;
+
+            _factory = factory;
+
+            OnBeforeInit(factory);
+
+            // 綁定 Handler
+            Handler = handler;
+            Handler.Element = (TElement)(object)this;
+            Console.WriteLine($"[UIContainer]Handler type: {Handler?.GetType().FullName ?? "null"}");
+
+            // 綁定 Renderer
+            Renderer = renderer;
+            Renderer.Element = (TElement)(object)this;
+            Console.WriteLine($"[UIContainer]Renderer type: {Renderer?.GetType().FullName ?? "null"}");
+
             BuildUIObjects();
+
+            OnInit(factory);
+            OnAfterInit(factory);
         }
 
         protected virtual void BuildUIObjects() { }

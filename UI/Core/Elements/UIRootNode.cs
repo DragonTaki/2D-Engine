@@ -7,6 +7,7 @@
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
+using System.Windows.Forms;
 using Engine.UI.Constants.Components;
 
 namespace Engine.UI.Core.Elements
@@ -18,6 +19,11 @@ namespace Engine.UI.Core.Elements
     /// </summary>
     public class UIRootNode : UINode
     {
+
+#nullable enable
+        public Form? MainForm { get; set; }
+#nullable disable
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UIRootNode"/> class.
         /// </summary>
@@ -38,6 +44,11 @@ namespace Engine.UI.Core.Elements
             : base(zIndex, isPersistent, type)
         {
             /* no-op */
+        }
+
+        public override void RequestRedraw()
+        {
+            MainForm.Invalidate();
         }
     }
 }

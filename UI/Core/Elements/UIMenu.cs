@@ -55,11 +55,15 @@ namespace Engine.UI.Core.Elements
         public override void Init(IUiFactory factory, THandler handler, TRenderer renderer)
         {
             Console.WriteLine($"[UIMenu]Init 3 generic Current type: {this?.GetType().FullName ?? "null"}, IsInitialized: {IsInitialized}");
-            if (IsInitialized) return;
+
+            if (IsInitialized)
+                return;
+
             IsInitialized = true;
+
             _factory = factory;
 
-            BeforeInit(factory);
+            OnBeforeInit(factory);
 
             // 綁定 Handler
             Handler = handler;
@@ -70,25 +74,22 @@ namespace Engine.UI.Core.Elements
             Renderer = renderer;
             Renderer.Element = (TElement)(object)this;
             Console.WriteLine($"[UIMenu]Renderer type: {Renderer?.GetType().FullName ?? "null"}");
-            BuildScrollContainer();
 
-            base.Init();
+            BuildScrollContainer();
+            BuildUIObjects();
 
             OnInit(factory);
-            AfterInit(factory);
+
+            BuildButtons();
+            Handler.UpdateScrollContentHeight();
+
+            OnAfterInit(factory);
         }
 
         protected override void OnInit(IUiFactory factory)
         {
             LocalPosition = MenuDefaults.Position;
             Size = MenuDefaults.Size;
-        }
-
-        protected override void AfterInit(IUiFactory factory)
-        {
-            BuildButtons();
-
-            Handler.UpdateScrollContentHeight();
         }
 
         public virtual void BuildScrollContainer()

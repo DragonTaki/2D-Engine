@@ -114,6 +114,15 @@ namespace Engine.UI.Core.Renderers
         /// <param name="element">UI element rendered.</param>
         protected virtual void AfterRender(Graphics g, TElement element) { }
 
+        /// <summary>
+        /// 通知這個元素需要重繪
+        /// </summary>
+        public virtual void Invalidate()
+        {
+            // 如果有 UI 系統管理容器，可以通知上層重繪
+            Element?.RequestRedraw();
+        }
+
         #endregion
     }
 

@@ -32,15 +32,12 @@ namespace Engine.UI.Elements
         #region Fields / Properties
         public UIScrollContainer ScrollContainer { get; private set; }
 
-        // 儲存所有要顯示的文字段落
-        protected List<TextFragment> _fragments = new();
-        public List<UILabel> _labels = new();
-        // 可動態調整屬性
         public Font Font { get; set; } = SystemFonts.DefaultFont;
         public float LineHeight { get; set; }
         public Color BackgroundColor { get; set; } = Color.Black;
         public Color TextColor { get; set; } = Color.White;
         public float LineSpacing { get; set; } = 4f;
+        public float ParagraphSpacing { get; set; } = 5f;
 
         #endregion
 
@@ -59,7 +56,7 @@ namespace Engine.UI.Elements
             IsInitialized = true;
             _factory = factory;
 
-            BeforeInit(factory);
+            OnBeforeInit(factory);
 
             // 綁定 Handler
             Handler = handler;
@@ -75,7 +72,7 @@ namespace Engine.UI.Elements
             base.Init();
 
             OnInit(factory);
-            AfterInit(factory);
+            OnAfterInit(factory);
         }
 
         protected override void OnInit(IUiFactory factory)
@@ -101,84 +98,48 @@ namespace Engine.UI.Elements
         /// </summary>
         public void AppendLine(string text, Color? color = null, bool bold = false, bool italic = false)
         {
-            var frag = new TextFragment
-            {
-                Text = text,
-                Color = color ?? TextColor,
-                Bold = bold,
-                Italic = italic
-            };
-
-            _fragments.Add(frag);
-            RefreshTextContent();
-        }
-
-        /// <summary>
-        /// 清空文字內容
-        /// </summary>
-        public void Clear()
-        {
-            _fragments.Clear();
-            ScrollContainer.RemoveAllChild();
-            ScrollContainer.ContentHeight = 0f;
-        }
-
-        protected void UpdateScrollContentHeight()
-        {
-            if (_labels.Count == 0) return;
-            var buttonHeight = _labels[0].Size.Y;
-            ScrollContainer.ContentHeight = _labels.Count * (buttonHeight + LineSpacing);
-        }
-
-        public List<UILabel> GetVisibleLines()
-        {
-            UIElementUtils.UpdateVisibleState(_labels, ScrollContainer.GetAbsClippingRect());
-            return _labels.Where(b => b.IsEnabled).ToList();
-        }
-
-        /// <summary>
-        /// 重新建立所有文字行元素
-        /// </summary>
-        protected void RefreshTextContent()
-        {
-            ScrollContainer.RemoveAllChild();
-            _labels.Clear();
-
-            float y = 0f;
-
             using var bmp = new Bitmap(1, 1);
             using var g = Graphics.FromImage(bmp);
 
-            foreach (var frag in _fragments)
+            float y = ScrollContainer.ContentHeight;
+            bool isFirstParagraph = y == 0;
+
+            var lines = text.Split('\n');
+            for (int i = 0; i < lines.Length; i++)
             {
-                var lines = frag.Text.Split('\n');
-                foreach (var line in lines)
-                {
-                    Font font = new Font(Font,
-                        (frag.Bold ? FontStyle.Bold : FontStyle.Regular) |
-                        (frag.Italic ? FontStyle.Italic : FontStyle.Regular));
+                var line = lines[i];
 
-                    SizeF size = g.MeasureString(line, font);
-        
-                    var label = _factory.CreateElement<UILabel, UILabelHandler, UILabelRenderer>();
+                Font font = new Font(Font,
+                    (bold ? FontStyle.Bold : FontStyle.Regular) |
+                    (italic ? FontStyle.Italic : FontStyle.Regular));
 
-                    label.Text = line;
-                    label.Font = font;
-                    label.ForeColor = frag.Color;
-                    label.Layout = new Geometry.LayoutF(0, y, Size.X, size.Height);
-                    label.WordWrap = false; // 一行一個 Label
-                    label.TextAlign = ContentAlignment.MiddleLeft;
+                SizeF size = g.MeasureString(line, font);
+    
+                // 段落第一行前加段落間距（第一段不加）
+                if (i == 0 && !isFirstParagraph)
+                    y += ParagraphSpacing;
 
-                    label.LocalPosition.Current.Y = y;
+                // 段落內後續行加行間距（每段第一行不加）
+                if (i > 0)
+                    y += LineSpacing;
 
-                    ScrollContainer.AddChild(label);
-                    _labels.Add(label);
+                var label = _factory.CreateElement<UILabel, UILabelHandler, UILabelRenderer>();
 
-                    y += size.Height + LineSpacing;
-                }
+                label.Text = line;
+                label.Font = font;
+                label.ForeColor = color ?? TextColor;
+                label.Layout = new Geometry.LayoutF(0, y, Size.X, size.Height);
+                label.WordWrap = false; // 一行一個 Label
+                label.TextAlign = ContentAlignment.MiddleLeft;
+
+                label.LocalPosition.Current.Y = y;
+
+                ScrollContainer.AddChild(label);
+
+                y += size.Height;
             }
 
-            ScrollContainer.ContentHeight = Math.Max(0, y - LineSpacing);
+            ScrollContainer.ContentHeight = y;
         }
 
         #endregion
@@ -188,6 +149,38 @@ namespace Engine.UI.Elements
         public RectangleF GetAbsClipRect() => ScrollContainer.GetAbsClippingRect();
 
         #endregion
+
+        /// <summary>
+        /// Clears all log entries and optionally disposes their resources.
+        /// </summary>
+        /// <param name="disposeChildren">
+        /// Whether to call Dispose() on each UILabel before removal.
+        /// </param>
+        public void ClearLogs(bool disposeChildren = true)
+        {
+            var labels = ScrollContainer.Children.OfType<UILabel>().ToList();
+            foreach (var label in labels)
+            {
+                if (disposeChildren)
+                    label.Dispose();
+
+                ScrollContainer.RemoveChild(label);
+            }
+
+            // Reset scroll, layout, or cached text metrics
+            ResetState();
+        }
+
+        /// <summary>
+        /// Resets internal state after clearing.
+        /// </summary>
+        private void ResetState()
+        {
+            // Example: reset scroll position or internal log buffer
+            ScrollContainer.ContentHeight = 0f;
+            // if you have an internal string buffer, clear it too
+            // _logBuffer.Clear();
+        }
     }
 
     /// <summary>
