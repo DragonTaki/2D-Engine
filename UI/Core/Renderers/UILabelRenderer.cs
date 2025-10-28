@@ -78,7 +78,7 @@ namespace Engine.UI.Core.Renderers
         /// </summary>
         /// <param name="g">The <see cref="Graphics"/> object to draw on.</param>
         /// <param name="element">The UI element being rendered (should match <see cref="Container"/>).</param>
-        protected override void OnRender(Graphics g, UILabel element)
+        public override void OnRender(Graphics g, UILabel element)
         {
             var _label = (UILabel)element;
 

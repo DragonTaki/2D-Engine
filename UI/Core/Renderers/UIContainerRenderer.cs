@@ -42,7 +42,7 @@ namespace Engine.UI.Core.Renderers
         /// </summary>
         /// <param name="g">The <see cref="Graphics"/> object to draw on.</param>
         /// <param name="element">The UI element being rendered (should match <see cref="Container"/>).</param>
-        protected override void OnRender(Graphics g, TElement element)
+        public override void OnRender(Graphics g, TElement element)
         {
             // Placeholder for rendering logic.
             // TODO: implement container-specific drawing, e.g., background, borders.

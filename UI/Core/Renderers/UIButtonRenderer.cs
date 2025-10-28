@@ -23,27 +23,7 @@ namespace Engine.UI.Core.Renderers
     /// <typeparam name="THandler">The type of container handler this renderer is associated with.</typeparam>
     public class UIButtonRenderer : UIRenderer<UIButton, UIButtonHandler, UIButtonRenderer>
     {
-        #region Constructor
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="UIButtonRenderer{THandler}"/>.
-        /// </summary>
         public UIButtonRenderer() { }
-
-        #endregion
-
-        #region Rendering
-
-        protected override void OnRender(Graphics g, UIButton element)
-        {
-            // Placeholder for rendering logic.
-            // TODO: implement container-specific drawing, e.g., background, borders.
-            // Optionally, iterate over Container.Children and invoke their renderers.
-
-            //
-        }
-
-        #endregion
     }
 
     public class UIButtonRenderer<TEnum> : UIButtonRenderer

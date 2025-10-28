@@ -146,28 +146,35 @@ namespace Engine.UI.Elements
 
             float y = 0f;
 
+            using var bmp = new Bitmap(1, 1);
+            using var g = Graphics.FromImage(bmp);
+
             foreach (var frag in _fragments)
             {
                 var lines = frag.Text.Split('\n');
                 foreach (var line in lines)
                 {
-                    var label = new UILabel
-                    {
-                        Text = line,
-                        Font = new Font(Font,
-                            (frag.Bold ? FontStyle.Bold : FontStyle.Regular) |
-                            (frag.Italic ? FontStyle.Italic : FontStyle.Regular)),
-                        ForeColor = frag.Color,
-                        Layout = new Geometry.LayoutF(0, y, Size.X, LineHeight),
-                        WordWrap = false, // 一行一個 Label
-                        TextAlign = ContentAlignment.MiddleLeft,
-                    };
+                    Font font = new Font(Font,
+                        (frag.Bold ? FontStyle.Bold : FontStyle.Regular) |
+                        (frag.Italic ? FontStyle.Italic : FontStyle.Regular));
+
+                    SizeF size = g.MeasureString(line, font);
+        
+                    var label = _factory.CreateElement<UILabel, UILabelHandler, UILabelRenderer>();
+
+                    label.Text = line;
+                    label.Font = font;
+                    label.ForeColor = frag.Color;
+                    label.Layout = new Geometry.LayoutF(0, y, Size.X, size.Height);
+                    label.WordWrap = false; // 一行一個 Label
+                    label.TextAlign = ContentAlignment.MiddleLeft;
 
                     label.LocalPosition.Current.Y = y;
+
                     ScrollContainer.AddChild(label);
                     _labels.Add(label);
 
-                    y += LineHeight + LineSpacing;
+                    y += size.Height + LineSpacing;
                 }
             }
 

@@ -39,7 +39,7 @@ namespace Engine.UI.Core.Renderers
             }
         }
 
-        protected override void OnRender(Graphics g, TElement element)
+        public override void OnRender(Graphics g, TElement element)
         {
             _composite.Render(g, element);
         }
@@ -47,7 +47,7 @@ namespace Engine.UI.Core.Renderers
         private class Outline : UIRenderer<TElement, THandler, TRenderer>
         {
             public Outline() { }
-            protected override void OnRender(Graphics g, TElement element)
+            public override void OnRender(Graphics g, TElement element)
             {
                 using (Pen debugPen = new Pen(Color.FromArgb(100, 128, 128, 128), 4))
                 {
@@ -74,7 +74,7 @@ namespace Engine.UI.Core.Renderers
         private class Labels : UIRenderer<TElement, THandler, TRenderer>
         {
             public Labels() { }
-            protected override void OnRender(Graphics g, TElement element)
+            public override void OnRender(Graphics g, TElement element)
             {
                 var textBox = (UITextBox<TElement, THandler, TRenderer>)element;
                 var labels = textBox._labels;

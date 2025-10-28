@@ -53,10 +53,10 @@ namespace Engine.UI.Core.Renderers
         /// <summary>
         /// Draws all renderers in the order they were added.
         /// </summary>
-        protected override void OnRender(Graphics g, TElement element)
+        public override void OnRender(Graphics g, TElement element)
         {
             foreach (var renderer in _renderers)
-                renderer.Render(g, element);
+                renderer.OnRender(g, element);
         }
     }
 }

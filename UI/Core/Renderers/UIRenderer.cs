@@ -92,7 +92,7 @@ namespace Engine.UI.Core.Renderers
         /// </summary>
         /// <param name="g">Graphics context to draw on.</param>
         /// <param name="element">The UI element being rendered.</param>
-        protected virtual void OnRender(Graphics g, TElement element) { }
+        public virtual void OnRender(Graphics g, TElement element) { }
 
         #endregion
 

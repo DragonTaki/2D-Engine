@@ -15,7 +15,7 @@ using Engine.UI.Elements;
 
 namespace Engine.UI.Core.Handlers
 {
-    public abstract class UILabelHandler : UIHandler<UILabel, UILabelHandler, UILabelRenderer>
+    public class UILabelHandler : UIHandler<UILabel, UILabelHandler, UILabelRenderer>
     {
         private UILabel Label => (UILabel)Element;
 
