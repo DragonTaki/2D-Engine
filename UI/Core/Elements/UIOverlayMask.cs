@@ -24,10 +24,10 @@ namespace Engine.UI.Core.Elements
     /// </summary>
     public class UIOverlayMask : UIElement
     {
-        public readonly ConfirmDialog _dialog;
+        public readonly UIConfirmDialog _dialog;
         public Color MaskColor { get; set; } = Color.FromArgb(120, 0, 0, 0);
 
-        public UIOverlayMask(ConfirmDialog dialog)
+        public UIOverlayMask(UIConfirmDialog dialog)
         {
             _dialog = dialog;
             IsVisible = false;

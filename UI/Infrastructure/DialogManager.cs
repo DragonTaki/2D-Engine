@@ -20,7 +20,7 @@ namespace Engine.UI.Core.Infrastructure
 {
     public class DialogManager : InitializableOnceBase<UIRootNode>
     {
-        private static ConfirmDialog _confirmDialog;
+        private static UIConfirmDialog _confirmDialog;
         private static UIOverlayMask _overlayMask;
         private static UIOverlayNode _overlayNode;
 
@@ -32,7 +32,7 @@ namespace Engine.UI.Core.Infrastructure
 
             if (_confirmDialog == null)
             {
-                _confirmDialog = new ConfirmDialog(new ConfirmDialogRenderer())
+                _confirmDialog = new UIConfirmDialog(new UIConfirmDialogRenderer())
                 {
                     ZIndex = int.MaxValue
                 };

@@ -10,7 +10,7 @@
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
-using Chinese_Chess_v3.Game.Constants.UI;
+using Chinese_Chess_v3.Game.UI.Constants;
 
 using Engine.Styles;
 using Engine.UI.Core.Elements;
