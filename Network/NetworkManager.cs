@@ -11,15 +11,19 @@ using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Engine.Network
 {
     public class NetworkManager
     {
+        public const string AppVersion = "v1.0.0";
         private readonly string _host;
         private readonly int _port;
         
         public Guid ClientId { get; private set; }
+
+        private AuthManager _authManager;
 
         private TcpClient _client;
         private NetworkStream _stream;
@@ -36,7 +40,7 @@ namespace Engine.Network
         private DateTime _lastHeartbeat = DateTime.UtcNow;
 
         private const int HeartbeatInterval = 1000;      // Unit: millisecond
-        private const int TimeoutLimit = 5 * 60 * 1000;  // Unit: millisecond
+        private const int ServerTimeoutLimit = 8 * 1000;  // Unit: millisecond
 
         public NetworkManager(string host = "127.0.0.1", int port = 8080)
         {
@@ -45,23 +49,39 @@ namespace Engine.Network
             ClientId = Guid.NewGuid();
         }
 
-        public void Connect()
+        public async Task<bool> ConnectAsync()
         {
             lock (_lock)
             {
                 if (IsConnected)
-                    return;
+                    return false;
 
                 _cts = new CancellationTokenSource();
                 _client = new TcpClient();
-                _client.Connect(_host, _port);
-                _stream = _client.GetStream();
-
-                StartListening(_cts.Token);
-                StartHeartbeat();
-
-                Console.WriteLine("[NetworkManager] Network connected.");
             }
+
+            await _client.ConnectAsync(_host, _port);
+            _stream = _client.GetStream();
+
+            StartListening(_cts.Token);
+
+            // ✅ 初始化 AuthManager
+            _authManager = new AuthManager(this);
+            _authManager.SendAuth();
+
+            // ✅ 等待 Auth 結果
+            bool authSuccess = await _authManager.WaitForAuthResponse();
+
+            if (!authSuccess)
+            {
+                Console.WriteLine("[NetworkManager] Auth failed, disconnecting...");
+                Disconnect();
+                return false;
+            }
+
+            StartHeartbeat();
+            Console.WriteLine("[NetworkManager] Network connected.");
+            return true;
         }
 
         public void Disconnect()
@@ -87,7 +107,7 @@ namespace Engine.Network
         {
             Disconnect();
             Console.WriteLine("[NetworkManager] Network reconnecting...");
-            Connect();
+            _ = ConnectAsync();
         }
 
         private void StartHeartbeat()
@@ -97,8 +117,7 @@ namespace Engine.Network
             {
                 if (!IsConnected) return;
 
-                // 超過5分鐘沒收到心跳 → 斷線
-                if ((DateTime.UtcNow - _lastHeartbeat).TotalMilliseconds > TimeoutLimit)
+                if ((DateTime.UtcNow - _lastHeartbeat).TotalMilliseconds > ServerTimeoutLimit)
                 {
                     Console.WriteLine("[NetworkManager] Heartbeat timeout. Disconnecting...");
                     Disconnect();
@@ -145,7 +164,9 @@ namespace Engine.Network
             {
                 while (!token.IsCancellationRequested && _client.Connected)
                 {
+#nullable enable
                     string? line = await reader.ReadLineAsync();
+#nullable disable
                     if (line == null)
                     {
                         Disconnect();

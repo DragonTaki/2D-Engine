@@ -31,6 +31,7 @@ namespace Engine.Network
         Chat,             // 聊天訊息
 
         // Other
+        Server,           // 伺服器
         Heartbeat,        // 心跳
         Error,            // 錯誤訊息
     }
