@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 
+using Engine.Styles;
 using Engine.UI.Constants.Components;
 using Engine.UI.Core.Bases;
 using Engine.UI.Core.Handlers;
@@ -29,6 +30,14 @@ namespace Engine.UI.Core.Elements
         #region Fields / Properties
 
         public readonly List<Action> _pendingActions = new();
+
+        /// <summary>
+        /// Optional background/border style for this container, drawn by
+        /// <see cref="UIContainerRenderer{TElement, THandler, TRenderer}"/>
+        /// when set. Left <c>null</c> by default, so containers with no
+        /// style assigned draw nothing at this layer (unchanged behavior).
+        /// </summary>
+        public IBoxDrawStyle Style { get; set; }
 
         #endregion
 

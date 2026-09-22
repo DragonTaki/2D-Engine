@@ -44,11 +44,11 @@ namespace Engine.UI.Core.Renderers
         /// <param name="element">The UI element being rendered (should match <see cref="Container"/>).</param>
         public override void OnRender(Graphics g, TElement element)
         {
-            // Placeholder for rendering logic.
-            // TODO: implement container-specific drawing, e.g., background, borders.
-            // Optionally, iterate over Container.Children and invoke their renderers.
-
-            //
+            // Draws the container's own background/border only when a Style
+            // is assigned; containers with none keep the previous no-op
+            // behavior. Children are rendered by the central render
+            // pipeline, not from here.
+            element.Style?.Draw(g, element.GetCurrentAbsoluteBounds());
         }
 
         #endregion
