@@ -10,8 +10,6 @@
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
-using Chinese_Chess_v3.Game.UI.Constants;
-
 using Engine.Styles;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
@@ -88,7 +86,7 @@ namespace Engine.UI.Core.Renderers
                 g.SetClip(clip);
                 foreach (var button in buttons)
                 {
-                    IButtonDrawStyle style = button.Style ?? UILayoutStyles.MainMenu.Button.Style;
+                    IButtonDrawStyle style = button.Style ?? DefaultStyles.DefaultButtonStyle;
                     style.Draw(g, button.Text, button.GetCurrentAbsolutePosition(), button.Size);
                 }
                 g.ResetClip();
