@@ -11,8 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 
-using Chinese_Chess_v3.Game.Configs;
-
 namespace Engine.Logging
 {
     public enum LogLevel
@@ -76,8 +74,11 @@ namespace Engine.Logging
 #nullable enable
         private static Action<string>? externalLogger = null;
 #nullable disable
-        private static readonly bool enableDebug = Settings.EnableDebugMode;
-        private static readonly string currentUser = Settings.CurrentUser;
+        // Pushed in by the app's composition root (Launcher/Program.cs) at
+        // startup from Game.Configs.Settings — Engine must not read Game's
+        // config directly.
+        public static bool EnableDebug { get; set; } = false;
+        public static string CurrentUser { get; set; } = string.Empty;
 
         public static void SetExternalLogger(Action<string> callback)
         {
@@ -86,7 +87,7 @@ namespace Engine.Logging
 
         public static void Log(string message, LogLevel level = LogLevel.INFO)
         {
-            if (level == LogLevel.DEBUG && !enableDebug)
+            if (level == LogLevel.DEBUG && !EnableDebug)
                 return;
 
             var record = new LogRecord(message, level);
@@ -116,9 +117,9 @@ namespace Engine.Logging
                 "#BAE1FF", "#D5BAFF", "#FFBAED"
             };
 
-            string greeting = string.IsNullOrEmpty(currentUser)
+            string greeting = string.IsNullOrEmpty(CurrentUser)
                 ? "Hello!"
-                : $"Hello, {currentUser}!";
+                : $"Hello, {CurrentUser}!";
 
             string welcome = "Chinese Chess v3.0";
             string author = "Author: DragonTaki";
