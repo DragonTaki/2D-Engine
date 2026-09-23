@@ -50,17 +50,21 @@ namespace Engine.Physics
 
         /// <summary>
         /// Updates all registered Physics2D instances by invoking their SmoothUpdate method.
-        /// Also performs global cleanup of expired physics effects.
         /// This method runs on the main thread.
         /// </summary>
+        /// <remarks>
+        /// Effect cleanup (<see cref="Physics2D.CleanupAllPhysicsEffects"/>) is
+        /// not called from here — it needs a caller-supplied set of still-valid
+        /// effect IDs, which only the effect owner (e.g. StarAnimation's
+        /// <c>StarController.Update</c>) has. Calling it here too used to just
+        /// duplicate that same-frame cleanup a second time.
+        /// </remarks>
         public static void UpdateAll()
         {
             foreach (var p in _allPhysics)
             {
                 p.SmoothUpdate();
             }
-
-            Physics2D.CleanupAllPhysicsEffects();
         }
 
         /// <summary>

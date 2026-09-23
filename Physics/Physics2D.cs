@@ -12,8 +12,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-using StarAnimation.Core.Effect;
-
 using Engine.Mathematics;
 
 namespace Engine.Physics
@@ -193,20 +191,24 @@ namespace Engine.Physics
         /// <summary>
         /// Cleans up invalid physics effects from all registered instances.
         /// </summary>
-        public static void CleanupAllPhysicsEffects()
+        /// <param name="validEffectIds">
+        /// The effect IDs a caller (e.g. StarAnimation) still considers active;
+        /// Engine has no knowledge of what an "effect" is, so the caller supplies
+        /// this set rather than Physics2D reaching up to ask for it.
+        /// </param>
+        public static void CleanupAllPhysicsEffects(ISet<Guid> validEffectIds)
         {
             foreach (var physics in PhysicsRegistry.GetAll())
-                physics.CleanupInvalidEffectReferences();
+                physics.CleanupInvalidEffectReferences(validEffectIds);
         }
 
         /// <summary>
         /// Removes acceleration contributions whose effect IDs are no longer active.
         /// </summary>
-        private void CleanupInvalidEffectReferences()
+        private void CleanupInvalidEffectReferences(ISet<Guid> validEffectIds)
         {
-            var validIds = EffectInstance.GetAllActiveEffectIds();
             var keysToRemove = AccelerationContributions.Keys
-                .Where(id => !validIds.Contains(id))
+                .Where(id => !validEffectIds.Contains(id))
                 .ToList();
 
             foreach (var id in keysToRemove)
