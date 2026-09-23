@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/11
-// Update Date: 2025/05/15
-// Version: v1.3
+// Update Date: 2026/09/23
+// Version: v1.4
 /* ----- ----- ----- ----- */
 
 using System;
@@ -40,7 +40,7 @@ namespace Engine.Physics
         /// <summary>
         /// A dictionary of externally contributed accelerations indexed by unique effect ID.
         /// </summary>
-        public Dictionary<Guid, Vector2F> AccelerationContributions = new();
+        public Dictionary<Guid, Vector2F> AccelerationContributions { get; set; } = new();
 
 #nullable enable
         /// <summary>
@@ -96,7 +96,6 @@ namespace Engine.Physics
             // If position target was set, move towards
             if (Position.HasTarget)
             {
-
                 // Calculate the direction vector from the current position to the target position
                 Vector2F delta = Position.Target - Position.Current;
 
@@ -121,10 +120,12 @@ namespace Engine.Physics
                         Acceleration.Target += direction * distance;
                     }
 
-                    // Check if damping is enabled and the object is close to the target
-                    if (Movement.CanDamping && distance < CalculateThreshold)
+                    // Apply damping force to slow down as we approach the target.
+                    // (This used to also require distance < CalculateThreshold, which
+                    // can never be true here since this whole block only runs when
+                    // distance >= CalculateThreshold — that made damping dead code.)
+                    if (Movement.CanDamping)
                     {
-                        // Apply damping force to slow down as we approach the target
                         float dampingForce = Velocity.Current.Length() * Movement.Damping;
                         Acceleration.Target -= direction * dampingForce;
                     }
@@ -220,6 +221,9 @@ namespace Engine.Physics
         /// </summary>
         public void EnforceBoundaries()
         {
+            if (Boundary == null)
+                return;
+
             if (Boundary.Min != null && Boundary.Max != null)
             {
                 Position.Current.X = Math.Clamp(Position.Current.X, Boundary.Min.X, Boundary.Max.X);
