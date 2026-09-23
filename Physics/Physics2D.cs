@@ -374,6 +374,12 @@ namespace Engine.Physics
     public class Acceleration
     {
         /// <summary>
+        /// The base acceleration (X and Y components), e.g. a constant force
+        /// field such as gravity that Current/Target build on top of.
+        /// </summary>
+        public Vector2F Base { get; set; } = new Vector2F();
+
+        /// <summary>
         /// The current acceleration (X and Y components).
         /// </summary>
         public Vector2F Current { get; set; } = new Vector2F();
@@ -394,6 +400,7 @@ namespace Engine.Physics
         /// <param name="accel">The acceleration vector.</param>
         public Acceleration(Vector2F accel)
         {
+            Base = accel;
             Current = accel;
             Target = accel;
         }
@@ -411,6 +418,7 @@ namespace Engine.Physics
         /// </summary>
         public void Reset()
         {
+            Base = Vector2F.Zero;
             Current = Vector2F.Zero;
             Target = Vector2F.Zero;
         }
