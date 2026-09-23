@@ -10,8 +10,6 @@
 using System.Drawing;
 using System.Windows.Forms;
 
-using Chinese_Chess_v3.Game.UI.Dialogs;
-
 using Engine.Globals;
 using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Renderers;
@@ -24,10 +22,10 @@ namespace Engine.UI.Core.Elements
     /// </summary>
     public class UIOverlayMask : UIElement
     {
-        public readonly UIConfirmDialog _dialog;
+        public readonly IUIDialog _dialog;
         public Color MaskColor { get; set; } = Color.FromArgb(120, 0, 0, 0);
 
-        public UIOverlayMask(UIConfirmDialog dialog)
+        public UIOverlayMask(IUIDialog dialog)
         {
             _dialog = dialog;
             IsVisible = false;
@@ -58,7 +56,7 @@ namespace Engine.UI.Core.Elements
             Hide();
             _dialog.IsVisible = false;
             _dialog.IsEnabled = false;
-            _dialog._onResult?.Invoke(ConfirmDialogResult.Cancel);
+            _dialog.Cancel();
             return true;
         }
 
