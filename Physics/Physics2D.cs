@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/11
 // Update Date: 2026/09/23
-// Version: v1.4
+// Version: v1.5
 /* ----- ----- ----- ----- */
 
 using System;
@@ -13,6 +13,7 @@ using System.Drawing;
 using System.Linq;
 
 using Engine.Mathematics;
+using Engine.Timing;
 
 namespace Engine.Physics
 {
@@ -83,6 +84,11 @@ namespace Engine.Physics
         /// </summary>
         public void SmoothUpdate()
         {
+            // Elapsed time since the last call, so velocity/position integrate
+            // at a real-world rate instead of one that speeds up or slows
+            // down with however often SmoothUpdate happens to be called.
+            float deltaTime = GlobalTime.Timer.DeltaTimeInSeconds;
+
             // Integrate all sources of acceleration
             Acceleration.Target = Vector2F.Zero;
 
@@ -163,13 +169,13 @@ namespace Engine.Physics
                 AccelerationLerpFactor
             );
 
-            // Update velocity
-            Velocity.Current += Acceleration.Current;
+            // Update velocity (semi-implicit Euler: scale by deltaTime, not by "one tick")
+            Velocity.Current += Acceleration.Current * deltaTime;
 
             // If target-driven movement, check next location before update, prevent "over" the target
             if (Position.HasTarget)
             {
-                Vector2F nextPosition = Position.Current + Velocity.Current;
+                Vector2F nextPosition = Position.Current + Velocity.Current * deltaTime;
                 Vector2F toTargetNow = Position.Target - Position.Current;
                 Vector2F toTargetNext = Position.Target - nextPosition;
 
@@ -185,8 +191,8 @@ namespace Engine.Physics
                 }
             }
 
-            // Update Location
-            Position.Current += Velocity.Current;
+            // Update Location (scaled by deltaTime — see SmoothUpdate's opening comment)
+            Position.Current += Velocity.Current * deltaTime;
         }
 
         /// <summary>
