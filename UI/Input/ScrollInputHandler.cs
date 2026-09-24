@@ -10,7 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Windows.Forms;
+using Engine.Platform;
 
 using Engine.Mathematics;
 using Engine.Physics;
@@ -125,7 +125,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>True if a scroll target was activated; otherwise false.</returns>
-        public bool OnMouseDown(MouseEventArgs e)
+        public bool OnMouseDown(IMouseEvent e)
         {
             // Cancel any previous drag if active
             if (IsDragging)
@@ -165,7 +165,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>True if drag moved enough to update the target; otherwise false.</returns>
-        public bool OnMouseMove(MouseEventArgs e)
+        public bool OnMouseMove(IMouseEvent e)
         {
             bool handled = _dragHandler.OnMouseMove(e);
             return handled;
@@ -176,7 +176,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>True if a drag was active and released; otherwise false.</returns>
-        public bool OnMouseUp(MouseEventArgs e)
+        public bool OnMouseUp(IMouseEvent e)
         {
             bool handled = _dragHandler.OnMouseUp(e);
             return handled;
@@ -187,7 +187,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse wheel event arguments.</param>
         /// <returns>True if the event affected the active target; otherwise false.</returns>
-        public bool OnMouseWheel(MouseEventArgs e)
+        public bool OnMouseWheel(IMouseEvent e)
         {
             if (_activeTarget?.Physics == null || _activeTarget?.Behavior?.AllowWheel != true)
                 return false;
@@ -201,7 +201,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>Always returns false; clicks handled elsewhere.</returns>
-        public bool OnMouseClick(MouseEventArgs e)
+        public bool OnMouseClick(IMouseEvent e)
         {
             return false;
         }

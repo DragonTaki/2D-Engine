@@ -8,7 +8,7 @@
 /* ----- ----- ----- ----- */
 
 using System.Collections.Generic;
-using System.Windows.Forms;
+using Engine.Platform;
 
 using Engine.UI.Core.Elements;
 
@@ -104,7 +104,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse event arguments containing location and button info.</param>
         /// <returns>True if any handler or UI element processed the event; otherwise false.</returns>
-        public bool OnMouseDown(MouseEventArgs e)
+        public bool OnMouseDown(IMouseEvent e)
         {
             _dragStarted = false;
             _hasDragged = false;
@@ -142,7 +142,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse event arguments with location.</param>
         /// <returns>True if the event was handled by scroll or UI; otherwise false.</returns>
-        public bool OnMouseMove(MouseEventArgs e)
+        public bool OnMouseMove(IMouseEvent e)
         {
             //Console.WriteLine($"[MouseMove] _dragStarted = {_dragStarted}, _hasDragged = {_hasDragged}");
             bool handled = false;
@@ -187,7 +187,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>Always returns true as the event is consumed.</returns>
-        public bool OnMouseUp(MouseEventArgs e)
+        public bool OnMouseUp(IMouseEvent e)
         {
             // Release scroll whatever
             foreach (var h in _handlers)
@@ -220,7 +220,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse event arguments containing wheel delta.</param>
         /// <returns>True if the event was handled by any handler; otherwise false.</returns>
-        public bool OnMouseWheel(MouseEventArgs e)
+        public bool OnMouseWheel(IMouseEvent e)
         {
             // Process UI mouse event first
             if (Root.OnMouseWheel(e))
@@ -239,7 +239,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>Always returns false; handled manually in OnMouseUp.</returns>
-        public bool OnMouseClick(MouseEventArgs e)
+        public bool OnMouseClick(IMouseEvent e)
         {
             // Windows mouse event
             // If [press -> drag -> release]

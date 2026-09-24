@@ -8,8 +8,8 @@
 /* ----- ----- ----- ----- */
 
 using System.Collections.Generic;
-using System.Windows.Forms;
 
+using Engine.Platform;
 using Engine.UI.Core.Elements;
 
 namespace Engine.UI.Input
@@ -90,7 +90,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>True if the event was handled by the router.</returns>
-        public bool OnMouseDown(MouseEventArgs e)
+        public bool OnMouseDown(IMouseEvent e)
         {
             return MouseRouter.OnMouseDown(e);
         }
@@ -100,7 +100,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>True if the event was handled by the router.</returns>
-        public bool OnMouseMove(MouseEventArgs e)
+        public bool OnMouseMove(IMouseEvent e)
         {
             return MouseRouter.OnMouseMove(e);
         }
@@ -110,7 +110,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>True if the event was handled by the router.</returns>
-        public bool OnMouseUp(MouseEventArgs e)
+        public bool OnMouseUp(IMouseEvent e)
         {
             return MouseRouter.OnMouseUp(e);
         }
@@ -120,7 +120,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>True if the event was handled by the router.</returns>
-        public bool OnMouseClick(MouseEventArgs e)
+        public bool OnMouseClick(IMouseEvent e)
         {
             return MouseRouter.OnMouseClick(e);
         }
@@ -130,39 +130,10 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse wheel event arguments.</param>
         /// <returns>True if the event was handled by the router.</returns>
-        public bool OnMouseWheel(MouseEventArgs e)
+        public bool OnMouseWheel(IMouseEvent e)
         {
             return MouseRouter.OnMouseWheel(e);
         }
-
-        #endregion
-
-        #region Event Handler Wrappers (for WinForms)
-
-        /// <summary>
-        /// Wrapper for MouseDown event from WinForms.
-        /// </summary>
-        public void ProcessMouseDown (object s, MouseEventArgs e)=> OnMouseDown(e);
-
-        /// <summary>
-        /// Wrapper for MouseMove event from WinForms.
-        /// </summary>
-        public void ProcessMouseMove(object s, MouseEventArgs e) => OnMouseMove(e);
-
-        /// <summary>
-        /// Wrapper for MouseUp event from WinForms.
-        /// </summary>
-        public void ProcessMouseUp(object s, MouseEventArgs e) => OnMouseUp(e);
-
-        /// <summary>
-        /// Wrapper for MouseClick event from WinForms.
-        /// </summary>
-        public void ProcessMouseClick(object s, MouseEventArgs e) => OnMouseClick(e);
-
-        /// <summary>
-        /// Wrapper for MouseWheel event from WinForms.
-        /// </summary>
-        public void ProcessMouseWheel(object s, MouseEventArgs e) => OnMouseWheel(e);
 
         #endregion
 

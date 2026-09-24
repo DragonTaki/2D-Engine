@@ -9,7 +9,7 @@
 
 using System;
 using System.Drawing;
-using System.Windows.Forms;
+using Engine.Platform;
 
 using Engine.Mathematics;
 
@@ -109,7 +109,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse event arguments containing position and button information.</param>
         /// <returns>Always returns <c>true</c> to indicate event was handled.</returns>
-        public bool OnMouseDown(MouseEventArgs e)
+        public bool OnMouseDown(IMouseEvent e)
         {
             IsDragging = true;
             HasMovedEnoughToDrag = false;
@@ -132,7 +132,7 @@ namespace Engine.UI.Input
         /// <c>true</c> if drag movement is active and processed;  
         /// <c>false</c> if movement is below threshold and not yet considered as a drag.
         /// </returns>
-        public bool OnMouseMove(MouseEventArgs e)
+        public bool OnMouseMove(IMouseEvent e)
         {
             if (!IsDragging)
                 return true;  // No active drag; ignore move
@@ -173,7 +173,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse event arguments containing the release position.</param>
         /// <returns>Always returns <c>true</c> to indicate event was handled.</returns>
-        public bool OnMouseUp(MouseEventArgs e)
+        public bool OnMouseUp(IMouseEvent e)
         {
             if (!IsDragging)
                 return true;  // Nothing to end
@@ -204,7 +204,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse wheel event arguments.</param>
         /// <returns>Always returns <c>false</c> since this class does not process wheel input.</returns>
-        public bool OnMouseWheel(MouseEventArgs e)
+        public bool OnMouseWheel(IMouseEvent e)
         {
             return false;
         }
@@ -215,7 +215,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>Always returns <c>false</c> since direct click event is not processed.</returns>
-        public bool OnMouseClick(MouseEventArgs e)
+        public bool OnMouseClick(IMouseEvent e)
         {
             return false;
         }

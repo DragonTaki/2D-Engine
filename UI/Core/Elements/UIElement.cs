@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
-using System.Windows.Forms;
 
 using Engine.Geometry;
 using Engine.Mathematics;
@@ -360,7 +359,7 @@ namespace Engine.UI.Core.Elements
         /// <summary>
         /// Propagates mouse events to children and self.
         /// </summary>
-        protected bool PropagateMouseEvent(MouseEventArgs e, UIEventType eventName)
+        protected bool PropagateMouseEvent(IMouseEvent e, UIEventType eventName)
         {
             bool isInside = IsInteractable && GetCurrentAbsoluteBounds().Contains(e.Location);
 
@@ -408,27 +407,27 @@ namespace Engine.UI.Core.Elements
             };
         }
 
-        public override bool OnMouseDown(MouseEventArgs e)
+        public override bool OnMouseDown(IMouseEvent e)
         {
             return PropagateMouseEvent(e, UIEventType.MouseDown);
         }
 
-        public override bool OnMouseMove(MouseEventArgs e)
+        public override bool OnMouseMove(IMouseEvent e)
         {
             return PropagateMouseEvent(e, UIEventType.MouseMove);
         }
 
-        public override bool OnMouseUp(MouseEventArgs e)
+        public override bool OnMouseUp(IMouseEvent e)
         {
             return PropagateMouseEvent(e, UIEventType.MouseUp);
         }
 
-        public override bool OnMouseWheel(MouseEventArgs e)
+        public override bool OnMouseWheel(IMouseEvent e)
         {
             return PropagateMouseEvent(e, UIEventType.MouseWheel);
         }
 
-        public override bool OnMouseClick(MouseEventArgs e)
+        public override bool OnMouseClick(IMouseEvent e)
         {
             return PropagateMouseEvent(e, UIEventType.MouseClick);
         }

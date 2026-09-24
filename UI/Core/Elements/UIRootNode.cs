@@ -7,7 +7,7 @@
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
-using System.Windows.Forms;
+using Engine.Platform;
 using Engine.UI.Constants.Components;
 
 namespace Engine.UI.Core.Elements
@@ -21,7 +21,7 @@ namespace Engine.UI.Core.Elements
     {
 
 #nullable enable
-        public Form? MainForm { get; set; }
+        public IWindow? MainWindow { get; set; }
 #nullable disable
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace Engine.UI.Core.Elements
 
         public override void RequestRedraw()
         {
-            MainForm.Invalidate();
+            MainWindow.Invalidate();
         }
     }
 }

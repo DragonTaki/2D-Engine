@@ -8,7 +8,7 @@
 /* ----- ----- ----- ----- */
 
 using System;
-using System.Windows.Forms;
+using Engine.Platform;
 
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Renderers;
@@ -29,7 +29,7 @@ namespace Engine.UI.Core.Handlers
 
         #region Mouse Handling
 
-        internal override bool HandleMouseClick(MouseEventArgs e)
+        internal override bool HandleMouseClick(IMouseEvent e)
         {
             if (!Element.IsEnabled) return false; // 不可用時不觸發
             Action?.Invoke();

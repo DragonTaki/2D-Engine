@@ -8,7 +8,6 @@
 /* ----- ----- ----- ----- */
 
 using System.Drawing;
-using System.Windows.Forms;
 
 using Engine.Globals;
 using Engine.Platform;
@@ -51,7 +50,7 @@ namespace Engine.UI.Core.Elements
             IsEnabled = false;
         }
 
-        public override bool OnMouseDown(MouseEventArgs e)
+        public override bool OnMouseDown(IMouseEvent e)
         {
             // Hide everything and trigger cancel
             Hide();
@@ -73,11 +72,11 @@ namespace Engine.UI.Core.Elements
             _element = element;
         }
 
-        internal override bool HandleMouseDown(MouseEventArgs e) => true;
-        internal override bool HandleMouseMove(MouseEventArgs e) => true;
-        internal override bool HandleMouseUp(MouseEventArgs e) => true;
-        internal override bool HandleMouseWheel(MouseEventArgs e) => true;
-        internal override bool HandleMouseClick(MouseEventArgs e) => true;
+        internal override bool HandleMouseDown(IMouseEvent e) => true;
+        internal override bool HandleMouseMove(IMouseEvent e) => true;
+        internal override bool HandleMouseUp(IMouseEvent e) => true;
+        internal override bool HandleMouseWheel(IMouseEvent e) => true;
+        internal override bool HandleMouseClick(IMouseEvent e) => true;
     }
 
     public class UIOverlayMaskRenderer : UIRenderer<UIOverlayMask>

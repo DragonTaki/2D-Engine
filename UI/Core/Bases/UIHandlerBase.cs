@@ -7,7 +7,7 @@
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
-using System.Windows.Forms;
+using Engine.Platform;
 
 using Engine.UI.Core.Interfaces;
 
@@ -18,15 +18,15 @@ namespace Engine.UI.Core.Bases
         /// <summary>Reference back to the element (non-generic)</summary>
         public UIElementBase Element { get; internal set; }
 
-        internal abstract bool HandleMouseDown(MouseEventArgs e);
+        internal abstract bool HandleMouseDown(IMouseEvent e);
 
-        internal abstract bool HandleMouseMove(MouseEventArgs e);
+        internal abstract bool HandleMouseMove(IMouseEvent e);
 
-        internal abstract bool HandleMouseUp(MouseEventArgs e);
+        internal abstract bool HandleMouseUp(IMouseEvent e);
 
-        internal abstract bool HandleMouseWheel(MouseEventArgs e);
+        internal abstract bool HandleMouseWheel(IMouseEvent e);
 
-        internal abstract bool HandleMouseClick(MouseEventArgs e);
+        internal abstract bool HandleMouseClick(IMouseEvent e);
 
         public virtual void Init(IUiFactory factory, UIElementBase element) { }
 

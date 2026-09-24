@@ -9,12 +9,15 @@
 
 using System.Drawing;
 
+using Engine.Platform;
+
 namespace Engine.Configs
 {
     public static class EngineSettings
     {
         // ScrollTextBox 預設字型
-        public static Font DefaultScrollTextFont { get; set; } = new Font("Consolas", 12f);
+        public static IFont DefaultScrollTextFont { get; set; } =
+            GraphicsBackend.Factory.CreateFont(GraphicsBackend.Factory.GetSystemFontFamily("Consolas"), 12f);
 
         // ScrollTextBox 預設行高
         public static float DefaultScrollTextLineHeight { get; set; } = 18f;

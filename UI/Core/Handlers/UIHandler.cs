@@ -7,7 +7,7 @@
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
-using System.Windows.Forms;
+using Engine.Platform;
 
 using Engine.UI.Core.Bases;
 using Engine.UI.Core.Elements;
@@ -42,27 +42,27 @@ namespace Engine.UI.Core.Handlers
 
         protected virtual void AfterInit() { }
 
-        internal override bool HandleMouseDown(MouseEventArgs e)
+        internal override bool HandleMouseDown(IMouseEvent e)
         {
             return false;  // The default is not to process, and the subclass can return true to indicate successful processing
         }
 
-        internal override bool HandleMouseMove(MouseEventArgs e)
+        internal override bool HandleMouseMove(IMouseEvent e)
         {
             return false;
         }
 
-        internal override bool HandleMouseUp(MouseEventArgs e)
+        internal override bool HandleMouseUp(IMouseEvent e)
         {
             return false;
         }
 
-        internal override bool HandleMouseWheel(MouseEventArgs e)
+        internal override bool HandleMouseWheel(IMouseEvent e)
         {
             return false;
         }
 
-        internal override bool HandleMouseClick(MouseEventArgs e)
+        internal override bool HandleMouseClick(IMouseEvent e)
         {
             return false;
         }

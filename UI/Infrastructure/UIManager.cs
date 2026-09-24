@@ -7,7 +7,6 @@
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
-using System.Windows.Forms;
 
 using Engine.Platform;
 using Engine.UI.Core.Elements;
@@ -45,7 +44,7 @@ namespace Engine.UI.Core.Infrastructure
         /// <summary>
         /// Forwards mouse down events to the root element.
         /// </summary>
-        public void OnMouseDown(MouseEventArgs e)
+        public void OnMouseDown(IMouseEvent e)
         {
             Root?.OnMouseDown(e);
         }
@@ -53,7 +52,7 @@ namespace Engine.UI.Core.Infrastructure
         /// <summary>
         /// Forwards mouse move events to the root element.
         /// </summary>
-        public void OnMouseMove(MouseEventArgs e)
+        public void OnMouseMove(IMouseEvent e)
         {
             Root?.OnMouseMove(e);
         }
@@ -61,7 +60,7 @@ namespace Engine.UI.Core.Infrastructure
         /// <summary>
         /// Forwards mouse up events to the root element.
         /// </summary>
-        public void OnMouseUp(MouseEventArgs e)
+        public void OnMouseUp(IMouseEvent e)
         {
             Root?.OnMouseUp(e);
         }
@@ -69,7 +68,7 @@ namespace Engine.UI.Core.Infrastructure
         /// <summary>
         /// Forwards mouse wheel events to the root element.
         /// </summary>
-        public void OnMouseWheel(MouseEventArgs e)
+        public void OnMouseWheel(IMouseEvent e)
         {
             Root?.OnMouseWheel(e);
         }
@@ -77,7 +76,7 @@ namespace Engine.UI.Core.Infrastructure
         /// <summary>
         /// Forwards mouse click events to the root element.
         /// </summary>
-        public void OnMouseClick(MouseEventArgs e)
+        public void OnMouseClick(IMouseEvent e)
         {
             Root?.OnMouseClick(e);
         }

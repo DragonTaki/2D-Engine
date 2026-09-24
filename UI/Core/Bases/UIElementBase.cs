@@ -9,7 +9,6 @@
 
 using System.Collections.Generic;
 using System.Drawing;
-using System.Windows.Forms;
 
 using Engine.Geometry;
 using Engine.Mathematics;
@@ -338,35 +337,35 @@ namespace Engine.UI.Core.Bases
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>True if the event was handled.</returns>
-        public abstract bool OnMouseDown(MouseEventArgs e);
+        public abstract bool OnMouseDown(IMouseEvent e);
 
         /// <summary>
         /// Handles mouse move events.
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>True if the event was handled.</returns>
-        public abstract bool OnMouseMove(MouseEventArgs e);
+        public abstract bool OnMouseMove(IMouseEvent e);
 
         /// <summary>
         /// Handles mouse button release events.
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>True if the event was handled.</returns>
-        public abstract bool OnMouseUp(MouseEventArgs e);
+        public abstract bool OnMouseUp(IMouseEvent e);
 
         /// <summary>
         /// Handles mouse wheel scrolling events.
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>True if the event was handled.</returns>
-        public abstract bool OnMouseWheel(MouseEventArgs e);
+        public abstract bool OnMouseWheel(IMouseEvent e);
 
         /// <summary>
         /// Handles mouse click events.
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>True if the event was handled.</returns>
-        public abstract bool OnMouseClick(MouseEventArgs e);
+        public abstract bool OnMouseClick(IMouseEvent e);
 
         #endregion
 

@@ -7,7 +7,7 @@
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
-using System.Windows.Forms;
+using Engine.Platform;
 
 namespace Engine.UI.Input
 {
@@ -39,7 +39,7 @@ namespace Engine.UI.Input
         /// <c>true</c> if the handler has processed the mouse down event;  
         /// otherwise, <c>false</c> if the event should continue to other handlers.
         /// </returns>
-        bool OnMouseDown(MouseEventArgs e);
+        bool OnMouseDown(IMouseEvent e);
 
         /// <summary>
         /// Called when the mouse is moved.
@@ -49,7 +49,7 @@ namespace Engine.UI.Input
         /// <c>true</c> if movement is handled (e.g., during dragging);  
         /// <c>false</c> if ignored or below movement threshold.
         /// </returns>
-        bool OnMouseMove(MouseEventArgs e);
+        bool OnMouseMove(IMouseEvent e);
 
         /// <summary>
         /// Called when the mouse button is released.
@@ -60,7 +60,7 @@ namespace Engine.UI.Input
         /// <c>true</c> if release was processed;  
         /// <c>false</c> if not applicable for this handler.
         /// </returns>
-        bool OnMouseUp(MouseEventArgs e);
+        bool OnMouseUp(IMouseEvent e);
 
         /// <summary>
         /// Called when the mouse wheel is scrolled.
@@ -71,7 +71,7 @@ namespace Engine.UI.Input
         /// <c>true</c> if the handler processed the wheel event (e.g., scrolling content);  
         /// otherwise, <c>false</c>.
         /// </returns>
-        bool OnMouseWheel(MouseEventArgs e);
+        bool OnMouseWheel(IMouseEvent e);
 
         /// <summary>
         /// Called when a mouse click event is detected (press and release without drag).
@@ -81,7 +81,7 @@ namespace Engine.UI.Input
         /// <c>true</c> if the handler handled the click event;  
         /// <c>false</c> if unhandled and should propagate further.
         /// </returns>
-        bool OnMouseClick(MouseEventArgs e);
+        bool OnMouseClick(IMouseEvent e);
 
         #endregion
 

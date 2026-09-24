@@ -8,7 +8,7 @@
 /* ----- ----- ----- ----- */
 
 using System;
-using System.Windows.Forms;
+using Engine.Platform;
 
 using Engine.Mathematics;
 using Engine.UI.Core.Elements;
@@ -72,7 +72,7 @@ namespace Engine.UI.Core.Handlers
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>True if event was handled, otherwise false.</returns>
-        internal override bool HandleMouseDown(MouseEventArgs e)
+        internal override bool HandleMouseDown(IMouseEvent e)
         {
             return ScrollContainer.InputHandler.OnMouseDown(e);
         }
@@ -82,7 +82,7 @@ namespace Engine.UI.Core.Handlers
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>True if event was handled, otherwise false.</returns>
-        internal override bool HandleMouseMove(MouseEventArgs e)
+        internal override bool HandleMouseMove(IMouseEvent e)
         {
             return ScrollContainer.InputHandler.OnMouseMove(e);
         }
@@ -92,7 +92,7 @@ namespace Engine.UI.Core.Handlers
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>True if event was handled, otherwise false.</returns>
-        internal override bool HandleMouseUp(MouseEventArgs e)
+        internal override bool HandleMouseUp(IMouseEvent e)
         {
             return ScrollContainer.InputHandler.OnMouseUp(e);
         }
@@ -102,7 +102,7 @@ namespace Engine.UI.Core.Handlers
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>True if event was handled, otherwise false.</returns>
-        internal override bool HandleMouseWheel(MouseEventArgs e)
+        internal override bool HandleMouseWheel(IMouseEvent e)
         {
             return ScrollContainer.InputHandler.OnMouseWheel(e);
         }
