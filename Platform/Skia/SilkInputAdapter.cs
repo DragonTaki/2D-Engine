@@ -7,9 +7,13 @@
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
+using System.Numerics;
+
 using Silk.NET.Input;
 
 using Engine.UI.Input;
+
+using SilkWindowInterface = Silk.NET.Windowing.IWindow;
 
 namespace Engine.Platform.Skia
 {
@@ -29,11 +33,23 @@ namespace Engine.Platform.Skia
 
         private readonly UIInputManager _inputManager;
         private readonly IMouse _mouse;
+        private readonly SilkWindowInterface _window;
 
-        public SilkInputAdapter(UIInputManager inputManager, IMouse mouse)
+        /// <summary>
+        /// GLFW reports mouse position in the window's logical (point) space,
+        /// but everything this engine draws to — and hit-tests against — is
+        /// sized in the window's physical framebuffer pixels (see
+        /// <c>CrossPlatformApp</c>, which sizes the render surface from
+        /// <c>FramebufferSize</c>, not <c>Size</c>). On a HiDPI/Retina display
+        /// those two differ by the display's scale factor, so mouse
+        /// coordinates have to be rescaled into framebuffer space before
+        /// reaching UI hit-testing, or clicks land on the wrong element.
+        /// </summary>
+        public SilkInputAdapter(UIInputManager inputManager, IMouse mouse, SilkWindowInterface window)
         {
             _inputManager = inputManager;
             _mouse = mouse;
+            _window = window;
 
             _mouse.MouseDown += OnMouseDown;
             _mouse.MouseUp += OnMouseUp;
@@ -42,19 +58,31 @@ namespace Engine.Platform.Skia
             _mouse.Scroll += OnScroll;
         }
 
+        private Vector2 ToFramebufferSpace(Vector2 windowPosition)
+        {
+            var windowSize = _window.Size;
+            var framebufferSize = _window.FramebufferSize;
+            if (windowSize.X <= 0 || windowSize.Y <= 0)
+                return windowPosition;
+
+            return new Vector2(
+                windowPosition.X * framebufferSize.X / windowSize.X,
+                windowPosition.Y * framebufferSize.Y / windowSize.Y);
+        }
+
         private void OnMouseDown(IMouse mouse, MouseButton button) =>
-            _inputManager.OnMouseDown(new SilkMouseEvent(mouse.Position));
+            _inputManager.OnMouseDown(new SilkMouseEvent(ToFramebufferSpace(mouse.Position)));
 
         private void OnMouseUp(IMouse mouse, MouseButton button) =>
-            _inputManager.OnMouseUp(new SilkMouseEvent(mouse.Position));
+            _inputManager.OnMouseUp(new SilkMouseEvent(ToFramebufferSpace(mouse.Position)));
 
-        private void OnMouseMove(IMouse mouse, System.Numerics.Vector2 position) =>
-            _inputManager.OnMouseMove(new SilkMouseEvent(position));
+        private void OnMouseMove(IMouse mouse, Vector2 position) =>
+            _inputManager.OnMouseMove(new SilkMouseEvent(ToFramebufferSpace(position)));
 
-        private void OnClick(IMouse mouse, MouseButton button, System.Numerics.Vector2 position) =>
-            _inputManager.OnMouseClick(new SilkMouseEvent(position));
+        private void OnClick(IMouse mouse, MouseButton button, Vector2 position) =>
+            _inputManager.OnMouseClick(new SilkMouseEvent(ToFramebufferSpace(position)));
 
         private void OnScroll(IMouse mouse, ScrollWheel wheel) =>
-            _inputManager.OnMouseWheel(new SilkMouseEvent(mouse.Position, (int)(wheel.Y * WheelNotchScale)));
+            _inputManager.OnMouseWheel(new SilkMouseEvent(ToFramebufferSpace(mouse.Position), (int)(wheel.Y * WheelNotchScale)));
     }
 }
