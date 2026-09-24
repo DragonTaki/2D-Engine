@@ -3,12 +3,11 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/25
-// Update Date: 2025/10/25
-// Version: v1.0
+// Update Date: 2026/09/24
+// Version: v2.0
 /* ----- ----- ----- ----- */
 
-using System.Drawing;
-
+using Engine.Platform;
 using Engine.UI.Core.Bases;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
@@ -16,7 +15,7 @@ using Engine.UI.Core.Handlers;
 namespace Engine.UI.Core.Renderers
 {
     /// <summary>
-    /// Base class for all UI renderers. 
+    /// Base class for all UI renderers.
     /// Provides a unified interface and common utilities for drawing UI elements.
     /// </summary>
     public abstract class UIRenderer : UIRendererBase
@@ -26,7 +25,7 @@ namespace Engine.UI.Core.Renderers
         /// </summary>
         public bool IsInitialized { get; protected set; }
 
-        protected virtual void OnRender(Graphics g, UIElement element)
+        protected virtual void OnRender(IGraphics g, UIElement element)
         {
             // basic draw logic
         }
@@ -69,7 +68,7 @@ namespace Engine.UI.Core.Renderers
         /// </summary>
         /// <param name="g">Graphics context to draw on.</param>
         /// <param name="element">The UI element to render.</param>
-        public override void Render(Graphics g, UIElementBase element)
+        public override void Render(IGraphics g, UIElementBase element)
         {
             TElement _element = (TElement)element;
 
@@ -92,7 +91,7 @@ namespace Engine.UI.Core.Renderers
         /// </summary>
         /// <param name="g">Graphics context to draw on.</param>
         /// <param name="element">The UI element being rendered.</param>
-        public virtual void OnRender(Graphics g, TElement element) { }
+        public virtual void OnRender(IGraphics g, TElement element) { }
 
         #endregion
 
@@ -104,7 +103,7 @@ namespace Engine.UI.Core.Renderers
         /// </summary>
         /// <param name="g">Graphics context.</param>
         /// <param name="element">UI element to render.</param>
-        protected virtual void BeforeRender(Graphics g, TElement element) { }
+        protected virtual void BeforeRender(IGraphics g, TElement element) { }
 
         /// <summary>
         /// Hook invoked after <see cref="OnRender"/>.
@@ -112,7 +111,7 @@ namespace Engine.UI.Core.Renderers
         /// </summary>
         /// <param name="g">Graphics context.</param>
         /// <param name="element">UI element rendered.</param>
-        protected virtual void AfterRender(Graphics g, TElement element) { }
+        protected virtual void AfterRender(IGraphics g, TElement element) { }
 
         /// <summary>
         /// 通知這個元素需要重繪
@@ -129,11 +128,11 @@ namespace Engine.UI.Core.Renderers
     public abstract class UIRenderer<TElement> : UIRendererBase
         where TElement : UIElementBase
     {
-        public void Render(Graphics g, TElement element)
+        public void Render(IGraphics g, TElement element)
         {
             OnRender(g, element);
         }
 
-        protected abstract void OnRender(Graphics g, TElement element);
+        protected abstract void OnRender(IGraphics g, TElement element);
     }
 }

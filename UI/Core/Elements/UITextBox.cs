@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using Engine.Mathematics;
+using Engine.Platform;
 using Engine.UI.Constants.Components;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
@@ -32,7 +33,8 @@ namespace Engine.UI.Elements
         #region Fields / Properties
         public UIScrollContainer ScrollContainer { get; private set; }
 
-        public Font Font { get; set; } = SystemFonts.DefaultFont;
+        public IFont Font { get; set; } =
+            GraphicsBackend.Factory.CreateFont(GraphicsBackend.Factory.GenericSansSerifFontFamily, 10f);
         public float LineHeight { get; set; }
         public Color BackgroundColor { get; set; } = Color.Black;
         public Color TextColor { get; set; } = Color.White;
@@ -98,8 +100,7 @@ namespace Engine.UI.Elements
         /// </summary>
         public void AppendLine(string text, Color? color = null, bool bold = false, bool italic = false)
         {
-            using var bmp = new Bitmap(1, 1);
-            using var g = Graphics.FromImage(bmp);
+            using var g = GraphicsBackend.Factory.CreateMeasurementContext();
 
             float y = ScrollContainer.ContentHeight;
             bool isFirstParagraph = y == 0;
@@ -109,9 +110,10 @@ namespace Engine.UI.Elements
             {
                 var line = lines[i];
 
-                Font font = new Font(Font,
-                    (bold ? FontStyle.Bold : FontStyle.Regular) |
-                    (italic ? FontStyle.Italic : FontStyle.Regular));
+                var style = FontStyleFlags.Regular;
+                if (bold) style |= FontStyleFlags.Bold;
+                if (italic) style |= FontStyleFlags.Italic;
+                IFont font = GraphicsBackend.Factory.CreateFont(Font.FontFamily, Font.Size, style);
 
                 SizeF size = g.MeasureString(line, font);
     
@@ -130,7 +132,7 @@ namespace Engine.UI.Elements
                 label.ForeColor = color ?? TextColor;
                 label.Layout = new Geometry.LayoutF(0, y, Size.X, size.Height);
                 label.WordWrap = false; // 一行一個 Label
-                label.TextAlign = ContentAlignment.MiddleLeft;
+                label.TextAlign = ContentAlign.MiddleLeft;
 
                 label.LocalPosition.Current.Y = y;
 
@@ -190,9 +192,9 @@ namespace Engine.UI.Elements
     {
         public string Text { get; }
         public Color Color { get; }
-        public Font Font { get; }
+        public IFont Font { get; }
 
-        public UITextLine(Geometry.LayoutF layout, string text, Color color, Font font)
+        public UITextLine(Geometry.LayoutF layout, string text, Color color, IFont font)
         {
             Layout = layout;
             Text = text;
@@ -211,10 +213,10 @@ namespace Engine.UI.Elements
             _element = element;
         }
 
-        protected override void OnRender(Graphics g, UITextLine element)
+        protected override void OnRender(IGraphics g, UITextLine element)
         {
             var rect = element.GetCurrentAbsoluteBounds();
-            using var brush = new SolidBrush(element.Color);
+            using var brush = GraphicsBackend.Factory.CreateSolidBrush(element.Color);
             g.DrawString(element.Text, element.Font, brush, rect.X, rect.Y);
         }
     }

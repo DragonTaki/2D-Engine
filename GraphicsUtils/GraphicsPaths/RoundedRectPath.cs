@@ -3,13 +3,14 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/08
-// Update Date: 2025/05/22
-// Version: v1.1
+// Update Date: 2026/09/24
+// Version: v2.0
 /* ----- ----- ----- ----- */
 
 using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
+
+using Engine.Platform;
 
 namespace Engine.GraphicsUtils.GraphicsPaths
 {
@@ -21,9 +22,9 @@ namespace Engine.GraphicsUtils.GraphicsPaths
         /// <param name="width">Width of the rectangle.</param>
         /// <param name="height">Height of the rectangle.</param>
         /// <param name="cornerRadius">Optional: Radius of the corner (default: auto-calculated).</param>
-        public static GraphicsPath Create(float width, float height, float? cornerRadius = null)
+        public static IGraphicsPath Create(float width, float height, float? cornerRadius = null)
         {
-            GraphicsPath path = new GraphicsPath();
+            IGraphicsPath path = GraphicsBackend.Factory.CreatePath();
 
             float radius = cornerRadius ?? Math.Min(width, height) * 0.08f;  // 8% of size (or override)
             radius = MathF.Min(radius, MathF.Min(width, height) / 2f);       // Avoid over-rounding

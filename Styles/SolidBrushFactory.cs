@@ -3,13 +3,14 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/22
-// Update Date: 2025/05/22
-// Version: v1.0
+// Update Date: 2026/09/24
+// Version: v2.0
 /* ----- ----- ----- ----- */
 
 using System.Drawing;
 
 using Engine.Geometry;
+using Engine.Platform;
 
 namespace Engine.Styles
 {
@@ -22,6 +23,6 @@ namespace Engine.Styles
             Color = color;
         }
 
-        public Brush Create(LayoutF bounds) => new SolidBrush(Color);
+        public IBrush Create(LayoutF bounds) => GraphicsBackend.Factory.CreateSolidBrush(Color);
     }
 }

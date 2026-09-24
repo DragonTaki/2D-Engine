@@ -29,6 +29,18 @@ namespace Engine.Platform.WinForms
             return new WinFormsBrush(new LinearGradientBrush(bounds, start, end, mode));
         }
 
+        public IBrush CreateLinearGradientBrush(RectangleF bounds, GradientDirection direction, (float position, Color color)[] stops)
+        {
+            var mode = direction == GradientDirection.Horizontal ? LinearGradientMode.Horizontal : LinearGradientMode.Vertical;
+            var brush = new LinearGradientBrush(bounds, Color.Empty, Color.Empty, mode);
+            brush.InterpolationColors = new ColorBlend
+            {
+                Positions = System.Array.ConvertAll(stops, s => s.position),
+                Colors = System.Array.ConvertAll(stops, s => s.color),
+            };
+            return new WinFormsBrush(brush);
+        }
+
         public IPen CreatePen(Color color, float width) => new WinFormsPen(new Pen(color, width));
 
         public void LoadFontFamily(string key, string filePath)
@@ -57,6 +69,7 @@ namespace Engine.Platform.WinForms
             }
             catch
             {
+                Console.WriteLine($"System font '{name}' not found, using default system font.");
                 return GenericSansSerifFontFamily;
             }
         }

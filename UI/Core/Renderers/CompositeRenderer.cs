@@ -8,8 +8,8 @@
 /* ----- ----- ----- ----- */
 
 using System.Collections.Generic;
-using System.Drawing;
 
+using Engine.Platform;
 using Engine.UI.Core.Bases;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
@@ -53,7 +53,7 @@ namespace Engine.UI.Core.Renderers
         /// <summary>
         /// Draws all renderers in the order they were added.
         /// </summary>
-        public override void OnRender(Graphics g, TElement element)
+        public override void OnRender(IGraphics g, TElement element)
         {
             foreach (var renderer in _renderers)
                 renderer.OnRender(g, element);

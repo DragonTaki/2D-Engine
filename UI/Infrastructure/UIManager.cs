@@ -7,9 +7,9 @@
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
-using System.Drawing;
 using System.Windows.Forms;
 
+using Engine.Platform;
 using Engine.UI.Core.Elements;
 
 namespace Engine.UI.Core.Infrastructure
@@ -37,7 +37,7 @@ namespace Engine.UI.Core.Infrastructure
         /// <summary>
         /// Renders the UI to the screen.
         /// </summary>
-        public void Draw(Graphics g)
+        public void Draw(IGraphics g)
         {
             Root?.Draw(g);
         }

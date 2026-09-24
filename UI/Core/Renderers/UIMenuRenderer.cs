@@ -3,13 +3,13 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/24
-// Update Date: 2025/10/27
-// Version: v1.1
+// Update Date: 2026/09/24
+// Version: v2.0
 /* ----- ----- ----- ----- */
 
 using System.Drawing;
-using System.Drawing.Drawing2D;
 
+using Engine.Platform;
 using Engine.Styles;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
@@ -41,7 +41,7 @@ namespace Engine.UI.Core.Renderers
             }
         }
 
-        public override void OnRender(Graphics g, TElement element)
+        public override void OnRender(IGraphics g, TElement element)
         {
             _composite.Render(g, element);
         }
@@ -49,11 +49,11 @@ namespace Engine.UI.Core.Renderers
         private class Outline : UIRenderer<TElement, THandler, TRenderer>
         {
             public Outline() { }
-            public override void OnRender(Graphics g, TElement element)
+            public override void OnRender(IGraphics g, TElement element)
             {
-                using (Pen debugPen = new Pen(Color.FromArgb(100, 128, 128, 128), 4))
+                using (IPen debugPen = GraphicsBackend.Factory.CreatePen(Color.FromArgb(100, 128, 128, 128), 4))
                 {
-                    debugPen.DashStyle = DashStyle.Dash;
+                    debugPen.DashStyle = PenDashStyle.Dash;
 
                     // 使用 UIElement 提供的絕對邊界
                     var menu = (UIMenu<TElement, THandler, TRenderer>)element;
@@ -76,7 +76,7 @@ namespace Engine.UI.Core.Renderers
         private class Buttons : UIRenderer<TElement, THandler, TRenderer>
         {
             public Buttons() { }
-            public override void OnRender(Graphics g, TElement element)
+            public override void OnRender(IGraphics g, TElement element)
             {
                 // 取得可見按鈕
                 var menu = (UIMenu<TElement, THandler, TRenderer>)element;

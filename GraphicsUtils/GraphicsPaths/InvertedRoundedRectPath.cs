@@ -3,11 +3,11 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/22
-// Update Date: 2025/05/22
-// Version: v1.0
+// Update Date: 2026/09/24
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
-using System.Drawing.Drawing2D;
+using Engine.Platform;
 
 namespace Engine.GraphicsUtils.GraphicsPaths
 {
@@ -23,7 +23,7 @@ namespace Engine.GraphicsUtils.GraphicsPaths
         /// <param name="height">Height of the rectangle.</param>
         /// <param name="cornerRadius">Optional: Radius of the inward corner curve (default: auto-calculated).</param>
         /// <returns>GraphicsPath representing the inward-rounded rectangle.</returns>
-        public static GraphicsPath Create(float width, float height, float? cornerRadius = null)
+        public static IGraphicsPath Create(float width, float height, float? cornerRadius = null)
         {
             /*
             GraphicsPath path = new GraphicsPath();
@@ -59,7 +59,7 @@ namespace Engine.GraphicsUtils.GraphicsPaths
             path.CloseFigure();
             return path;*/
 
-            GraphicsPath path = new GraphicsPath();
+            IGraphicsPath path = GraphicsBackend.Factory.CreatePath();
 
             float cut = cornerRadius ?? System.Math.Min(width, height) * 0.1f;
             cut = System.MathF.Min(cut, System.MathF.Min(width, height) / 2f); // 避免超出尺寸

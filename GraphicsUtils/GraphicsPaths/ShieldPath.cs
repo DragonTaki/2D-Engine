@@ -3,11 +3,11 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/22
-// Update Date: 2025/05/22
-// Version: v1.0
+// Update Date: 2026/09/24
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
-using System.Drawing.Drawing2D;
+using Engine.Platform;
 
 namespace Engine.GraphicsUtils.GraphicsPaths
 {
@@ -16,9 +16,9 @@ namespace Engine.GraphicsUtils.GraphicsPaths
         /// <summary>
         /// Create a basic shield-shaped path.
         /// </summary>
-        public static GraphicsPath Create(float width, float height)
+        public static IGraphicsPath Create(float width, float height)
         {
-            GraphicsPath path = new GraphicsPath();
+            IGraphicsPath path = GraphicsBackend.Factory.CreatePath();
 
             float curveHeight = 20.0f;
             float bottomPointHeight = 40.0f;

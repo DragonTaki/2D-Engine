@@ -3,12 +3,13 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/27
-// Update Date: 2025/10/27
-// Version: v1.0
+// Update Date: 2026/09/24
+// Version: v2.0
 /* ----- ----- ----- ----- */
 
 using System.Drawing;
 
+using Engine.Platform;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
 
@@ -33,40 +34,40 @@ namespace Engine.UI.Core.Renderers
         /// <summary>
         /// Returns a StringFormat configured based on alignment and wrapping options.
         /// </summary>
-        public StringFormat GetStringFormat(ContentAlignment align, bool wordWrap)
+        public IStringFormat GetStringFormat(ContentAlign align, bool wordWrap)
         {
             if (Label._cachedFormat != null && Label._lastAlign == align && Label._lastWrap == wordWrap)
                 return Label._cachedFormat;
 
             Label._cachedFormat?.Dispose();
-            Label._cachedFormat = new StringFormat
+            var format = GraphicsBackend.Factory.CreateStringFormat();
+            format.WordWrap = wordWrap;
+            format.EllipsisTrimming = true;
+            format.LineAlignment = align switch
             {
-                FormatFlags = wordWrap ? 0 : StringFormatFlags.NoWrap,
-                Trimming = StringTrimming.EllipsisCharacter,
-                LineAlignment = align switch
-                {
-                    ContentAlignment.TopLeft or ContentAlignment.TopCenter or ContentAlignment.TopRight => StringAlignment.Near,
-                    ContentAlignment.MiddleLeft or ContentAlignment.MiddleCenter or ContentAlignment.MiddleRight => StringAlignment.Center,
-                    _ => StringAlignment.Far,
-                },
-                Alignment = align switch
-                {
-                    ContentAlignment.TopLeft or ContentAlignment.MiddleLeft or ContentAlignment.BottomLeft => StringAlignment.Near,
-                    ContentAlignment.TopCenter or ContentAlignment.MiddleCenter or ContentAlignment.BottomCenter => StringAlignment.Center,
-                    _ => StringAlignment.Far,
-                }
+                ContentAlign.TopLeft or ContentAlign.TopCenter or ContentAlign.TopRight => TextAlign.Near,
+                ContentAlign.MiddleLeft or ContentAlign.MiddleCenter or ContentAlign.MiddleRight => TextAlign.Center,
+                _ => TextAlign.Far,
             };
+            format.Alignment = align switch
+            {
+                ContentAlign.TopLeft or ContentAlign.MiddleLeft or ContentAlign.BottomLeft => TextAlign.Near,
+                ContentAlign.TopCenter or ContentAlign.MiddleCenter or ContentAlign.BottomCenter => TextAlign.Center,
+                _ => TextAlign.Far,
+            };
+            Label._cachedFormat = format;
             Label._lastAlign = align;
             Label._lastWrap = wordWrap;
             return Label._cachedFormat;
         }
 
-        public Brush GetBrush()
+        public IBrush GetBrush()
         {
-            if (Label._cachedBrush == null || Label._cachedBrush.Color != Label.ForeColor)
+            if (Label._cachedBrush == null || Label._lastForeColor != Label.ForeColor)
             {
                 Label._cachedBrush?.Dispose();
-                Label._cachedBrush = new SolidBrush(Label.ForeColor);
+                Label._cachedBrush = GraphicsBackend.Factory.CreateSolidBrush(Label.ForeColor);
+                Label._lastForeColor = Label.ForeColor;
             }
             return Label._cachedBrush;
         }
@@ -76,9 +77,9 @@ namespace Engine.UI.Core.Renderers
         /// <summary>
         /// Performs the rendering of the container and its child elements.
         /// </summary>
-        /// <param name="g">The <see cref="Graphics"/> object to draw on.</param>
+        /// <param name="g">The <see cref="IGraphics"/> surface to draw on.</param>
         /// <param name="element">The UI element being rendered (should match <see cref="Container"/>).</param>
-        public override void OnRender(Graphics g, UILabel element)
+        public override void OnRender(IGraphics g, UILabel element)
         {
             var _label = (UILabel)element;
 
@@ -92,7 +93,7 @@ namespace Engine.UI.Core.Renderers
                 float y = rect.Y;
                 foreach (var frag in Label._fragments)
                 {
-                    using var brush = new SolidBrush(frag.Color);
+                    using var brush = GraphicsBackend.Factory.CreateSolidBrush(frag.Color);
                     g.DrawString(frag.Text, Label.Font, brush, rect.X, y);
                     y += Label.Font.Height; // 或使用 frag.LineHeight
                 }
@@ -102,7 +103,7 @@ namespace Engine.UI.Core.Renderers
             // 原本單純文字模式
             if (!string.IsNullOrEmpty(Label.Text))
             {
-                using (var brush = new SolidBrush(Color.FromArgb(128, Color.Red))) // 半透明紅色
+                using (var brush = GraphicsBackend.Factory.CreateSolidBrush(Color.FromArgb(128, Color.Red))) // 半透明紅色
                 {
                     g.FillRectangle(brush, rect);
                 }

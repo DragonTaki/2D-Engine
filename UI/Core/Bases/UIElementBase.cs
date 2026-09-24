@@ -14,6 +14,7 @@ using System.Windows.Forms;
 using Engine.Geometry;
 using Engine.Mathematics;
 using Engine.Physics;
+using Engine.Platform;
 using Engine.UI.Constants.Components;
 using Engine.UI.Core.Interfaces;
 using Engine.UI.Models;
@@ -375,7 +376,7 @@ namespace Engine.UI.Core.Bases
         /// Renders the visual representation of this element and its children.
         /// </summary>
         /// <param name="g">Graphics context used for drawing.</param>
-        public abstract void Draw(Graphics g);
+        public abstract void Draw(IGraphics g);
 
         #endregion
     }

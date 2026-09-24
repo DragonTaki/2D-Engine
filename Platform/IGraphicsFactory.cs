@@ -35,6 +35,12 @@ namespace Engine.Platform
         IBrush CreateSolidBrush(Color color);
         IBrush CreateLinearGradientBrush(RectangleF bounds, Color start, Color end, GradientDirection direction);
 
+        /// <summary>
+        /// Creates a linear gradient brush with more than two color stops.
+        /// </summary>
+        /// <param name="stops">Each stop's position (0.0-1.0 along the gradient) and color.</param>
+        IBrush CreateLinearGradientBrush(RectangleF bounds, GradientDirection direction, (float position, Color color)[] stops);
+
         IPen CreatePen(Color color, float width);
 
         /// <summary>Loads a font family from a font file (e.g. a bundled .ttf/.otf), keyed for later lookup by <paramref name="key"/>.</summary>

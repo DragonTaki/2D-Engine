@@ -24,6 +24,8 @@ namespace Engine.Platform
         void CloseFigure();
         void AddLine(float x1, float y1, float x2, float y2);
         void AddArc(RectangleF bounds, float startAngle, float sweepAngle);
+        void AddArc(float x, float y, float width, float height, float startAngle, float sweepAngle);
+        void AddBezier(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
         void Transform(IMatrix matrix);
         IGraphicsPath Clone();
     }

@@ -7,7 +7,7 @@
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
-using System.Drawing;
+using Engine.Platform;
 
 namespace Engine.UI.Core.Bases
 {
@@ -18,6 +18,6 @@ namespace Engine.UI.Core.Bases
 
         public virtual void Init(UIElementBase element) { }
 
-        public virtual void Render(Graphics g, UIElementBase element) { }
+        public virtual void Render(IGraphics g, UIElementBase element) { }
     }
 }

@@ -10,6 +10,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 
+using Engine.Platform;
 using Engine.UI.Constants.Components;
 using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Renderers;
@@ -36,7 +37,8 @@ namespace Engine.UI.Core.Elements
         /// <summary>
         /// Font used to render the text.
         /// </summary>
-        public Font Font { get; set; } = SystemFonts.DefaultFont;
+        public IFont Font { get; set; } =
+            GraphicsBackend.Factory.CreateFont(GraphicsBackend.Factory.GenericSansSerifFontFamily, 10f);
 
         /// <summary>
         /// Color of the text.
@@ -46,20 +48,19 @@ namespace Engine.UI.Core.Elements
         /// <summary>
         /// Text alignment within the label bounds.
         /// </summary>
-        public ContentAlignment TextAlign { get; set; } = ContentAlignment.MiddleCenter;
+        public ContentAlign TextAlign { get; set; } = ContentAlign.MiddleCenter;
 
         /// <summary>
         /// Indicates whether text wrapping is enabled.
         /// </summary>
         public bool WordWrap { get; set; } = true;
 
-#nullable enable
-        public SolidBrush? _cachedBrush;
+        public IBrush _cachedBrush;
+        public Color _lastForeColor;
 
-        public StringFormat? _cachedFormat;
-#nullable disable
+        public IStringFormat _cachedFormat;
 
-        public ContentAlignment _lastAlign;
+        public ContentAlign _lastAlign;
 
         public bool _lastWrap;
 

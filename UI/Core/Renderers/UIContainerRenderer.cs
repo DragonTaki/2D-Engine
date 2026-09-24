@@ -7,8 +7,7 @@
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
-using System.Drawing;
-
+using Engine.Platform;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
 
@@ -40,9 +39,9 @@ namespace Engine.UI.Core.Renderers
         /// <summary>
         /// Performs the rendering of the container and its child elements.
         /// </summary>
-        /// <param name="g">The <see cref="Graphics"/> object to draw on.</param>
+        /// <param name="g">The <see cref="IGraphics"/> surface to draw on.</param>
         /// <param name="element">The UI element being rendered (should match <see cref="Container"/>).</param>
-        public override void OnRender(Graphics g, TElement element)
+        public override void OnRender(IGraphics g, TElement element)
         {
             // Draws the container's own background/border only when a Style
             // is assigned; containers with none keep the previous no-op

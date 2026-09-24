@@ -3,12 +3,14 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/07
-// Update Date: 2025/05/07
-// Version: v1.0
+// Update Date: 2026/09/24
+// Version: v2.0
 /* ----- ----- ----- ----- */
 
 using System;
 using System.Drawing;
+
+using Engine.Platform;
 
 namespace Engine.Styles
 {
@@ -17,90 +19,70 @@ namespace Engine.Styles
         // Default font
         public static class FontDefaults
         {
-            public static readonly FontFamily FontFamily = FontFamily.GenericSansSerif;
             public const float FontSize = 10.0f;
-            public static readonly FontStyle FontStyle = FontStyle.Regular;
-
-            public static readonly Font DefaultFont = new Font(FontFamily, FontSize, FontStyle);
+            public const FontStyleFlags FontStyle = FontStyleFlags.Regular;
         }
-
-        // Default brush
-        public static readonly Brush DefaultBrush = Brushes.Black;
 
         // Default color
         public static readonly Color DefaultColor = Color.Black;
 
         // Font method
-        public static Font GetFont(string fontKey = null, float? size = null, FontStyle? style = null)
+        public static IFont GetFont(string fontKey = null, float? size = null, FontStyleFlags? style = null)
         {
             try
             {
                 // Default
-                FontFamily fontFamily = FontDefaults.FontFamily;
+                IFontFamily fontFamily = GraphicsBackend.Factory.GenericSansSerifFontFamily;
                 float fontSize = size ?? FontDefaults.FontSize;
-                FontStyle fontStyle = style ?? FontDefaults.FontStyle;
+                FontStyleFlags fontStyle = style ?? FontDefaults.FontStyle;
 
                 // If specified fontkey
                 if (!string.IsNullOrEmpty(fontKey))
                 {
                     try
                     {
-                        fontFamily = FontManager.GetFont(fontKey, fontSize, fontStyle).FontFamily;
+                        fontFamily = FontManager.GetFontFamily(fontKey);
                     }
                     catch
                     {
-                        fontFamily = GetSystemFont(fontKey);
+                        fontFamily = GraphicsBackend.Factory.GetSystemFontFamily(fontKey);
                     }
                 }
 
-                return new Font(fontFamily, fontSize, fontStyle, GraphicsUnit.Pixel);
+                return GraphicsBackend.Factory.CreateFont(fontFamily, fontSize, fontStyle);
             }
             catch
             {
-                return new Font(FontDefaults.FontFamily,
-                                FontDefaults.FontSize,
-                                FontDefaults.FontStyle);  // Return default if error
-            }
-        }
-
-        private static FontFamily GetSystemFont(string fontKey)
-        {
-            try
-            {
-                // Try to get the system font by its name
-                return new FontFamily(fontKey);
-            }
-            catch
-            {
-                // If the system font is not found, fall back to a default system font
-                Console.WriteLine($"System font '{fontKey}' not found, using default system font.");
-                return FontFamily.GenericSansSerif;
+                return GraphicsBackend.Factory.CreateFont(
+                    GraphicsBackend.Factory.GenericSansSerifFontFamily,
+                    FontDefaults.FontSize,
+                    FontDefaults.FontStyle);  // Return default if error
             }
         }
 
         // Brush methods
-        public static Brush GetBrush(string colorValue = "#000000", float alpha = 1.0f)
+        public static IBrush GetBrush(string colorValue = "#000000", float alpha = 1.0f)
         {
             try
             {
                 Color color = GetColor(colorValue, alpha);
-                return new SolidBrush(color);
+                return GraphicsBackend.Factory.CreateSolidBrush(color);
             }
             catch
             {
-                return DefaultBrush;  // Return default if error
+                return GraphicsBackend.Factory.CreateSolidBrush(DefaultColor);  // Return default if error
             }
         }
-        public static Brush GetBrush(Color color, float alpha = 1.0f)
+        public static IBrush GetBrush(Color color, float alpha = 1.0f)
         {
             try
             {
                 Color colorWithAlpha = Color.FromArgb(ClampAlpha(alpha), color);
-                return new SolidBrush(colorWithAlpha);
+                return GraphicsBackend.Factory.CreateSolidBrush(colorWithAlpha);
             }
             catch
             {
-                return DefaultBrush;  // Return default if error
+                return GraphicsBackend.Factory.CreateSolidBrush(DefaultColor);  // Return default if error
             }
         }
 

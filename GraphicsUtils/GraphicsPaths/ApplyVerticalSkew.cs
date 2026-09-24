@@ -7,7 +7,7 @@
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
-using System.Drawing.Drawing2D;
+using Engine.Platform;
 
 namespace Engine.GraphicsUtils.GraphicsPaths
 {
@@ -16,12 +16,12 @@ namespace Engine.GraphicsUtils.GraphicsPaths
         /// <summary>
         /// Apply vertical distortion (e.g., top-narrow, bottom-wide) to a given path.
         /// </summary>
-        public static GraphicsPath Apply(GraphicsPath originalPath, float topScale, float bottomScale, float height)
+        public static IGraphicsPath Apply(IGraphicsPath originalPath, float topScale, float bottomScale, float height)
         {
             // Create a custom skew matrix
-            GraphicsPath transformed = (GraphicsPath)originalPath.Clone();
+            IGraphicsPath transformed = originalPath.Clone();
 
-            using (Matrix matrix = new Matrix())
+            using (IMatrix matrix = GraphicsBackend.Factory.CreateMatrix())
             {
                 matrix.Translate(0, -height / 2.0f); // Center to origin
                 matrix.Shear((bottomScale - topScale) / height, 0); // Shear horizontally based on difference

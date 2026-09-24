@@ -23,6 +23,24 @@ namespace Engine.Platform
     }
 
     /// <summary>
+    /// A 9-way anchor within a box, mirroring the subset of WinForms'
+    /// <c>ContentAlignment</c> actually used here (e.g. for
+    /// <c>UILabel.TextAlign</c>).
+    /// </summary>
+    public enum ContentAlign
+    {
+        TopLeft,
+        TopCenter,
+        TopRight,
+        MiddleLeft,
+        MiddleCenter,
+        MiddleRight,
+        BottomLeft,
+        BottomCenter,
+        BottomRight
+    }
+
+    /// <summary>
     /// Text layout options passed to
     /// <see cref="IGraphics.DrawString(string, IFont, IBrush, System.Drawing.RectangleF, IStringFormat)"/>.
     /// Created via <see cref="IGraphics.CreateStringFormat"/>.

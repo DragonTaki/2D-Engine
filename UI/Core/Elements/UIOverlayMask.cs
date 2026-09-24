@@ -11,6 +11,7 @@ using System.Drawing;
 using System.Windows.Forms;
 
 using Engine.Globals;
+using Engine.Platform;
 using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Renderers;
 using Engine.UI.Dialogs;
@@ -88,11 +89,11 @@ namespace Engine.UI.Core.Elements
             _element = element;
         }
 
-        protected override void OnRender(Graphics g, UIOverlayMask element)
+        protected override void OnRender(IGraphics g, UIOverlayMask element)
         {
             if (_element._dialog.ShowMaskEffect)
             {
-                using var brush = new SolidBrush(_element.MaskColor);
+                using var brush = GraphicsBackend.Factory.CreateSolidBrush(_element.MaskColor);
                 var bounds = new RectangleF(0, 0, GlobalWindow.Width, GlobalWindow.Height);
                 g.FillRectangle(brush, bounds);
             }

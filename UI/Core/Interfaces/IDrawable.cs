@@ -7,7 +7,7 @@
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
-using System.Drawing;
+using Engine.Platform;
 
 namespace Engine.UI.Core.Interfaces
 {
@@ -33,6 +33,6 @@ namespace Engine.UI.Core.Interfaces
         /// Drawing order should be controlled by the caller or UI hierarchy to ensure
         /// proper layering of elements.
         /// </remarks>
-        void Draw(Graphics g);
+        void Draw(IGraphics g);
     }
 }

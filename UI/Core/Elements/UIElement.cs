@@ -16,6 +16,7 @@ using System.Windows.Forms;
 
 using Engine.Geometry;
 using Engine.Mathematics;
+using Engine.Platform;
 using Engine.UI.Constants.Components;
 using Engine.UI.Constants.Core;
 using Engine.UI.Constants.Events;
@@ -451,7 +452,7 @@ namespace Engine.UI.Core.Elements
         /// <summary>
         /// Draw element and children.
         /// </summary>
-        public override void Draw(Graphics g)
+        public override void Draw(IGraphics g)
         {
             if (_layoutDirty)
                 UpdateLayout();
