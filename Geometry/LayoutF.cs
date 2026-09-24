@@ -73,7 +73,7 @@ namespace Engine.Geometry
         public Vector2F Center => new Vector2F(Position.X + Size.X / 2f, Position.Y + Size.Y / 2f);
 
         public static LayoutF FromSizeCentered(Vector2F size) =>
-            new LayoutF(GlobalWindow.Center - new Vector2F(size.Width, size.Height) / 2f, size);
+            new LayoutF(GlobalViewport.Center - new Vector2F(size.Width, size.Height) / 2f, size);
 
         public bool Contains(Vector2F point) =>
             point.X >= Position.X && point.X <= Position.X + Size.X &&

@@ -158,6 +158,15 @@ namespace Engine.Platform.Skia
             }
         }
 
+        public void PushTransform(float scale, float offsetX, float offsetY)
+        {
+            Native.Save();
+            Native.Translate(offsetX, offsetY);
+            Native.Scale(scale, scale);
+        }
+
+        public void PopTransform() => Native.Restore();
+
         // Skia is always anti-aliased per-paint (each IBrush/IPen is created
         // with IsAntialias = true — see SkiaGraphicsFactory), so there is no
         // separate global quality mode to flip here.

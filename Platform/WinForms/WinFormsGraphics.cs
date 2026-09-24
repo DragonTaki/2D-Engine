@@ -7,6 +7,7 @@
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
@@ -17,6 +18,11 @@ namespace Engine.Platform.WinForms
     internal sealed class WinFormsGraphics : IGraphics
     {
         public Graphics Native { get; }
+
+        // GDI+'s Graphics.Restore() requires the exact GraphicsState object
+        // Save() returned, so PushTransform/PopTransform need their own
+        // stack rather than a bare counter.
+        private readonly Stack<GraphicsState> _transformStates = new();
 
         /// <summary>
         /// Whether this instance owns (and should dispose) <see cref="Native"/>.
@@ -75,6 +81,15 @@ namespace Engine.Platform.WinForms
 
         public void SetClip(RectangleF bounds) => Native.SetClip(bounds);
         public void ResetClip() => Native.ResetClip();
+
+        public void PushTransform(float scale, float offsetX, float offsetY)
+        {
+            _transformStates.Push(Native.Save());
+            Native.TranslateTransform(offsetX, offsetY);
+            Native.ScaleTransform(scale, scale);
+        }
+
+        public void PopTransform() => Native.Restore(_transformStates.Pop());
 
         public void ApplyHighQualitySettings()
         {

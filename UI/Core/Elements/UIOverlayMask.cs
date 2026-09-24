@@ -93,7 +93,7 @@ namespace Engine.UI.Core.Elements
             if (_element._dialog.ShowMaskEffect)
             {
                 using var brush = GraphicsBackend.Factory.CreateSolidBrush(_element.MaskColor);
-                var bounds = new RectangleF(0, 0, GlobalWindow.Width, GlobalWindow.Height);
+                var bounds = new RectangleF(0, 0, GlobalViewport.Size.X, GlobalViewport.Size.Y);
                 g.FillRectangle(brush, bounds);
             }
         }

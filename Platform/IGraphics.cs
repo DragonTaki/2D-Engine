@@ -49,6 +49,20 @@ namespace Engine.Platform
         void SetClip(RectangleF bounds);
         void ResetClip();
 
+        /// <summary>
+        /// Pushes a combined translate + uniform-scale transform onto the
+        /// drawing state (saving whatever state — including clip — was
+        /// active before), so everything drawn afterward is offset and
+        /// scaled accordingly. Used once per frame to map the fixed-aspect
+        /// content coordinate space onto the actual window size — see
+        /// <c>Engine.Globals.GlobalViewport</c>. Must be paired with exactly
+        /// one matching <see cref="PopTransform"/>.
+        /// </summary>
+        void PushTransform(float scale, float offsetX, float offsetY);
+
+        /// <summary>Restores the drawing state saved by the matching <see cref="PushTransform"/>.</summary>
+        void PopTransform();
+
         /// <summary>Enables anti-aliasing and high-quality text/image rendering.</summary>
         void ApplyHighQualitySettings();
     }
