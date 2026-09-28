@@ -15,8 +15,10 @@ namespace Engine.Platform.Skia
     /// Plain data holder for <see cref="IStringFormat"/> — SkiaSharp has no
     /// equivalent object; <see cref="SkiaGraphics"/> reads these fields
     /// directly when laying out a <c>DrawString(..., RectangleF, IStringFormat)</c>
-    /// call. Word-wrap/ellipsis are not implemented (single-line only) —
-    /// a known gap, see docs/PLATFORM-ABSTRACTION.md.
+    /// call. <see cref="WordWrap"/> is implemented (see
+    /// <c>SkiaGraphics.WrapText</c>). <see cref="EllipsisTrimming"/> is
+    /// still not — an overflowing final line is just left as-is, not cut
+    /// off with "…" — a known gap, see docs/PLATFORM-ABSTRACTION.md.
     /// </summary>
     internal sealed class SkiaStringFormat : IStringFormat
     {

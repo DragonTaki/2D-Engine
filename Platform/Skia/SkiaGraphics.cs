@@ -75,28 +75,43 @@ namespace Engine.Platform.Skia
             var paint = ((SkiaBrush)brush).Native;
             var fmt = (SkiaStringFormat)format;
 
-            float textWidth = skFont.MeasureText(text, paint);
             var metrics = skFont.Metrics;
             float lineHeight = metrics.Descent - metrics.Ascent + metrics.Leading;
 
-            float x = fmt.Alignment switch
-            {
-                TextAlign.Center => bounds.X + (bounds.Width - textWidth) / 2f,
-                TextAlign.Far => bounds.X + bounds.Width - textWidth,
-                _ => bounds.X,
-            };
+            // fmt.EllipsisTrimming (truncating an overflowing final line
+            // with "…") is still not implemented — only WordWrap is, since
+            // that's the gap that actually made CJK text render wrong
+            // (see WrapText's doc comment), not just look slightly worse.
+            var lines = fmt.WordWrap
+                ? WrapText(text, skFont, paint, bounds.Width)
+                : new List<string> { text };
 
-            // Baseline Y: top of the text box, offset down by ascent so the
+            float totalHeight = lineHeight * Math.Max(lines.Count, 1);
+
+            // Top of the text block, offset down by ascent per line so the
             // glyphs' top edge lands at the aligned position.
-            float topY = fmt.LineAlignment switch
+            float startTopY = fmt.LineAlignment switch
             {
-                TextAlign.Center => bounds.Y + (bounds.Height - lineHeight) / 2f,
-                TextAlign.Far => bounds.Y + bounds.Height - lineHeight,
+                TextAlign.Center => bounds.Y + (bounds.Height - totalHeight) / 2f,
+                TextAlign.Far => bounds.Y + bounds.Height - totalHeight,
                 _ => bounds.Y,
             };
-            float baselineY = topY - metrics.Ascent;
 
-            Native.DrawText(text, x, baselineY, SKTextAlign.Left, skFont, paint);
+            for (int i = 0; i < lines.Count; i++)
+            {
+                string line = lines[i];
+                float lineWidth = skFont.MeasureText(line, paint);
+
+                float x = fmt.Alignment switch
+                {
+                    TextAlign.Center => bounds.X + (bounds.Width - lineWidth) / 2f,
+                    TextAlign.Far => bounds.X + bounds.Width - lineWidth,
+                    _ => bounds.X,
+                };
+                float baselineY = startTopY + i * lineHeight - metrics.Ascent;
+
+                Native.DrawText(line, x, baselineY, SKTextAlign.Left, skFont, paint);
+            }
         }
 
         public SizeF MeasureString(string text, IFont font)
@@ -113,34 +128,93 @@ namespace Engine.Platform.Skia
             using var paint = new SKPaint();
             float lineHeight = ((SkiaFont)font).Height;
 
-            // Skia has no built-in wrap-measuring — greedily wrap by word.
-            var words = text.Split(' ');
+            var lines = WrapText(text, skFont, paint, maxWidth);
+            float maxLineWidth = 0f;
+            foreach (var line in lines)
+                maxLineWidth = Math.Max(maxLineWidth, skFont.MeasureText(line, paint));
+
+            return new SizeF(maxLineWidth, lineHeight * Math.Max(lines.Count, 1));
+        }
+
+        /// <summary>
+        /// Greedily packs "atoms" (see <see cref="TokenizeForWrap"/>) onto
+        /// lines no wider than <paramref name="maxWidth"/>. Shared by
+        /// <see cref="MeasureString(string, IFont, int)"/> and the
+        /// <see cref="DrawString(string, IFont, IBrush, RectangleF, IStringFormat)"/>
+        /// overload, so what gets measured (to size a box, e.g.
+        /// <c>UIConfirmDialog</c>) always matches what actually gets drawn.
+        /// </summary>
+        private static List<string> WrapText(string text, SKFont skFont, SKPaint paint, float maxWidth)
+        {
+            var atoms = TokenizeForWrap(text);
             var lines = new List<string>();
             var current = "";
-            float maxLineWidth = 0f;
 
-            foreach (var word in words)
+            foreach (var atom in atoms)
             {
-                var candidate = current.Length == 0 ? word : current + " " + word;
-                if (skFont.MeasureText(candidate, paint) > maxWidth && current.Length > 0)
+                string candidate = current + atom;
+                if (current.Length > 0 && skFont.MeasureText(candidate, paint) > maxWidth)
                 {
-                    lines.Add(current);
-                    maxLineWidth = Math.Max(maxLineWidth, skFont.MeasureText(current, paint));
-                    current = word;
+                    lines.Add(current.TrimEnd());
+                    // Drop a whitespace atom that would otherwise lead the new line.
+                    current = atom.TrimStart();
                 }
                 else
                 {
                     current = candidate;
                 }
             }
-            if (current.Length > 0)
-            {
-                lines.Add(current);
-                maxLineWidth = Math.Max(maxLineWidth, skFont.MeasureText(current, paint));
-            }
+            if (current.Trim().Length > 0)
+                lines.Add(current.TrimEnd());
 
-            return new SizeF(maxLineWidth, lineHeight * Math.Max(lines.Count, 1));
+            return lines;
         }
+
+        /// <summary>
+        /// Splits text into substrings that concatenate back into the
+        /// original exactly: each CJK character (see <see cref="IsCjk"/>) is
+        /// its own atom (individually breakable), while runs of whitespace
+        /// or non-CJK characters are each kept together as one atom (a
+        /// whole word only breaks at whitespace, not mid-word). Splitting
+        /// purely on spaces (the simplest approach) would silently never
+        /// wrap CJK text at all — this project's UI text is overwhelmingly
+        /// Traditional Chinese, and CJK doesn't use spaces between
+        /// characters or words.
+        /// </summary>
+        private static List<string> TokenizeForWrap(string text)
+        {
+            var atoms = new List<string>();
+            int i = 0;
+            while (i < text.Length)
+            {
+                char c = text[i];
+                if (IsCjk(c))
+                {
+                    atoms.Add(c.ToString());
+                    i++;
+                    continue;
+                }
+
+                bool isSpace = char.IsWhiteSpace(c);
+                int j = i + 1;
+                while (j < text.Length && char.IsWhiteSpace(text[j]) == isSpace && !IsCjk(text[j]))
+                    j++;
+                atoms.Add(text.Substring(i, j - i));
+                i = j;
+            }
+            return atoms;
+        }
+
+        /// <summary>
+        /// Rough range check for "this character doesn't rely on spaces to
+        /// separate words" scripts — CJK Radicals through CJK Unified
+        /// Ideographs, CJK Compatibility Ideographs, and Halfwidth/Fullwidth
+        /// Forms (covers Fullwidth Chinese punctuation). Not exhaustive
+        /// Unicode script detection, just enough for this project's actual
+        /// Traditional Chinese UI text.
+        /// </summary>
+        private static bool IsCjk(char c) =>
+            (c >= 0x2E80 && c <= 0x9FFF) || (c >= 0xF900 && c <= 0xFAFF) || (c >= 0xFF00 && c <= 0xFFEF);
 
         public void SetClip(RectangleF bounds)
         {
