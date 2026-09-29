@@ -10,6 +10,7 @@
 using System;
 using System.Drawing;
 
+using Engine.Logging;
 using Engine.Platform;
 
 namespace Engine.Styles
@@ -43,16 +44,18 @@ namespace Engine.Styles
                     {
                         fontFamily = FontManager.GetFontFamily(fontKey);
                     }
-                    catch
+                    catch (ArgumentException)
                     {
+                        // Not a loaded font key: try it as a system font name.
                         fontFamily = GraphicsBackend.Factory.GetSystemFontFamily(fontKey);
                     }
                 }
 
                 return GraphicsBackend.Factory.CreateFont(fontFamily, fontSize, fontStyle);
             }
-            catch
+            catch (Exception ex)
             {
+                AppLogger.Log($"[StyleHelper] GetFont('{fontKey}') failed, using default font: {ex.Message}", LogLevel.WARN);
                 return GraphicsBackend.Factory.CreateFont(
                     GraphicsBackend.Factory.GenericSansSerifFontFamily,
                     FontDefaults.FontSize,
@@ -68,8 +71,9 @@ namespace Engine.Styles
                 Color color = GetColor(colorValue, alpha);
                 return GraphicsBackend.Factory.CreateSolidBrush(color);
             }
-            catch
+            catch (Exception ex)
             {
+                AppLogger.Log($"[StyleHelper] GetBrush failed, using default color: {ex.Message}", LogLevel.WARN);
                 return GraphicsBackend.Factory.CreateSolidBrush(DefaultColor);  // Return default if error
             }
         }
@@ -80,8 +84,9 @@ namespace Engine.Styles
                 Color colorWithAlpha = Color.FromArgb(ClampAlpha(alpha), color);
                 return GraphicsBackend.Factory.CreateSolidBrush(colorWithAlpha);
             }
-            catch
+            catch (Exception ex)
             {
+                AppLogger.Log($"[StyleHelper] GetBrush failed, using default color: {ex.Message}", LogLevel.WARN);
                 return GraphicsBackend.Factory.CreateSolidBrush(DefaultColor);  // Return default if error
             }
         }
@@ -133,11 +138,13 @@ namespace Engine.Styles
                         return Color.FromArgb(ClampAlpha(alpha), namedColor);
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                AppLogger.Log($"[StyleHelper] Invalid color '{colorValue}', using default: {ex.Message}", LogLevel.WARN);
                 return DefaultColor;  // Return default if error
             }
 
+            AppLogger.Log($"[StyleHelper] Unrecognized color '{colorValue}', using default.", LogLevel.WARN);
             return DefaultColor;  // Return default if error
         }
         public static Color GetColor(Color color, float alpha = 1.0f)
@@ -146,8 +153,9 @@ namespace Engine.Styles
             {
                 return Color.FromArgb(ClampAlpha(alpha), color);
             }
-            catch
+            catch (Exception ex)
             {
+                AppLogger.Log($"[StyleHelper] GetColor failed, using default: {ex.Message}", LogLevel.WARN);
                 return DefaultColor;  // Return default if error
             }
         }
