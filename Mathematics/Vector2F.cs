@@ -378,7 +378,7 @@ namespace Engine.Mathematics
         /// <returns>A new vector with scalar divided by each component.</returns>
         public static Vector2F operator /(float scalar, Vector2F v)
         {
-            return new Vector2F(v.X / scalar, v.Y / scalar);
+            return new Vector2F(scalar / v.X, scalar / v.Y);
         }
 
         /// <summary>
