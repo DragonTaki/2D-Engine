@@ -27,7 +27,9 @@ namespace Engine.Logging
         public string Label { get; set; }
         public string Color { get; set; }
 
-        public static Dictionary<LogLevel, LogLevelMeta> MetaMap = new()
+        // Read-only: a public mutable static field could be reassigned or have entries
+        // removed by any caller, breaking every lookup below.
+        public static readonly IReadOnlyDictionary<LogLevel, LogLevelMeta> MetaMap = new Dictionary<LogLevel, LogLevelMeta>
         {
             { LogLevel.INIT,  new LogLevelMeta { Label = "INIT",  Color = null } },
             { LogLevel.DEBUG, new LogLevelMeta { Label = "DEBUG", Color = "gray" } },
