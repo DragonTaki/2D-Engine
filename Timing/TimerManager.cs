@@ -51,8 +51,10 @@ namespace Engine.Timing
             {
                 if (!_animationStopwatch.IsRunning) return;
 
-                long current = _animationStopwatch.ElapsedMilliseconds;
-                DeltaTimeInSeconds = Math.Clamp((current - _lastAnimationTimestamp) / 1000f, 0f, TimerSettings.MaxDeltaTimeInSeconds);
+                // Stopwatch ticks, not whole milliseconds, so dt isn't quantized to 15/16/31 ms.
+                long current = _animationStopwatch.ElapsedTicks;
+                float delta = (float)((current - _lastAnimationTimestamp) / (double)Stopwatch.Frequency);
+                DeltaTimeInSeconds = Math.Clamp(delta, 0f, TimerSettings.MaxDeltaTimeInSeconds);
                 _lastAnimationTimestamp = current;
 
                 OnAnimationFrame?.Invoke();
