@@ -124,6 +124,10 @@ namespace Engine.UI.Core.Elements
 
         public virtual void SetupButtons(IEnumerable<(string label, Action onClick)> buttonDefs)
         {
+            // Replace, don't just forget, the previous buttons: clearing only the list left
+            // them in the scroll container (still drawn/hit-tested) and never released them.
+            foreach (var old in Buttons)
+                old.Dispose();  // also detaches it from its parent
             Buttons.Clear();
             float offset = 0f;
             foreach (var (label, onClick) in buttonDefs)
@@ -136,10 +140,14 @@ namespace Engine.UI.Core.Elements
                 button.LocalPosition = new UIPosition(IsVerticalLayout ? new Vector2F(0, offset) : new Vector2F(offset, 0));
 
                 Buttons.Add(button);
-                AddChild(button);
+                // Inside the scroll container, like AddButton/BuildButtons - adding to the
+                // menu itself put the buttons outside the scrolling content.
+                ScrollContainer.AddChild(button);
 
                 offset += IsVerticalLayout ? button.Size.Y + ButtonSpacing : button.Size.X + ButtonSpacing;
             }
+
+            Handler.UpdateScrollContentHeight();
         }
 
         public virtual void LayoutButtons()
@@ -147,9 +155,13 @@ namespace Engine.UI.Core.Elements
             float offset = 0f;
             foreach (var button in Buttons)
             {
-                button.LocalPosition.Base = IsVerticalLayout ? new Vector2F(0, offset) : new Vector2F(offset, 0);
+                // Set the whole position: writing only Base left Current (what drawing and
+                // hit testing use) where it was, so the buttons never moved.
+                button.LocalPosition = new UIPosition(IsVerticalLayout ? new Vector2F(0, offset) : new Vector2F(offset, 0));
                 offset += IsVerticalLayout ? button.Size.Y + ButtonSpacing : button.Size.X + ButtonSpacing;
             }
+
+            Handler.UpdateScrollContentHeight();
         }
 
         public RectangleF GetAbsClipRect() => ScrollContainer.GetAbsClippingRect();
