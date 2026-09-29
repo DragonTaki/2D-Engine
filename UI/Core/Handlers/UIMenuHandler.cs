@@ -7,6 +7,8 @@
 // Version: v1.1
 /* ----- ----- ----- ----- */
 
+using System;
+
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Renderers;
 
@@ -23,8 +25,16 @@ namespace Engine.UI.Core.Handlers
         {
             var menu = (UIMenu<TElement, THandler, TRenderer>)Element;
             if (menu.ButtonList.Count == 0) return;
-            var buttonHeight = menu.ButtonList[0].Size.Y;
-            menu.ScrollContainer.ContentHeight = menu.ButtonList.Count * (buttonHeight + menu.ButtonSpacing) - menu.ButtonSpacing;
+
+            // Content extent is the lowest button bottom edge, not N * (height + spacing):
+            // that formula dropped the first button's offset (e.g. 40px on the main menu),
+            // so 8 buttons measured exactly the viewport height, OverContent was false and
+            // the container always rebounded to the top with the last button cut off.
+            float contentHeight = 0f;
+            foreach (var button in menu.ButtonList)
+                contentHeight = Math.Max(contentHeight, button.LocalPosition.Base.Y + button.Size.Y);
+
+            menu.ScrollContainer.ContentHeight = contentHeight;
         }
 
     }
