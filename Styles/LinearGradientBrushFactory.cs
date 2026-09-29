@@ -35,6 +35,11 @@ namespace Engine.Styles
         /// </summary>
         public IBrush Create(RectangleF bounds)
         {
+            // GDI+'s LinearGradientBrush throws ArgumentException for a zero-width/height
+            // rectangle (Skia doesn't); there's no gradient to show there anyway.
+            if (bounds.Width <= 0 || bounds.Height <= 0)
+                return GraphicsBackend.Factory.CreateSolidBrush(TopColor);
+
             return GraphicsBackend.Factory.CreateLinearGradientBrush(bounds, TopColor, BottomColor, Direction);
         }
 
