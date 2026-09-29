@@ -73,9 +73,16 @@ namespace Engine.UI.Core.Infrastructure
             if (_rootElement == null)
                 throw new InvalidOperationException("NavigationManager not initialized with root element.");
 
-            ClearNonPersistentChildren(_rootElement);
-
             var screenType = typeof(TScreen);
+            _screens.TryGetValue(screenType, out var previousInstance);
+            bool alreadyShown = previousInstance != null && _rootElement.Children.Contains(previousInstance) && !forceReload;
+
+            // Screens being replaced get OnExit (IScreen lifecycle, e.g. the main menu closes
+            // its open submenu); re-showing the current screen isn't a transition.
+            var leaving = _rootElement.Children.Where(c => !c.IsPersistent && (c != previousInstance || forceReload)).ToList();
+            ClearNonPersistentChildren(_rootElement);
+            foreach (var left in leaving)
+                AsScreen(left)?.OnExit();
 
             if (forceReload)
             {
@@ -95,8 +102,18 @@ namespace Engine.UI.Core.Infrastructure
             if (!_rootElement.Children.Contains(screen))
                 _rootElement.AddChild(screen);
 
+            if (!alreadyShown)
+                AsScreen(screen)?.OnEnter();
+
             return (TScreen)screen;
         }
+
+        /// <summary>
+        /// The screen's <see cref="IScreen"/> implementation: the element itself, or (as with
+        /// the main menu) its handler.
+        /// </summary>
+        private static IScreen AsScreen(UIElementBase element) =>
+            element as IScreen ?? element?.HandlerBase as IScreen;
 
         /// <summary>
         /// 卸載指定畫面（從根節點移除並忘記快取）
@@ -114,7 +131,10 @@ namespace Engine.UI.Core.Infrastructure
             if (_screens.TryGetValue(screenType, out var screen))
             {
                 _screens.Remove(screenType);
+                bool wasShown = _rootElement != null && _rootElement.Children.Contains(screen);
                 _rootElement?.RemoveChild(screen);
+                if (wasShown)
+                    AsScreen(screen)?.OnExit();
             }
         }
 
@@ -124,8 +144,11 @@ namespace Engine.UI.Core.Infrastructure
         public void Hide<TScreen>() where TScreen : UIElementBase
         {
             var screenType = typeof(TScreen);
-            if (_screens.TryGetValue(screenType, out var screen))
+            if (_screens.TryGetValue(screenType, out var screen) && screen.IsVisible)
+            {
                 screen.IsVisible = false;
+                AsScreen(screen)?.OnExit();
+            }
         }
 
         /// <summary>
