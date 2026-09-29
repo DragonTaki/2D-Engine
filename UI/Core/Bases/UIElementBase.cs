@@ -7,6 +7,7 @@
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 
@@ -24,7 +25,7 @@ namespace Engine.UI.Core.Bases
     /// Base abstract class for all UI elements.
     /// Provides hierarchy management, layout computation, interaction, rendering, and physics integration.
     /// </summary>
-    public abstract class UIElementBase
+    public abstract class UIElementBase : IDisposable
     {
         #region Core References
 
