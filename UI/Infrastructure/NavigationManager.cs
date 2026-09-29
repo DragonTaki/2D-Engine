@@ -99,8 +99,15 @@ namespace Engine.UI.Core.Infrastructure
         }
 
         /// <summary>
-        /// 卸載指定畫面，釋放資源
+        /// 卸載指定畫面（從根節點移除並忘記快取）
         /// </summary>
+        /// <remarks>
+        /// Screens are deliberately never disposed: by design each screen is a single
+        /// long-lived instance (DI singleton) that is reused every time it's shown, like the
+        /// root node. Disposing one here would hand back an already-disposed instance on the
+        /// next Show (the container resolves the same singleton), i.e. a blank screen.
+        /// Only short-lived elements (e.g. pieces) are disposed, by their owners.
+        /// </remarks>
         public void UnloadScreen<TScreen>() where TScreen : UIElementBase
         {
             var screenType = typeof(TScreen);
@@ -108,9 +115,6 @@ namespace Engine.UI.Core.Infrastructure
             {
                 _screens.Remove(screenType);
                 _rootElement?.RemoveChild(screen);
-
-                // 若 UIElement 支援 IDisposable，可在此釋放
-                (screen as IDisposable)?.Dispose();
             }
         }
 
