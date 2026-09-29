@@ -57,7 +57,8 @@ namespace Engine.Styles
         {
             DrawBox(g, bounds);
 
-            if (!string.IsNullOrEmpty(text) && TextBrush != null)
+            // Text needs both a brush and a font (MeasureString/DrawString with a null font throw).
+            if (!string.IsNullOrEmpty(text) && TextBrush != null && Font != null)
             {
                 var textSize = g.MeasureString(text, Font);
                 float textX = bounds.Position.X + (bounds.Size.X - textSize.Width) / 2f;
