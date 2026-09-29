@@ -48,7 +48,7 @@ namespace Engine.UI.Core.Elements
 
         public override void RequestRedraw()
         {
-            MainWindow.Invalidate();
+            MainWindow?.Invalidate();
         }
     }
 }
