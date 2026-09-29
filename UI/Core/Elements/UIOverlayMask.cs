@@ -10,6 +10,7 @@
 using System.Drawing;
 
 using Engine.Globals;
+using Engine.Mathematics;
 using Engine.Platform;
 using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Renderers;
@@ -30,6 +31,14 @@ namespace Engine.UI.Core.Elements
             _dialog = dialog;
             IsVisible = false;
             IsEnabled = false;
+
+            // The dim renderer and the modal handler below were defined but never attached,
+            // so the dialog's ShowMaskEffect dimming was never drawn and, while a dialog was
+            // open, hover/wheel/click still reached the screens underneath.
+            RendererBase = new UIOverlayMaskRenderer(this);
+            HandlerBase = new UIOverlayMaskHandler(this);
+
+            LocalPosition = Vector2F.Zero;
         }
 
         /// <summary>
@@ -37,6 +46,11 @@ namespace Engine.UI.Core.Elements
         /// </summary>
         public void Show()
         {
+            // Cover the whole UI design space, so area-tested events (wheel, click) and hit
+            // testing see the mask too - with a zero size only move/up were intercepted.
+            // Sized here, not in the constructor, which can run before the launcher sets
+            // GlobalViewport.DesignSize.
+            Size = new Vector2F(GlobalViewport.Size.X, GlobalViewport.Size.Y);
             IsVisible = true;
             IsEnabled = true;
         }
