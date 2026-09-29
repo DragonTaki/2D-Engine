@@ -75,6 +75,8 @@ namespace Engine.UI.Core.Elements
             Renderer.Element = (TElement)(object)this;
             Console.WriteLine($"[UIMenu]Renderer type: {Renderer?.GetType().FullName ?? "null"}");
 
+            RunInitHooks();
+
             BuildScrollContainer();
             BuildUIObjects();
 

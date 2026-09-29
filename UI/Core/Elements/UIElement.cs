@@ -63,6 +63,15 @@ namespace Engine.UI.Core.Elements
                 return;
             IsInitialized = true;
 
+            RunInitHooks();
+        }
+
+        /// <summary>
+        /// Runs the parameterless init hooks without touching <see cref="UIElementBase.IsInitialized"/>,
+        /// so Init overloads that already set the flag can still invoke them.
+        /// </summary>
+        protected void RunInitHooks()
+        {
             OnBeforeInit();
             OnInit();
             OnAfterInit();
@@ -579,7 +588,7 @@ namespace Engine.UI.Core.Elements
             Renderer.Element = (TElement)(object)this;
             Console.WriteLine($"[UIElement]Renderer type: {Renderer?.GetType().FullName ?? "null"}");
 
-            base.Init();
+            RunInitHooks();
 
             OnInit(factory);
             OnAfterInit(factory);

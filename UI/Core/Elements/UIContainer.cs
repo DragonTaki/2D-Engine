@@ -74,6 +74,8 @@ namespace Engine.UI.Core.Elements
             Renderer.Element = (TElement)(object)this;
             Console.WriteLine($"[UIContainer]Renderer type: {Renderer?.GetType().FullName ?? "null"}");
 
+            RunInitHooks();
+
             BuildUIObjects();
 
             OnInit(factory);

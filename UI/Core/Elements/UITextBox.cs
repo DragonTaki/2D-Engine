@@ -71,7 +71,7 @@ namespace Engine.UI.Elements
             Console.WriteLine($"[UITextBox]Renderer type: {Renderer?.GetType().FullName ?? "null"}");
             BuildScrollContainer();
 
-            base.Init();
+            RunInitHooks();
 
             OnInit(factory);
             OnAfterInit(factory);
