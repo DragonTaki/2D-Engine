@@ -26,7 +26,8 @@ namespace Engine.Platform.Skia
         public IBrush CreateLinearGradientBrush(RectangleF bounds, Color start, Color end, GradientDirection direction)
         {
             var (p0, p1) = GradientEndpoints(bounds, direction);
-            var shader = SKShader.CreateLinearGradient(p0, p1, new[] { ToSKColor(start), ToSKColor(end) }, null, SKShaderTileMode.Clamp);
+            // The paint takes its own reference to the shader; release ours.
+            using var shader = SKShader.CreateLinearGradient(p0, p1, new[] { ToSKColor(start), ToSKColor(end) }, null, SKShaderTileMode.Clamp);
             return new SkiaBrush(new SKPaint { Shader = shader, Style = SKPaintStyle.Fill, IsAntialias = true });
         }
 
@@ -40,7 +41,7 @@ namespace Engine.Platform.Skia
                 positions[i] = stops[i].position;
                 colors[i] = ToSKColor(stops[i].color);
             }
-            var shader = SKShader.CreateLinearGradient(p0, p1, colors, positions, SKShaderTileMode.Clamp);
+            using var shader = SKShader.CreateLinearGradient(p0, p1, colors, positions, SKShaderTileMode.Clamp);
             return new SkiaBrush(new SKPaint { Shader = shader, Style = SKPaintStyle.Fill, IsAntialias = true });
         }
 
