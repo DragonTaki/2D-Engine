@@ -47,7 +47,11 @@ namespace Engine.Physics
         /// <summary>
         /// Optional bounding box within which the object must stay.
         /// </summary>
-        public Boundary? Boundary { get; set; } = new Boundary();
+        /// <remarks>
+        /// Null (no constraint) by default: a default-constructed Boundary is Min = Max =
+        /// (0, 0), which would pin the object to the origin the first time it's enforced.
+        /// </remarks>
+        public Boundary? Boundary { get; set; } = null;
 #nullable disable
 
         /// <summary>
@@ -237,8 +241,20 @@ namespace Engine.Physics
 
             if (Boundary.Min != null && Boundary.Max != null)
             {
-                Position.Current.X = Math.Clamp(Position.Current.X, Boundary.Min.X, Boundary.Max.X);
-                Position.Current.Y = Math.Clamp(Position.Current.Y, Boundary.Min.Y, Boundary.Max.Y);
+                // Math.Clamp throws when min > max; tolerate a boundary given in either order.
+                float minX = Math.Min(Boundary.Min.X, Boundary.Max.X), maxX = Math.Max(Boundary.Min.X, Boundary.Max.X);
+                float minY = Math.Min(Boundary.Min.Y, Boundary.Max.Y), maxY = Math.Max(Boundary.Min.Y, Boundary.Max.Y);
+
+                float x = Math.Clamp(Position.Current.X, minX, maxX);
+                float y = Math.Clamp(Position.Current.Y, minY, maxY);
+
+                // Stop motion into a wall that was hit, or the object keeps pushing
+                // against it (and overshoots again) every frame.
+                float vx = x != Position.Current.X ? 0f : Velocity.Current.X;
+                float vy = y != Position.Current.Y ? 0f : Velocity.Current.Y;
+
+                Position.Current = new Vector2F(x, y);
+                Velocity.Current = new Vector2F(vx, vy);
             }
         }
     }
