@@ -371,6 +371,10 @@ namespace Engine.UI.Core.Elements
         /// </summary>
         protected bool PropagateMouseEvent(IMouseEvent e, UIEventType eventName)
         {
+            // A hidden or disabled element doesn't take input, and neither does its subtree.
+            if (!IsInteractable)
+                return false;
+
             bool isInside = IsInteractable && GetCurrentAbsoluteBounds().Contains(e.Location);
 
             // Propagate to child

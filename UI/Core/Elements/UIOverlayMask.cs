@@ -52,6 +52,11 @@ namespace Engine.UI.Core.Elements
 
         public override bool OnMouseDown(IMouseEvent e)
         {
+            // While hidden the mask must not swallow clicks or re-fire the
+            // dialog's last result callback.
+            if (!IsInteractable)
+                return false;
+
             // Hide everything and trigger cancel
             Hide();
             _dialog.IsVisible = false;
