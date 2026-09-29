@@ -49,6 +49,8 @@ namespace Engine.Platform
     {
         TextAlign Alignment { get; set; }
         TextAlign LineAlignment { get; set; }
+
+        /// <summary>Whether text wraps at the layout width. Defaults to true, as in GDI+.</summary>
         bool WordWrap { get; set; }
 
         /// <summary>Whether overflowing text is truncated with an ellipsis ("…").</summary>

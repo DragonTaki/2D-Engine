@@ -24,7 +24,8 @@ namespace Engine.Platform.Skia
     {
         public TextAlign Alignment { get; set; } = TextAlign.Near;
         public TextAlign LineAlignment { get; set; } = TextAlign.Near;
-        public bool WordWrap { get; set; }
+        // Defaults to true to match a fresh GDI+ StringFormat (NoWrap unset).
+        public bool WordWrap { get; set; } = true;
         public bool EllipsisTrimming { get; set; }
 
         public void Dispose() { }
