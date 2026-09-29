@@ -43,6 +43,9 @@ namespace Engine.UI.Core.Renderers
 
         public override void OnRender(IGraphics g, TElement element)
         {
+            // Container Style (background/border) first - overriding without calling base
+            // meant a Style set on this container was never drawn.
+            base.OnRender(g, element);
             _composite.Render(g, element);
         }
 
