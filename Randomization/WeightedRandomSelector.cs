@@ -35,7 +35,12 @@ namespace Engine.Randomization
 
             float totalWeight = 0f;
             for (int i = 0; i < weights.Count; i++)
+            {
+                // A negative/NaN/infinite weight corrupts the cumulative walk below.
+                if (!(weights[i] >= 0f) || float.IsInfinity(weights[i]))
+                    throw new ArgumentException($"Weight at index {i} must be a finite, non-negative number.");
                 totalWeight += weights[i];
+            }
 
             if (totalWeight <= 0f)
                 throw new ArgumentException("Total weight must be greater than 0.");
@@ -50,7 +55,13 @@ namespace Engine.Randomization
                     return items[i];
             }
 
-            // Fallback (should not occur if weights are valid)
+            // Fallback: float rounding can leave r == accumulated at the end. Return the last
+            // item that actually has weight - items[^1] could have weight 0.
+            for (int i = items.Count - 1; i >= 0; i--)
+            {
+                if (weights[i] > 0f)
+                    return items[i];
+            }
             return items[^1];
         }
     }
