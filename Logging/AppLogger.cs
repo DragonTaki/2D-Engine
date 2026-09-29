@@ -63,7 +63,7 @@ namespace Engine.Logging
             {
                 text = ToText(),
                 color = meta.Color ?? "white",
-                tag = $"tag_{meta.Label.ToLower()}"
+                tag = $"tag_{meta.Label.ToLowerInvariant()}"
             };
             return JsonSerializer.Serialize(payload);
         }
