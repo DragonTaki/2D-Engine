@@ -7,6 +7,8 @@
 // Version: v1.1
 /* ----- ----- ----- ----- */
 
+using System;
+
 using Engine.Platform;
 
 namespace Engine.GraphicsUtils.GraphicsPaths
@@ -20,8 +22,14 @@ namespace Engine.GraphicsUtils.GraphicsPaths
         {
             IGraphicsPath path = GraphicsBackend.Factory.CreatePath();
 
-            float curveHeight = 20.0f;
-            float bottomPointHeight = 40.0f;
+            width = MathF.Max(0f, width);
+            height = MathF.Max(0f, height);
+
+            // Fixed shape sizes, clamped so a small shield doesn't fold over itself (the
+            // top corners need 2x curveHeight of width; the straight sides need
+            // curveHeight + bottomPointHeight of height).
+            float curveHeight = MathF.Min(20.0f, MathF.Min(width / 2f, height / 2f));
+            float bottomPointHeight = MathF.Min(40.0f, height - curveHeight);
 
             path.StartFigure();
             path.AddArc(0, 0, curveHeight * 2, curveHeight * 2, 180, 90); // Top-left corner

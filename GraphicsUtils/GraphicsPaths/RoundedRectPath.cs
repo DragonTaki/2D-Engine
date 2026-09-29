@@ -26,8 +26,24 @@ namespace Engine.GraphicsUtils.GraphicsPaths
         {
             IGraphicsPath path = GraphicsBackend.Factory.CreatePath();
 
+            // Negative sizes (e.g. from an over-inset layout) would invert the path.
+            width = MathF.Max(0f, width);
+            height = MathF.Max(0f, height);
+
             float radius = cornerRadius ?? Math.Min(width, height) * 0.08f;  // 8% of size (or override)
             radius = MathF.Min(radius, MathF.Min(width, height) / 2f);       // Avoid over-rounding
+
+            // No rounding left (radius <= 0, e.g. CornerRadius - Margin went negative):
+            // a plain rectangle, instead of arcs with zero/negative-size bounds.
+            if (radius <= 0f)
+            {
+                path.StartFigure();
+                path.AddLine(0, 0, width, 0);
+                path.AddLine(width, 0, width, height);
+                path.AddLine(width, height, 0, height);
+                path.CloseFigure();
+                return path;
+            }
 
             float diameter = radius * 2;
 

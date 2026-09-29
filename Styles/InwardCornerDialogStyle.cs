@@ -15,7 +15,7 @@ using Engine.Platform;
 namespace Engine.Styles
 {
     /// <summary>
-    /// Dialog style with a single border and inward-rounded corners.
+    /// Dialog style with a single border and inward-cut (chamfered) corners, see InvertedRoundedRectPath.
     /// </summary>
     public class InwardCornerDialogStyle : IBoxDrawStyle
     {
@@ -24,7 +24,7 @@ namespace Engine.Styles
         public IBrushFactory BackgroundBrushFactory { get; set; }
 
         /// <summary>
-        /// Draw a dialog box with inward-rounded corners.
+        /// Draw a dialog box with inward-cut (chamfered) corners.
         /// </summary>
         public void Draw(IGraphics g, LayoutF bounds)
         {

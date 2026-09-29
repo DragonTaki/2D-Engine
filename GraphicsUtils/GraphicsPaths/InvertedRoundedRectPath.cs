@@ -12,17 +12,19 @@ using Engine.Platform;
 namespace Engine.GraphicsUtils.GraphicsPaths
 {
     /// <summary>
-    /// Create a rectangle with inward-rounded (concave) corners.
+    /// Create a rectangle with inward-cut corners. The live implementation cuts each
+    /// corner with a straight 45-degree chamfer (the concave-arc variant is the
+    /// commented-out block in <see cref="Create"/>).
     /// </summary>
     public static class InvertedRoundedRectPath
     {
         /// <summary>
-        /// Create an inward-rounded rectangle path.
+        /// Create an inward-cut (chamfered) rectangle path.
         /// </summary>
         /// <param name="width">Width of the rectangle.</param>
         /// <param name="height">Height of the rectangle.</param>
         /// <param name="cornerRadius">Optional: Radius of the inward corner curve (default: auto-calculated).</param>
-        /// <returns>GraphicsPath representing the inward-rounded rectangle.</returns>
+        /// <returns>GraphicsPath representing the chamfered rectangle.</returns>
         public static IGraphicsPath Create(float width, float height, float? cornerRadius = null)
         {
             /*
@@ -61,8 +63,12 @@ namespace Engine.GraphicsUtils.GraphicsPaths
 
             IGraphicsPath path = GraphicsBackend.Factory.CreatePath();
 
+            width = System.MathF.Max(0f, width);
+            height = System.MathF.Max(0f, height);
+
             float cut = cornerRadius ?? System.Math.Min(width, height) * 0.1f;
             cut = System.MathF.Min(cut, System.MathF.Min(width, height) / 2f); // 避免超出尺寸
+            cut = System.MathF.Max(0f, cut); // A negative cut would make the path self-intersect
 
             // 依順時針方向從左上角開始建立封閉路徑
             path.StartFigure();
