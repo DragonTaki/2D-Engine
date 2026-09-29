@@ -67,6 +67,8 @@ namespace Engine.UI.Core.Infrastructure
             var renderer = new UIScrollContainerRenderer();
             var element = new UIScrollContainer(scroll);
 
+            handler.Init(this, element);
+            renderer.Init(element);
             element.Init(this, handler, renderer);
 
             return element;
@@ -84,6 +86,8 @@ namespace Engine.UI.Core.Infrastructure
             var button = new UIButton();
 
             // 初始化綁定
+            handler.Init(this, button);
+            renderer.Init(button);
             button.Init(this, handler, renderer);
 
             // 綁定點擊事件
