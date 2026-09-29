@@ -34,10 +34,10 @@ namespace Engine.UI.Input
         public bool HasMovedEnoughToDrag = false;
 
         /// <summary>Stores the initial point where the mouse was pressed down.</summary>
-        private Point _dragStartPoint;
+        private Vector2F _dragStartPoint = Vector2F.Zero;
 
         /// <summary>Stores the last recorded mouse position during dragging.</summary>
-        private Point _dragLastPoint;
+        private Vector2F _dragLastPoint = Vector2F.Zero;
 
         /// <summary>Records when the mouse button was first pressed.</summary>
         private DateTime _dragStartTime;
@@ -114,8 +114,9 @@ namespace Engine.UI.Input
             IsDragging = true;
             HasMovedEnoughToDrag = false;
 
-            _dragStartPoint = e.Location;
-            _dragLastPoint = e.Location;
+            // Copy: Vector2F is a mutable reference type.
+            _dragStartPoint = new Vector2F(e.X, e.Y);
+            _dragLastPoint = new Vector2F(e.X, e.Y);
             _dragStartTime = DateTime.Now;
             _dragLastTime = DateTime.Now;
             
@@ -135,7 +136,7 @@ namespace Engine.UI.Input
         public bool OnMouseMove(IMouseEvent e)
         {
             if (!IsDragging)
-                return true;  // No active drag; ignore move
+                return false;  // No active drag; ignore move
 
             float deltaX = e.X - _dragLastPoint.X;
             float deltaY = e.Y - _dragLastPoint.Y;
@@ -145,10 +146,15 @@ namespace Engine.UI.Input
             float deltaLength = MathF.Sqrt(MathF.Pow(deltaX, 2) + MathF.Pow(deltaY, 2));
             _totalDragDistance += deltaLength;  // accumulate distance
 
-            // If move too small, don't give movement yet
+            // If move too small, don't give movement yet. The threshold is measured as
+            // displacement from the press point, not as a sum of per-event step lengths
+            // (_dragLastPoint doesn't advance before the threshold, so summing those
+            // would count the same displacement again on every event).
             if (!HasMovedEnoughToDrag)
             {
-                if (_totalDragDistance >= DragThreshold)
+                float dispX = e.X - _dragStartPoint.X;
+                float dispY = e.Y - _dragStartPoint.Y;
+                if (MathF.Sqrt(dispX * dispX + dispY * dispY) >= DragThreshold)
                 {
                     HasMovedEnoughToDrag = true;
                 }
@@ -162,7 +168,7 @@ namespace Engine.UI.Input
             OnDrag?.Invoke(delta);
 
             // Update last position
-            _dragLastPoint = e.Location;
+            _dragLastPoint = new Vector2F(e.X, e.Y);
 
             return true;
         }
@@ -180,7 +186,7 @@ namespace Engine.UI.Input
 
             IsDragging = false;
             
-            _dragLastPoint = e.Location;
+            _dragLastPoint = new Vector2F(e.X, e.Y);
             _dragLastTime = DateTime.Now;
 
             // Determine if this was a click instead of a drag

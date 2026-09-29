@@ -145,20 +145,17 @@ namespace Engine.UI.Input
         public bool OnMouseMove(IMouseEvent e)
         {
             //Console.WriteLine($"[MouseMove] _dragStarted = {_dragStarted}, _hasDragged = {_hasDragged}");
-            bool handled = false;
-
             // Event _handlers first, then we know if is dragging or not
             foreach (var h in _handlers)
             {
                 if (h.OnMouseMove(e))
-                {
-                    handled = true;
                     break;
-                }
             }
 
-            // If configured, suppress UI interaction while dragging
-            if (!handled && SuppressUIWhenDragging)
+            // If configured, suppress UI interaction while dragging. Decided from the
+            // scroll handler's drag state rather than from `handled`: a drag past the
+            // threshold is exactly the case the handlers report as handled.
+            if (SuppressUIWhenDragging)
             {
                 if (!_dragStarted && _scrollHandler?.IsDragging == true && _scrollHandler.HasMovedEnoughToDrag())
                 {
