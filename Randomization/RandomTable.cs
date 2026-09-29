@@ -30,6 +30,9 @@ namespace Engine.Randomization
         /// <param name="seed">The seed used to generate deterministic random sequences.</param>
         public RandomTable(int size, int seed)
         {
+            if (size <= 0)
+                throw new ArgumentOutOfRangeException(nameof(size), size, "Table size must be positive.");
+
             _tableSize = size;
             _intTable = new int[size];
             _floatTable = new float[size];
@@ -39,7 +42,10 @@ namespace Engine.Randomization
             for (int i = 0; i < size; i++)
             {
                 _intTable[i] = rand.Next();
-                _floatTable[i] = (float)rand.NextDouble();
+                // Narrowing a double just below 1.0 to float can round up to exactly 1.0f,
+                // breaking the documented [0, 1) range; clamp to the largest float below 1.
+                float f = (float)rand.NextDouble();
+                _floatTable[i] = f < 1f ? f : MathF.BitDecrement(1f);
                 _doubleTable[i] = rand.NextDouble();
             }
 
@@ -64,6 +70,12 @@ namespace Engine.Randomization
         /// <returns>An integer in [0, max).</returns>
         public int NextInt(int max)
         {
+            // Same contract as System.Random.Next(int): max < 0 throws, max == 0 gives 0
+            // (instead of a DivideByZeroException / negative results).
+            if (max < 0)
+                throw new ArgumentOutOfRangeException(nameof(max), max, "max must be non-negative.");
+            if (max == 0)
+                return 0;
             return NextInt() % max;
         }
 
@@ -75,7 +87,13 @@ namespace Engine.Randomization
         /// <returns>An integer in [min, max).</returns>
         public int NextInt(int min, int max)
         {
-            return min + NextInt(max - min);
+            // Same contract as System.Random.Next(int, int): min > max throws, min == max gives min.
+            // long arithmetic so a wide range (e.g. negative min) can't overflow max - min.
+            if (min > max)
+                throw new ArgumentOutOfRangeException(nameof(min), min, "min must not exceed max.");
+            if (min == max)
+                return min;
+            return (int)(min + NextInt() % ((long)max - min));
         }
 
         /// <summary>
