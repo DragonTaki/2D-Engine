@@ -18,7 +18,11 @@ namespace Engine.Platform.WinForms
     /// <summary>GDI+-backed <see cref="IGraphicsFactory"/> — the WinForms platform backend.</summary>
     public sealed class WinFormsGraphicsFactory : IGraphicsFactory
     {
-        private readonly PrivateFontCollection _loadedFontFiles = new();
+        // One collection per file: PrivateFontCollection.Families is sorted by
+        // family name, not insertion order, so "the last family" of a shared
+        // collection isn't necessarily the file just added. The collections must
+        // stay alive as long as their FontFamily objects are in use.
+        private readonly List<PrivateFontCollection> _loadedFontFiles = new();
         private readonly Dictionary<string, IFontFamily> _loadedFontFamilies = new();
 
         public IBrush CreateSolidBrush(Color color) => new WinFormsBrush(new SolidBrush(color));
@@ -48,9 +52,16 @@ namespace Engine.Platform.WinForms
             if (!System.IO.File.Exists(filePath))
                 throw new System.IO.FileNotFoundException($"Font file not found: {filePath}");
 
-            _loadedFontFiles.AddFontFile(filePath);
-            var family = _loadedFontFiles.Families[_loadedFontFiles.Families.Length - 1];
-            _loadedFontFamilies[key] = new WinFormsFontFamily(family);
+            var collection = new PrivateFontCollection();
+            collection.AddFontFile(filePath);
+            if (collection.Families.Length == 0)
+            {
+                collection.Dispose();
+                throw new System.IO.InvalidDataException($"No font family could be loaded from: {filePath}");
+            }
+
+            _loadedFontFiles.Add(collection);
+            _loadedFontFamilies[key] = new WinFormsFontFamily(collection.Families[0]);
         }
 
         public IFontFamily GetLoadedFontFamily(string key)
