@@ -107,7 +107,7 @@ namespace Engine.UI.Core.Infrastructure
             if (_screens.TryGetValue(screenType, out var screen))
             {
                 _screens.Remove(screenType);
-                _rootElement.RemoveChild(screen);
+                _rootElement?.RemoveChild(screen);
 
                 // 若 UIElement 支援 IDisposable，可在此釋放
                 (screen as IDisposable)?.Dispose();
