@@ -78,7 +78,14 @@ namespace Engine.Platform.Skia
             try
             {
                 var typeface = SKTypeface.FromFamilyName(name);
-                if (typeface == null)
+
+                // FromFamilyName doesn't return null for an unknown family: it returns the
+                // platform's fallback typeface. Detect that by name so the "not found" path
+                // (and its log line) actually runs, matching the WinForms backend, which
+                // throws for unknown names.
+                // (Not disposed: the fallback can be the same managed instance as
+                // SKTypeface.Default, which GenericSansSerifFontFamily holds.)
+                if (typeface == null || !string.Equals(typeface.FamilyName, name, StringComparison.OrdinalIgnoreCase))
                 {
                     Console.WriteLine($"System font '{name}' not found, using default system font.");
                     return GenericSansSerifFontFamily;
