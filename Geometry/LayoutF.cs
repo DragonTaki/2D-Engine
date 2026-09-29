@@ -7,6 +7,7 @@
 // Version: v1.1
 /* ----- ----- ----- ----- */
 
+using System;
 using System.Drawing;
 using Engine.Globals;
 using Engine.Mathematics;
@@ -27,8 +28,10 @@ namespace Engine.Geometry
 
         public LayoutF(Vector2F position, Vector2F size)
         {
-            Position = position;
-            Size = size;
+            // Copies: callers pass live vectors (e.g. an element's own Size), which would
+            // otherwise alias this layout.
+            Position = new Vector2F(position.X, position.Y);
+            Size = new Vector2F(size.X, size.Y);
         }
 
         public LayoutF(float x, float y, float width, float height)
@@ -77,9 +80,11 @@ namespace Engine.Geometry
         public static LayoutF FromSizeCentered(Vector2F size) =>
             new LayoutF(GlobalViewport.Center - new Vector2F(size.Width, size.Height) / 2f, size);
 
+        // Half-open on the far edges (like RectangleF.Contains), so two adjacent layouts
+        // sharing an edge don't both contain a point on it.
         public bool Contains(Vector2F point) =>
-            point.X >= Position.X && point.X <= Position.X + Size.X &&
-            point.Y >= Position.Y && point.Y <= Position.Y + Size.Y;
+            point.X >= Position.X && point.X < Position.X + Size.X &&
+            point.Y >= Position.Y && point.Y < Position.Y + Size.Y;
 
         /// <summary>
         /// Implicit conversion from RectangleF to LayoutF.
@@ -108,9 +113,14 @@ namespace Engine.Geometry
         /// <param name="amount">Inset amount in X and Y directions (positive = shrink, negative = expand).</param>
         public LayoutF Inset(Vector2F amount)
         {
+            // Insetting past the center collapses to a zero size at the center instead of
+            // producing a negative size (which yields inverted/self-intersecting paths).
+            float width = Math.Max(0f, Size.X - amount.X * 2);
+            float height = Math.Max(0f, Size.Y - amount.Y * 2);
+            var center = Center;
             return new LayoutF(
-                Position + amount,
-                Size - amount * 2
+                new Vector2F(center.X - width / 2f, center.Y - height / 2f),
+                new Vector2F(width, height)
             );
         }
 
