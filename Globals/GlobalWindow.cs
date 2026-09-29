@@ -70,7 +70,7 @@ namespace Engine.Globals
         /// <summary>
         /// Gets the current window size.
         /// </summary>
-        public static PointF Size => new PointF(Width, Height);
+        public static SizeF Size => new SizeF(Width, Height);
 
         /// <summary>
         /// Gets the current center point of the window.
