@@ -462,7 +462,9 @@ namespace Engine.UI.Core.Elements
             //Console.WriteLine($"OnDraw called: {this.GetType().Name}");
             RendererBase?.Render(g, this);
 
-            foreach (var child in GetSortedChildrenByZIndex(descending: true)
+            // Painter's algorithm: lowest ZIndex first so higher ZIndex ends up on top
+            // (hit testing iterates the opposite way, highest first).
+            foreach (var child in GetSortedChildrenByZIndex(descending: false)
                 .Where(c => !c.DisableRender && c.IsVisible))
                 child.Draw(g);
         }
