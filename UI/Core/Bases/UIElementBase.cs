@@ -19,6 +19,7 @@ using Engine.Platform;
 using Engine.UI.Constants.Components;
 using Engine.UI.Constants.Core;
 using Engine.UI.Core.Interfaces;
+using Engine.UI.Layout;
 using Engine.UI.Models;
 
 namespace Engine.UI.Core.Bases
@@ -432,6 +433,22 @@ namespace Engine.UI.Core.Bases
             foreach (var child in Children.ToArray())
                 child.InvalidateLayoutRecursive();
         }
+
+        /// <summary>
+        /// Returns the element's intrinsic (content) border-box size, used when a Width or
+        /// Height is <see cref="SizeMode.Auto"/>.
+        /// <para>
+        /// The default measures the in-flow children (flex or not) plus padding; an element
+        /// without in-flow children reports its <see cref="DeclaredSize"/>. Leaf elements with
+        /// real content (e.g. <c>UILabel</c>) override this.
+        /// </para>
+        /// </summary>
+        /// <param name="available">
+        /// Border-box space available on each axis; <see cref="float.PositiveInfinity"/> when
+        /// unconstrained (e.g. max-content width). Text should wrap to a finite width.
+        /// </param>
+        public virtual Vector2F MeasureIntrinsicSize(Vector2F available) =>
+            LayoutEngine.MeasureContent(this, available);
 
         /// <summary>
         /// Called on every descendant of an element that the layout system just moved (the

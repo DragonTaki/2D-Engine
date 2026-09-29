@@ -24,6 +24,7 @@ using Engine.UI.Core.Bases;
 using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Interfaces;
 using Engine.UI.Core.Renderers;
+using Engine.UI.Layout;
 using Engine.UI.Models;
 
 namespace Engine.UI.Core.Elements
@@ -178,6 +179,38 @@ namespace Engine.UI.Core.Elements
         }
 
         /// <summary>
+        /// Absolute content box: the bounds minus <see cref="UILayout.Padding"/> - where
+        /// layout-managed in-flow children are placed and what <see cref="UILayout.Overflow"/> clips to.
+        /// </summary>
+        public RectangleF GetCurrentAbsoluteContentBox()
+        {
+            var position = GetCurrentAbsolutePosition();
+            var padding = LayoutRules.Padding;
+            return new RectangleF(
+                position.X + padding.Left,
+                position.Y + padding.Top,
+                Math.Max(0f, Size.X - padding.Horizontal),
+                Math.Max(0f, Size.Y - padding.Vertical));
+        }
+
+        /// <summary>
+        /// True when <see cref="UILayout.Overflow"/> clips children (Hidden or Scroll).
+        /// </summary>
+        public bool ClipsChildren => LayoutRules.Overflow != OverflowMode.Visible;
+
+        /// <summary>
+        /// Whether a point may reach this element's children: always, unless children are
+        /// clipped and the point is outside the content box (clipped content isn't hittable).
+        /// </summary>
+        protected bool ChildrenCanReceive(PointF point)
+        {
+            if (!ClipsChildren)
+                return true;
+            var box = GetCurrentAbsoluteContentBox();
+            return point.X >= box.Left && point.X < box.Right && point.Y >= box.Top && point.Y < box.Bottom;
+        }
+
+        /// <summary>
         /// The layout pass for this element, run by <see cref="Draw"/> whenever
         /// <see cref="UIElementBase.LayoutDirty"/> or <see cref="UIElementBase.LegacyLayoutPending"/>
         /// is set (and callable directly, see also <see cref="PerformLayout"/>):
@@ -218,6 +251,7 @@ namespace Engine.UI.Core.Elements
         protected void UpdateManagedLayout()
         {
             _layoutDirty = false;
+            LayoutEngine.ArrangeChildren(this);
 
             // Snapshot: arranging may run measure hooks, which must not see a list mid-change.
             foreach (var child in Children.ToArray())
@@ -425,11 +459,14 @@ namespace Engine.UI.Core.Elements
             }
 
             // Check children last to first (higher ZIndex first)
-            foreach (var child in GetSortedChildrenByZIndex(descending: true))
+            if (ChildrenCanReceive(point))
             {
-                var hit = child.HitTestDeep(point);
-                if (hit != null && hit.IsInteractable)
-                    return hit;
+                foreach (var child in GetSortedChildrenByZIndex(descending: true))
+                {
+                    var hit = child.HitTestDeep(point);
+                    if (hit != null && hit.IsInteractable)
+                        return hit;
+                }
             }
 
             // Check self
@@ -450,9 +487,19 @@ namespace Engine.UI.Core.Elements
 
             bool isInside = IsInteractable && GetCurrentAbsoluteBounds().Contains(e.Location);
 
+            // Clipped children can't be pressed/clicked/scrolled outside the content box
+            // (moves and releases still reach them, e.g. to end a drag).
+            bool areaEvent = eventName == UIEventType.MouseDown
+                || eventName == UIEventType.MouseWheel
+                || eventName == UIEventType.MouseClick;
+            bool childrenReachable = !areaEvent || ChildrenCanReceive(e.Location);
+
             // Propagate to child
             foreach (var child in GetSortedChildrenByZIndex(descending: true))
             {
+                if (!childrenReachable)
+                    break;
+
                 bool handled = eventName switch
                 {
                     UIEventType.MouseDown => child.OnMouseDown(e),
@@ -555,11 +602,24 @@ namespace Engine.UI.Core.Elements
             //Console.WriteLine($"OnDraw called: {this.GetType().Name}");
             RendererBase?.Render(g, this);
 
-            // Painter's algorithm: lowest ZIndex first so higher ZIndex ends up on top
-            // (hit testing iterates the opposite way, highest first).
-            foreach (var child in GetSortedChildrenByZIndex(descending: false)
-                .Where(c => !c.DisableRender && c.IsVisible))
-                child.Draw(g);
+            // Overflow Hidden/Scroll: clip the children to the content box. Balanced with
+            // try/finally - an unpaired SetClip leaks on GDI+ and unbalances Skia's save stack.
+            bool clip = ClipsChildren;
+            if (clip)
+                g.SetClip(GetCurrentAbsoluteContentBox());
+            try
+            {
+                // Painter's algorithm: lowest ZIndex first so higher ZIndex ends up on top
+                // (hit testing iterates the opposite way, highest first).
+                foreach (var child in GetSortedChildrenByZIndex(descending: false)
+                    .Where(c => !c.DisableRender && c.IsVisible))
+                    child.Draw(g);
+            }
+            finally
+            {
+                if (clip)
+                    g.ResetClip();
+            }
         }
 
         public override void RequestRedraw()
