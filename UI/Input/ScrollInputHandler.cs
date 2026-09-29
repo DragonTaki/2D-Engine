@@ -163,6 +163,16 @@ namespace Engine.UI.Input
             return true;
         }
 
+        private static bool IsSelfOrDescendant(UIElementBase element, UIElementBase ancestor)
+        {
+            for (var e = element; e != null; e = e.Parent)
+            {
+                if (e == ancestor)
+                    return true;
+            }
+            return false;
+        }
+
         /// <summary>
         /// Returns the top-most interactable scroll target whose viewport contains the point, or null.
         /// </summary>
@@ -181,8 +191,12 @@ namespace Engine.UI.Input
                 if (bounds == RectangleF.Empty || !bounds.Contains(location))
                     continue;
 
-                // Hit test for child elements
-                if (target.Element.HitTestDeep(location) != null)
+                // Hit test from the root, and accept only if the top-most element under the
+                // point belongs to this target. Testing just the target's own subtree ignored
+                // anything drawn above it (e.g. an open dialog and its mask), so a press there
+                // started a drag-scroll underneath and swallowed the press.
+                var hit = target.Element.GetRoot().HitTestDeep(location);
+                if (hit != null && IsSelfOrDescendant(hit, target.Element))
                     return target;
             }
 
