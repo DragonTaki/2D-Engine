@@ -97,7 +97,18 @@ namespace Engine.Styles
                 if (colorValue.StartsWith('#'))
                 {
                     // HEX format
-                    Color hexColor = ColorTranslator.FromHtml(colorValue);
+                    string hex = colorValue.Trim();
+                    if (hex.Length == 9)
+                    {
+                        // #RRGGBBAA (CSS order). ColorTranslator.FromHtml would read these
+                        // 8 digits as AARRGGBB, e.g. "#716c6cff" -> RGB 6C6CFF instead of 716C6C.
+                        int rgba = Convert.ToInt32(hex.Substring(1), 16);
+                        Color rgb = Color.FromArgb((rgba >> 24) & 0xFF, (rgba >> 16) & 0xFF, (rgba >> 8) & 0xFF);
+                        float hexAlpha = (rgba & 0xFF) / 255f;
+                        return Color.FromArgb(ClampAlpha(alpha * hexAlpha), rgb);
+                    }
+
+                    Color hexColor = ColorTranslator.FromHtml(hex);
                     return Color.FromArgb(ClampAlpha(alpha), hexColor);
                 }
                 else if (colorValue.Contains(','))
