@@ -111,6 +111,11 @@ namespace Engine.UI.Input
         /// </returns>
         float DragThreshold();
 
+        /// <summary>
+        /// Abandons any drag in progress, e.g. when the window loses focus mid-drag.
+        /// </summary>
+        void CancelDrag();
+
         #endregion
     }
 }

@@ -100,6 +100,18 @@ namespace Engine.UI.Input
         #region Mouse Event Handlers
 
         /// <summary>
+        /// Drops all in-progress press/drag state without delivering MouseUp or a click.
+        /// Call when the window loses focus: the matching MouseUp won't arrive.
+        /// </summary>
+        public void CancelInput()
+        {
+            _scrollHandler?.CancelDrag();
+            _pressedElement = null;
+            _dragStarted = false;
+            _hasDragged = false;
+        }
+
+        /// <summary>
         /// Handles the MouseDown event: triggers scroll/drag detection and forwards to UI.
         /// </summary>
         /// <param name="e">Mouse event arguments containing location and button info.</param>

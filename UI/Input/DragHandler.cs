@@ -205,6 +205,17 @@ namespace Engine.UI.Input
         }
 
         /// <summary>
+        /// Abandons any drag in progress without emitting a click, e.g. when the window loses
+        /// focus mid-drag and the matching MouseUp will never arrive (otherwise IsDragging
+        /// stays true and plain mouse moves keep scrolling until the next MouseDown).
+        /// </summary>
+        public void Cancel()
+        {
+            IsDragging = false;
+            HasMovedEnoughToDrag = false;
+        }
+
+        /// <summary>
         /// Called when the mouse wheel is scrolled.
         /// Currently not handled in this class.
         /// </summary>

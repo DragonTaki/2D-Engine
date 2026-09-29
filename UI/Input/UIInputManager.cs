@@ -60,6 +60,11 @@ namespace Engine.UI.Input
 
         #endregion
 
+        /// <summary>
+        /// Drops all in-progress press/drag state (see <see cref="MouseInputRouter.CancelInput"/>).
+        /// </summary>
+        public void CancelInput() => MouseRouter.CancelInput();
+
         #region Handler Management
 
         /// <summary>

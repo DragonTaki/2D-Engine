@@ -274,6 +274,11 @@ namespace Engine.UI.Input
         public bool HasMovedEnoughToDrag() => _dragHandler.HasMovedEnoughToDrag;
 
         /// <summary>
+        /// Abandons any drag in progress (see <see cref="DragHandler.Cancel"/>).
+        /// </summary>
+        public void CancelDrag() => _dragHandler.Cancel();
+
+        /// <summary>
         /// Returns the configured drag threshold for detection.
         /// </summary>
         public float DragThreshold() => _dragHandler.DragThreshold;
