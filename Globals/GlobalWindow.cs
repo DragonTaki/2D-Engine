@@ -40,22 +40,6 @@ namespace Engine.Globals
         }
 
         /// <summary>
-        /// Physical pixels per logical point (e.g. 2 on a Retina display). Width/Height
-        /// are in physical pixels, so anything with a fixed on-screen size (star radius,
-        /// star density) must be scaled by this to look the same on every display.
-        /// </summary>
-        public static float PixelScale { get; private set; } = 1f;
-
-        /// <summary>
-        /// Updates <see cref="PixelScale"/>; non-positive values are ignored.
-        /// </summary>
-        public static void UpdatePixelScale(float scale)
-        {
-            if (scale > 0f)
-                PixelScale = scale;
-        }
-
-        /// <summary>
         /// Gets the current window size.
         /// </summary>
         public static PointF Size => new PointF(Width, Height);
