@@ -26,10 +26,15 @@ namespace Engine.Physics
     /// That was an unbounded memory leak: every Physics2D ever created stayed
     /// registered for the lifetime of the process. Entries whose target has
     /// already been collected are swept out lazily as the registry is used.
+    ///
+    /// All access goes through <c>_lock</c>: <see cref="Unregister"/> runs from
+    /// <see cref="Physics2D"/>'s finalizer, i.e. on the GC finalizer thread,
+    /// concurrently with the frame loop enumerating the list.
     /// </remarks>
     public static class PhysicsRegistry
     {
         private static readonly List<WeakReference<Physics2D>> _allPhysics = new();
+        private static readonly object _lock = new();
 
         /// <summary>
         /// Registers a Physics2D instance into the global registry.
@@ -40,13 +45,16 @@ namespace Engine.Physics
         /// </exception>
         public static void Register(Physics2D physics)
         {
-            foreach (var weakRef in _allPhysics)
+            lock (_lock)
             {
-                if (weakRef.TryGetTarget(out var existing) && existing == physics)
-                    throw new InvalidOperationException("Physics2D instance already registered.");
-            }
+                foreach (var weakRef in _allPhysics)
+                {
+                    if (weakRef.TryGetTarget(out var existing) && existing == physics)
+                        throw new InvalidOperationException("Physics2D instance already registered.");
+                }
 
-            _allPhysics.Add(new WeakReference<Physics2D>(physics));
+                _allPhysics.Add(new WeakReference<Physics2D>(physics));
+            }
         }
 
         /// <summary>
@@ -55,19 +63,31 @@ namespace Engine.Physics
         /// already been garbage-collected.
         /// </summary>
         /// <param name="physics">The Physics2D instance to remove.</param>
-        public static void Unregister(Physics2D physics) =>
-            _allPhysics.RemoveAll(weakRef => !weakRef.TryGetTarget(out var target) || target == physics);
+        public static void Unregister(Physics2D physics)
+        {
+            lock (_lock)
+                _allPhysics.RemoveAll(weakRef => !weakRef.TryGetTarget(out var target) || target == physics);
+        }
 
         /// <summary>
         /// Gets an enumerable collection of all registered Physics2D instances
         /// that are still alive. Entries whose target has been garbage-collected
         /// are skipped.
         /// </summary>
-        /// <returns>An IEnumerable of all active Physics2D instances.</returns>
-        public static IEnumerable<Physics2D> GetAll() =>
-            _allPhysics
-                .Select(weakRef => weakRef.TryGetTarget(out var physics) ? physics : null)
-                .Where(physics => physics != null);
+        /// <returns>
+        /// A snapshot of all active Physics2D instances, so callers can enumerate it
+        /// while instances are registered/unregistered (e.g. by the finalizer thread).
+        /// </returns>
+        public static IEnumerable<Physics2D> GetAll()
+        {
+            lock (_lock)
+            {
+                return _allPhysics
+                    .Select(weakRef => weakRef.TryGetTarget(out var physics) ? physics : null)
+                    .Where(physics => physics != null)
+                    .ToList();
+            }
+        }
 
         /// <summary>
         /// Updates all registered Physics2D instances by invoking their SmoothUpdate method.
