@@ -199,6 +199,16 @@ namespace Engine.UI.Core.Elements
         public override void OnAddedToParent() => RebasePhysics();
 
         /// <summary>
+        /// Undoes the constructor's registration with the shared scroll input handler, so a
+        /// disposed container isn't kept alive, hit-tested or scrolled by it.
+        /// </summary>
+        protected override void DisposeUI()
+        {
+            base.DisposeUI();
+            _inputHandler.UnregisterScrollTarget(this);
+        }
+
+        /// <summary>
         /// Container size override.
         /// </summary>
         public override Vector2F Size

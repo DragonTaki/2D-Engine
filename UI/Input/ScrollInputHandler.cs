@@ -104,6 +104,20 @@ namespace Engine.UI.Input
             ZIndex = zIndex;
         }
 
+        /// <summary>
+        /// Removes a scroll target; clears it as the active target if it was one.
+        /// </summary>
+        public void UnregisterScrollTarget(UIElementBase element)
+        {
+            if (_activeTarget?.Element == element)
+            {
+                _dragHandler.Cancel();
+                _activeTarget = null;
+            }
+
+            _scrollTargets.RemoveAll(t => t.Element == element);
+        }
+
         #endregion
 
         #region Mouse Event Handlers

@@ -78,6 +78,11 @@ namespace Engine.UI.Input
             ScrollBehavior behavior = null,
             int zIndex = 0);
 
+        /// <summary>
+        /// Removes a previously registered scroll target (e.g. when its element is disposed).
+        /// </summary>
+        void UnregisterScrollTarget(UIElementBase element);
+
         #endregion
 
         #region Dragging Detection and Threshold
