@@ -128,7 +128,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="location">Mouse location in screen coordinates.</param>
         /// <returns>True if dragging within the active target; otherwise false.</returns>
-        public bool IsDraggingWithinActiveTarget(Point location)
+        public bool IsDraggingWithinActiveTarget(Vector2F location)
         {
             return IsDragging &&
                 _activeTarget?.ViewportGetter().Contains(location) == true;

@@ -99,11 +99,12 @@ namespace Engine.Mathematics
         }
 
         /// <summary>
-        /// Implicitly converts a <see cref="Vector2F"/> to a <see cref="Point"/>.
+        /// Explicitly converts a <see cref="Vector2F"/> to a <see cref="Point"/>, truncating
+        /// the fractional parts (explicit because it loses data, per .NET conversion guidelines).
         /// </summary>
         /// <param name="v">The <see cref="Vector2F"/> instance to convert.</param>
-        /// <returns>A <see cref="Point"/> with the same X and Y values.</returns>
-        public static implicit operator Point(Vector2F v) => new Point((int)v.X, (int)v.Y);
+        /// <returns>A <see cref="Point"/> with X and Y truncated to integers.</returns>
+        public static explicit operator Point(Vector2F v) => new Point((int)v.X, (int)v.Y);
 
         /// <summary>
         /// Implicitly converts a <see cref="Point"/> to a <see cref="Vector2F"/>.
@@ -165,11 +166,12 @@ namespace Engine.Mathematics
         }
 
         /// <summary>
-        /// Implicitly converts a <see cref="Vector2F"/> to a <see cref="Size"/>.
+        /// Explicitly converts a <see cref="Vector2F"/> to a <see cref="Size"/>, truncating
+        /// the fractional parts (explicit because it loses data).
         /// </summary>
         /// <param name="v">The <see cref="Vector2F"/> instance to convert.</param>
-        /// <returns>A <see cref="Size"/> with Width = X and Height = Y.</returns>
-        public static implicit operator Size(Vector2F v) => new Size((int)v.X, (int)v.Y);
+        /// <returns>A <see cref="Size"/> with Width = X and Height = Y truncated to integers.</returns>
+        public static explicit operator Size(Vector2F v) => new Size((int)v.X, (int)v.Y);
 
         /// <summary>
         /// Implicitly converts a <see cref="Size"/> to a <see cref="Vector2F"/>.
@@ -445,7 +447,8 @@ namespace Engine.Mathematics
         }
 
         /// <summary>
-        /// Rotates the vector counterclockwise by the given angle (in radians).
+        /// Rotates the vector by the given angle (in radians): counterclockwise in a y-up
+        /// frame, which appears clockwise on screen, where y points down.
         /// </summary>
         /// <param name="angleRadians">Angle to rotate, in radians.</param>
         /// <returns>New rotated vector.</returns>

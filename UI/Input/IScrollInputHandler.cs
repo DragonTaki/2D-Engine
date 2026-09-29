@@ -10,6 +10,7 @@
 using System;
 using System.Drawing;
 
+using Engine.Mathematics;
 using Engine.Physics;
 using Engine.UI.Core.Bases;
 using Engine.UI.Core.Elements;
@@ -95,7 +96,7 @@ namespace Engine.UI.Input
         /// <c>true</c> if the drag is occurring within the active scrollable region;  
         /// otherwise, <c>false</c>.
         /// </returns>
-        bool IsDraggingWithinActiveTarget(Point location);
+        bool IsDraggingWithinActiveTarget(Vector2F location);
 
         /// <summary>
         /// Checks if the accumulated movement has exceeded the configured drag threshold, 

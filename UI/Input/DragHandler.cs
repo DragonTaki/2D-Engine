@@ -95,9 +95,9 @@ namespace Engine.UI.Input
 
         /// <summary>
         /// Triggered when a mouse press and release is detected as a click (no drag occurred).
-        /// Provides the click location as a <see cref="Point"/>.
+        /// Provides the click location as a <see cref="Vector2F"/>.
         /// </summary>
-        public event Action<Point> OnClick;
+        public event Action<Vector2F> OnClick;
 
         #endregion
 
