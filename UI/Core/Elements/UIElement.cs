@@ -303,11 +303,8 @@ namespace Engine.UI.Core.Elements
         /// <returns>True if the point is inside this element's bounds.</returns>
         public virtual bool ContainsScreenPoint(Vector2F screenPoint)
         {
-            var absPos = this.GetCurrentAbsolutePosition();  // Full resolved screen-space position
-            return screenPoint.X >= absPos.X &&
-                screenPoint.X <= absPos.X + Size.X &&
-                screenPoint.Y >= absPos.Y &&
-                screenPoint.Y <= absPos.Y + Size.Y;
+            // Same (half-open) test as HitTest, via the absolute bounds.
+            return GetCurrentAbsoluteBounds().Contains(screenPoint);
         }
 
         /// <summary>
