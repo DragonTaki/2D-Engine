@@ -7,6 +7,7 @@
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
+using System;
 using System.Drawing;
 using Engine.Geometry;
 using Engine.Mathematics;
@@ -38,6 +39,33 @@ namespace Engine.Globals
             Width = width;
             Height = height;
         }
+
+        /// <summary>
+        /// Physical pixels per logical unit (2 on a Retina display, 1 otherwise).
+        /// </summary>
+        public static float PixelScale { get; private set; } = 1f;
+
+        /// <summary>
+        /// Updates <see cref="PixelScale"/>; non-positive values are ignored.
+        /// </summary>
+        public static void UpdatePixelScale(float scale)
+        {
+            if (scale > 0f)
+                PixelScale = scale;
+        }
+
+        /// <summary>
+        /// Current window width in logical units: device-independent units where
+        /// 1 unit equals 1 physical pixel at <see cref="PixelScale"/> 1 (Apple "points",
+        /// Windows "DIPs"). Content with fixed on-screen sizes should be authored in these
+        /// and drawn under a <see cref="PixelScale"/> transform.
+        /// </summary>
+        public static int LogicalWidth => (int)MathF.Round(Width / PixelScale);
+
+        /// <summary>
+        /// Current window height in logical units (see <see cref="LogicalWidth"/>).
+        /// </summary>
+        public static int LogicalHeight => (int)MathF.Round(Height / PixelScale);
 
         /// <summary>
         /// Gets the current window size.
