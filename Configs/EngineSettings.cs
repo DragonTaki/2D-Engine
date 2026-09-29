@@ -16,8 +16,16 @@ namespace Engine.Configs
     public static class EngineSettings
     {
         // ScrollTextBox 預設字型
-        public static IFont DefaultScrollTextFont { get; set; } =
-            GraphicsBackend.Factory.CreateFont(GraphicsBackend.Factory.GetSystemFontFamily("Consolas"), 12f);
+        // Created on first use rather than in the static initializer: touching any member of
+        // this class before a launcher set GraphicsBackend.Factory would otherwise throw
+        // TypeInitializationException (and make the whole class unusable afterwards).
+        public static IFont DefaultScrollTextFont
+        {
+            get => _defaultScrollTextFont ??=
+                GraphicsBackend.Factory.CreateFont(GraphicsBackend.Factory.GetSystemFontFamily("Consolas"), 12f);
+            set => _defaultScrollTextFont = value;
+        }
+        private static IFont _defaultScrollTextFont;
 
         // ScrollTextBox 預設行高
         public static float DefaultScrollTextLineHeight { get; set; } = 18f;
