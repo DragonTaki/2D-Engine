@@ -170,14 +170,33 @@ namespace Engine.UI.Core.Elements
             set
             {
                 base.LocalPosition = value;
-                var absPos = GetCurrentAbsolutePosition();
-
-                if (Physics != null)
-                {
-                    Physics.Position = absPos;
-                }
+                RebasePhysics();
             }
         }
+
+        /// <summary>
+        /// Keeps the physics position in sync when this container's absolute position changes
+        /// (LocalPosition set, attached to a parent). Moves Base to the new absolute position
+        /// and shifts Current/Target by the same delta, so the scroll offset (Current - Base)
+        /// is preserved. Replacing the whole Position here used to zero the offset (e.g. the
+        /// first layout pass undid alignment), and OnAddedToParent only moved Current, leaving
+        /// Base - which AbsViewportBounds and ScrollY use - at the pre-attach position.
+        /// </summary>
+        private void RebasePhysics()
+        {
+            if (Physics == null)
+                return;
+
+            var position = Physics.Position;
+            var absPos = GetCurrentAbsolutePosition();
+            var delta = absPos - position.Base;
+
+            position.Base = new Vector2F(absPos.X, absPos.Y);
+            position.Current = position.Current + delta;
+            position.Target = position.Target + delta;
+        }
+
+        public override void OnAddedToParent() => RebasePhysics();
 
         /// <summary>
         /// Container size override.
