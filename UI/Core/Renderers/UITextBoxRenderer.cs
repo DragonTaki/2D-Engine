@@ -36,6 +36,7 @@ namespace Engine.UI.Core.Renderers
             if (_composite.ListCount == 0)
             {
                 _composite
+                    .Add(new Background())
                     .Add(new Outline())
                     .Add(new Labels());
             }
@@ -47,6 +48,23 @@ namespace Engine.UI.Core.Renderers
             // meant a Style set on this container was never drawn.
             base.OnRender(g, element);
             _composite.Render(g, element);
+        }
+
+        /// <summary>
+        /// Fills the text box with its BackgroundColor (previously never drawn).
+        /// </summary>
+        private class Background : UIRenderer<TElement, THandler, TRenderer>
+        {
+            public Background() { }
+            public override void OnRender(IGraphics g, TElement element)
+            {
+                var textBox = (UITextBox<TElement, THandler, TRenderer>)element;
+                if (textBox.BackgroundColor.A == 0)
+                    return;
+
+                using var brush = GraphicsBackend.Factory.CreateSolidBrush(textBox.BackgroundColor);
+                g.FillRectangle(brush, textBox.GetCurrentAbsoluteBounds());
+            }
         }
 
         private class Outline : UIRenderer<TElement, THandler, TRenderer>
