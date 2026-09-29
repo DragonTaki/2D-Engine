@@ -14,20 +14,20 @@ namespace Engine.Platform.Skia
     /// <summary>
     /// SkiaSharp-backed <see cref="IMatrix"/>. <see cref="SKMatrix"/> is a
     /// value type, so this class holds and mutates one in place; each call
-    /// post-concatenates the new transform onto whatever was accumulated so
-    /// far, so calling <c>Translate</c> then <c>Shear</c> then <c>Translate</c>
-    /// applies them to a point in that same order (matching GDI+'s
-    /// <c>Matrix.Translate</c>/<c>Shear</c> default prepend behavior).
+    /// pre-concatenates the new transform onto whatever was accumulated so
+    /// far, matching GDI+'s <c>Matrix.Translate</c>/<c>Shear</c> default
+    /// <c>MatrixOrder.Prepend</c>: the most recently added transform is the
+    /// first one applied to a point.
     /// </summary>
     internal sealed class SkiaMatrix : IMatrix
     {
         public SKMatrix Native { get; private set; } = SKMatrix.CreateIdentity();
 
         public void Translate(float dx, float dy) =>
-            Native = Native.PostConcat(SKMatrix.CreateTranslation(dx, dy));
+            Native = Native.PreConcat(SKMatrix.CreateTranslation(dx, dy));
 
         public void Shear(float shearX, float shearY) =>
-            Native = Native.PostConcat(new SKMatrix
+            Native = Native.PreConcat(new SKMatrix
             {
                 ScaleX = 1,
                 ScaleY = 1,
