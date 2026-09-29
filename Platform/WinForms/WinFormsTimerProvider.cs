@@ -1,5 +1,5 @@
 /* ----- ----- ----- ----- */
-// TimerManager.cs
+// WinFormsTimerProvider.cs
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/07
@@ -11,13 +11,15 @@ using System;
 using System.Diagnostics;
 using System.Windows.Forms;
 
-namespace Engine.Timing
+using Engine.Timing;
+
+namespace Engine.Platform.WinForms
 {
     /// <summary>
     /// Timer manager that uses a Stopwatch and a Windows Forms Timer
     /// to provide a fixed interval animation timer with delta time calculation.
     /// </summary>
-    public class TimerManager : ITimerProvider
+    public class WinFormsTimerProvider : ITimerProvider
     {
         private Stopwatch _animationStopwatch;
         private Timer _animationTimer;
@@ -39,9 +41,9 @@ namespace Engine.Timing
         public event Action OnAnimationFrame;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TimerManager"/> class.
+        /// Initializes a new instance of the <see cref="WinFormsTimerProvider"/> class.
         /// </summary>
-        public TimerManager()
+        public WinFormsTimerProvider()
         {
             _animationStopwatch = new Stopwatch();
             _lastAnimationTimestamp = 0;
