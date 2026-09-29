@@ -66,8 +66,10 @@ namespace Engine.Geometry
 
         /// <summary>
         /// Represents an empty layout at (0,0) with zero size.
+        /// A new instance per access (like <see cref="Vector2F.Zero"/>): LayoutF and its
+        /// vectors are mutable, and this is every UIElementBase's default Bounds.
         /// </summary>
-        public static readonly LayoutF Zero = new LayoutF(Vector2F.Zero, Vector2F.Zero);
+        public static LayoutF Zero => new LayoutF(Vector2F.Zero, Vector2F.Zero);
 
         // Optionally, helper properties or methods
         public Vector2F Center => new Vector2F(Position.X + Size.X / 2f, Position.Y + Size.Y / 2f);
