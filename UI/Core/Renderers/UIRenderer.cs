@@ -133,6 +133,11 @@ namespace Engine.UI.Core.Renderers
             OnRender(g, element);
         }
 
+        // UIElement.Draw calls the non-generic RendererBase.Render; without this
+        // override that call landed on the empty base and nothing was drawn.
+        public override void Render(IGraphics g, UIElementBase element) =>
+            OnRender(g, (TElement)element);
+
         protected abstract void OnRender(IGraphics g, TElement element);
     }
 }
