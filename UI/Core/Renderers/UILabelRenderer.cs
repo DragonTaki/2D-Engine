@@ -7,6 +7,7 @@
 // Version: v2.0
 /* ----- ----- ----- ----- */
 
+using System;
 using System.Drawing;
 
 using Engine.Platform;
@@ -72,6 +73,52 @@ namespace Engine.UI.Core.Renderers
             return Label._cachedBrush;
         }
 
+        /// <summary>
+        /// Draws the label's text fragments as one line of consecutive runs, each in its own
+        /// color and bold/italic style, aligned within <paramref name="rect"/> by TextAlign.
+        /// (Fragments are inline runs - e.g. AppLogger's welcome message is one fragment
+        /// per character - but they used to be stacked one per line, in the plain font.)
+        /// </summary>
+        private void DrawFragmentsInline(IGraphics g, RectangleF rect)
+        {
+            var fragments = Label._fragments;
+            var widths = new float[fragments.Count];
+            float totalWidth = 0f, lineHeight = 0f;
+
+            for (int i = 0; i < fragments.Count; i++)
+            {
+                var font = Label.GetFragmentFont(fragments[i].Bold, fragments[i].Italic);
+                var size = g.MeasureString(fragments[i].Text ?? string.Empty, font);
+                widths[i] = size.Width;
+                totalWidth += size.Width;
+                lineHeight = Math.Max(lineHeight, size.Height);
+            }
+
+            float x = Label.TextAlign switch
+            {
+                ContentAlign.TopCenter or ContentAlign.MiddleCenter or ContentAlign.BottomCenter => rect.X + (rect.Width - totalWidth) / 2f,
+                ContentAlign.TopRight or ContentAlign.MiddleRight or ContentAlign.BottomRight => rect.Right - totalWidth,
+                _ => rect.X,
+            };
+            float y = Label.TextAlign switch
+            {
+                ContentAlign.MiddleLeft or ContentAlign.MiddleCenter or ContentAlign.MiddleRight => rect.Y + (rect.Height - lineHeight) / 2f,
+                ContentAlign.BottomLeft or ContentAlign.BottomCenter or ContentAlign.BottomRight => rect.Bottom - lineHeight,
+                _ => rect.Y,
+            };
+
+            for (int i = 0; i < fragments.Count; i++)
+            {
+                if (!string.IsNullOrEmpty(fragments[i].Text))
+                {
+                    var font = Label.GetFragmentFont(fragments[i].Bold, fragments[i].Italic);
+                    using var brush = GraphicsBackend.Factory.CreateSolidBrush(fragments[i].Color);
+                    g.DrawString(fragments[i].Text, font, brush, x, y);
+                }
+                x += widths[i];
+            }
+        }
+
         #region Rendering
 
         /// <summary>
@@ -95,13 +142,7 @@ namespace Engine.UI.Core.Renderers
 
                 if (Label._fragments != null && Label._fragments.Count > 0)
                 {
-                    float y = rect.Y;
-                    foreach (var frag in Label._fragments)
-                    {
-                        using var brush = GraphicsBackend.Factory.CreateSolidBrush(frag.Color);
-                        g.DrawString(frag.Text, Label.Font, brush, rect.X, y);
-                        y += Label.Font.Height; // 或使用 frag.LineHeight
-                    }
+                    DrawFragmentsInline(g, rect);
                     return;
                 }
 

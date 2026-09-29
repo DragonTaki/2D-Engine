@@ -66,6 +66,44 @@ namespace Engine.UI.Core.Elements
         private IFont _font;
         private bool _ownsFont;
 
+        // Bold/italic variants of Font for text fragments, owned by this label.
+        private readonly Dictionary<FontStyleFlags, IFont> _fragmentFonts = new();
+        private IFont _fragmentFontsBase;
+
+        /// <summary>
+        /// Font for a text fragment: <see cref="Font"/> itself when the fragment is plain,
+        /// otherwise a cached bold/italic variant of it.
+        /// </summary>
+        public IFont GetFragmentFont(bool bold, bool italic)
+        {
+            var style = FontStyleFlags.Regular;
+            if (bold) style |= FontStyleFlags.Bold;
+            if (italic) style |= FontStyleFlags.Italic;
+            if (style == FontStyleFlags.Regular)
+                return Font;
+
+            // Variants are derived from the current Font; rebuild them if it was replaced.
+            if (!ReferenceEquals(_fragmentFontsBase, Font))
+            {
+                DisposeFragmentFonts();
+                _fragmentFontsBase = Font;
+            }
+
+            if (!_fragmentFonts.TryGetValue(style, out var font))
+            {
+                font = GraphicsBackend.Factory.CreateFont(Font.FontFamily, Font.Size, style);
+                _fragmentFonts[style] = font;
+            }
+            return font;
+        }
+
+        private void DisposeFragmentFonts()
+        {
+            foreach (var f in _fragmentFonts.Values)
+                f.Dispose();
+            _fragmentFonts.Clear();
+        }
+
         /// <summary>
         /// Color of the text.
         /// </summary>
@@ -112,6 +150,8 @@ namespace Engine.UI.Core.Elements
             _cachedBrush = null;
             _cachedFormat?.Dispose();
             _cachedFormat = null;
+
+            DisposeFragmentFonts();
 
             if (_ownsFont)
                 _font?.Dispose();
