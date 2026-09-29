@@ -58,14 +58,22 @@ namespace Engine.Logging
             return $"{Timestamp} [{meta.Label}] {Message}";
         }
 
+        /// <summary>
+        /// Serializes this record for the external logger as an array of text fragments -
+        /// the same shape <see cref="AppLogger.LogWelcomeMessage"/> sends - so the
+        /// receiver handles one message format (this is simply a one-fragment message).
+        /// </summary>
         public string ToJson()
         {
             var meta = LogLevelMeta.MetaMap[Level];
-            var payload = new
+            var payload = new[]
             {
-                text = ToText(),
-                color = meta.Color ?? "white",
-                tag = $"tag_{meta.Label.ToLowerInvariant()}"
+                new
+                {
+                    text = ToText(),
+                    color = meta.Color ?? "white",
+                    tag = $"tag_{meta.Label.ToLowerInvariant()}"
+                }
             };
             return JsonSerializer.Serialize(payload);
         }
