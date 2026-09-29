@@ -19,7 +19,7 @@ namespace Engine.Platform.WinForms
     /// Timer manager that uses a Stopwatch and a Windows Forms Timer
     /// to provide a fixed interval animation timer with delta time calculation.
     /// </summary>
-    public class WinFormsTimerProvider : ITimerProvider
+    public class WinFormsTimerProvider : ITimerProvider, IDisposable
     {
         private Stopwatch _animationStopwatch;
         private Timer _animationTimer;
@@ -89,6 +89,17 @@ namespace Engine.Platform.WinForms
         public void StopTimers()
         {
             _animationTimer.Stop();
+            // Also stop the clock, so ElapsedTimeInSeconds doesn't keep advancing while stopped.
+            _animationStopwatch.Stop();
+        }
+
+        /// <summary>
+        /// Stops and releases the underlying WinForms timer (a native window-message timer).
+        /// </summary>
+        public void Dispose()
+        {
+            StopTimers();
+            _animationTimer.Dispose();
         }
     }
 }
