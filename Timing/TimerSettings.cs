@@ -14,7 +14,11 @@ namespace Engine.Timing
     /// </summary>
     public static class TimerSettings
     {
-        private const int GameAnimationFPS = 60;
+        /// <summary>
+        /// Target animation frame rate. Also the reference tick rate that
+        /// Physics2D's per-tick tuned constants and velocities are expressed in.
+        /// </summary>
+        public const int GameAnimationFPS = 60;
 
         /// <summary>
         /// Gets the timer interval in milliseconds for the game animation timer.

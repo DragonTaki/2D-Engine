@@ -87,7 +87,12 @@ namespace Engine.Physics
             // Elapsed time since the last call, so velocity/position integrate
             // at a real-world rate instead of one that speeds up or slows
             // down with however often SmoothUpdate happens to be called.
-            float deltaTime = GlobalTime.Timer.DeltaTimeInSeconds;
+            // Expressed in reference ticks (1 tick = 1/60 s), not seconds: every
+            // velocity and constant here (SpringK, Damping, star drift speeds,
+            // effect accelerations) was tuned as "per tick" when this integrated
+            // once per call. Integrating in seconds silently rescaled all of them
+            // (velocities 60x slower, spring pull ~3600x weaker - no scroll rebound).
+            float deltaTime = GlobalTime.Timer.DeltaTimeInSeconds * TimerSettings.GameAnimationFPS;
 
             // Integrate all sources of acceleration
             Acceleration.Target = Vector2F.Zero;
