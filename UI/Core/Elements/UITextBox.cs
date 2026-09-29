@@ -33,8 +33,35 @@ namespace Engine.UI.Elements
         #region Fields / Properties
         public UIScrollContainer ScrollContainer { get; private set; }
 
-        public IFont Font { get; set; } =
-            GraphicsBackend.Factory.CreateFont(GraphicsBackend.Factory.GenericSansSerifFontFamily, 10f);
+        /// <remarks>Same ownership rule as <see cref="UILabel.Font"/>.</remarks>
+        public IFont Font
+        {
+            get
+            {
+                if (_font == null)
+                {
+                    _font = GraphicsBackend.Factory.CreateFont(GraphicsBackend.Factory.GenericSansSerifFontFamily, 10f);
+                    _ownsFont = true;
+                }
+                return _font;
+            }
+            set
+            {
+                if (ReferenceEquals(value, _font))
+                    return;
+                if (_ownsFont)
+                    _font?.Dispose();
+                _font = value;
+                _ownsFont = false;
+            }
+        }
+
+        private IFont _font;
+        private bool _ownsFont;
+
+        // Per-style fonts for log lines, shared by every line label and owned by this
+        // text box (creating one per AppendLine leaked a native font per log line).
+        private readonly List<IFont> _lineFonts = new();
         public float LineHeight { get; set; }
         public Color BackgroundColor { get; set; } = Color.Black;
         public Color TextColor { get; set; } = Color.White;
@@ -113,7 +140,7 @@ namespace Engine.UI.Elements
                 var style = FontStyleFlags.Regular;
                 if (bold) style |= FontStyleFlags.Bold;
                 if (italic) style |= FontStyleFlags.Italic;
-                IFont font = GraphicsBackend.Factory.CreateFont(Font.FontFamily, Font.Size, style);
+                IFont font = GetLineFont(style);
 
                 SizeF size = g.MeasureString(line, font);
     
@@ -145,6 +172,35 @@ namespace Engine.UI.Elements
         }
 
         #endregion
+
+        private IFont GetLineFont(FontStyleFlags style)
+        {
+            foreach (var f in _lineFonts)
+            {
+                if (f.Style == style && f.Size == Font.Size &&
+                    (ReferenceEquals(f.FontFamily, Font.FontFamily) || f.FontFamily.Name == Font.FontFamily.Name))
+                    return f;
+            }
+
+            var font = GraphicsBackend.Factory.CreateFont(Font.FontFamily, Font.Size, style);
+            _lineFonts.Add(font);
+            return font;
+        }
+
+        protected override void DisposeUI()
+        {
+            base.DisposeUI();
+
+            // Labels are children and get disposed first; they don't own these.
+            foreach (var f in _lineFonts)
+                f.Dispose();
+            _lineFonts.Clear();
+
+            if (_ownsFont)
+                _font?.Dispose();
+            _font = null;
+            _ownsFont = false;
+        }
 
         #region Draw
 

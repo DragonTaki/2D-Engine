@@ -37,8 +37,34 @@ namespace Engine.UI.Core.Elements
         /// <summary>
         /// Font used to render the text.
         /// </summary>
-        public IFont Font { get; set; } =
-            GraphicsBackend.Factory.CreateFont(GraphicsBackend.Factory.GenericSansSerifFontFamily, 10f);
+        /// <remarks>
+        /// The default font is created lazily and owned (disposed) by this label; a font
+        /// assigned from outside is owned by whoever created it and is never disposed here.
+        /// </remarks>
+        public IFont Font
+        {
+            get
+            {
+                if (_font == null)
+                {
+                    _font = GraphicsBackend.Factory.CreateFont(GraphicsBackend.Factory.GenericSansSerifFontFamily, 10f);
+                    _ownsFont = true;
+                }
+                return _font;
+            }
+            set
+            {
+                if (ReferenceEquals(value, _font))
+                    return;
+                if (_ownsFont)
+                    _font?.Dispose();
+                _font = value;
+                _ownsFont = false;
+            }
+        }
+
+        private IFont _font;
+        private bool _ownsFont;
 
         /// <summary>
         /// Color of the text.
@@ -75,6 +101,22 @@ namespace Engine.UI.Core.Elements
         public UILabel() : base(type: UIElementType.Label)
         {
 
+        }
+
+        protected override void DisposeUI()
+        {
+            base.DisposeUI();
+
+            // Render caches filled by UILabelRenderer.
+            _cachedBrush?.Dispose();
+            _cachedBrush = null;
+            _cachedFormat?.Dispose();
+            _cachedFormat = null;
+
+            if (_ownsFont)
+                _font?.Dispose();
+            _font = null;
+            _ownsFont = false;
         }
     }
 }
