@@ -58,7 +58,11 @@ namespace Engine.Platform.Skia
             if (!System.IO.File.Exists(filePath))
                 throw new System.IO.FileNotFoundException($"Font file not found: {filePath}");
 
-            _loadedFontFamilies[key] = new SkiaFontFamily(SKTypeface.FromFile(filePath));
+            // FromFile returns null for an unreadable/unsupported file; fail here rather
+            // than with a NullReferenceException at the first CreateFont.
+            var typeface = SKTypeface.FromFile(filePath)
+                ?? throw new System.IO.InvalidDataException($"No typeface could be loaded from: {filePath}");
+            _loadedFontFamilies[key] = new SkiaFontFamily(typeface);
         }
 
         public IFontFamily GetLoadedFontFamily(string key)

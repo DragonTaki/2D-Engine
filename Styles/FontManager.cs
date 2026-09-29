@@ -10,6 +10,7 @@
 using System;
 using System.IO;
 
+using Engine.Logging;
 using Engine.Platform;
 
 namespace Engine.Styles
@@ -26,7 +27,17 @@ namespace Engine.Styles
         private static void AddFont(string key, string fileName)
         {
             string fontPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Font", fileName);
-            GraphicsBackend.Factory.LoadFontFamily(key, fontPath);
+
+            // A missing or unreadable font shouldn't abort startup (or skip the remaining
+            // fonts): StyleHelper.GetFont already falls back when a key isn't loaded.
+            try
+            {
+                GraphicsBackend.Factory.LoadFontFamily(key, fontPath);
+            }
+            catch (Exception ex) when (ex is IOException || ex is ArgumentException || ex is System.Runtime.InteropServices.ExternalException)
+            {
+                AppLogger.Log($"Failed to load font '{key}' from {fontPath}: {ex.Message}", LogLevel.ERROR);
+            }
         }
 
         public static IFontFamily GetFontFamily(string key) => GraphicsBackend.Factory.GetLoadedFontFamily(key);
