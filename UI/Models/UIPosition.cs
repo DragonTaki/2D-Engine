@@ -46,8 +46,12 @@ namespace Engine.UI.Models
         /// </param>
         public UIPosition(Vector2F basePosition)
         {
-            Base = basePosition;
-            Current = basePosition;
+            // Separate copies: Vector2F is a mutable class, and the implicit conversion
+            // below is used with shared static defaults (e.g. LocalPosition =
+            // MenuDefaults.Position), so storing the instance made Base, Current and that
+            // global default one object - an in-place write would corrupt all of them.
+            Base = new Vector2F(basePosition.X, basePosition.Y);
+            Current = new Vector2F(basePosition.X, basePosition.Y);
         }
 
         #endregion

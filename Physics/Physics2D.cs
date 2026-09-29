@@ -279,9 +279,12 @@ namespace Engine.Physics
         /// <param name="position">The position vector.</param>
         public Position(Vector2F position)
         {
-            Base = position;
-            Current = position;
-            Target = position;
+            // Separate copies: Vector2F is a mutable class, so sharing one instance made an
+            // in-place write to Current (e.g. Current.X = ...) move Base/Target too - and
+            // the caller's own vector.
+            Base = new Vector2F(position.X, position.Y);
+            Current = new Vector2F(position.X, position.Y);
+            Target = new Vector2F(position.X, position.Y);
         }
 
         /// <summary>
@@ -355,9 +358,10 @@ namespace Engine.Physics
         /// <param name="speed">The speed vector.</param>
         public Velocity(Vector2F speed)
         {
-            Base = speed;
-            Current = speed;
-            Target = speed;
+            // Separate copies, see Position(Vector2F).
+            Base = new Vector2F(speed.X, speed.Y);
+            Current = new Vector2F(speed.X, speed.Y);
+            Target = new Vector2F(speed.X, speed.Y);
         }
 
         /// <summary>
@@ -405,8 +409,9 @@ namespace Engine.Physics
         /// <param name="accel">The acceleration vector.</param>
         public Acceleration(Vector2F accel)
         {
-            Current = accel;
-            Target = accel;
+            // Separate copies, see Position(Vector2F).
+            Current = new Vector2F(accel.X, accel.Y);
+            Target = new Vector2F(accel.X, accel.Y);
         }
 
         /// <summary>
