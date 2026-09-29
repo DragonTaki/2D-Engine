@@ -35,7 +35,7 @@ namespace Engine.Timing
         {
             if (!_running) return;
 
-            DeltaTimeInSeconds = deltaTimeInSeconds;
+            DeltaTimeInSeconds = Math.Clamp(deltaTimeInSeconds, 0f, TimerSettings.MaxDeltaTimeInSeconds);
             ElapsedTimeInSeconds += deltaTimeInSeconds;
             OnAnimationFrame?.Invoke();
         }

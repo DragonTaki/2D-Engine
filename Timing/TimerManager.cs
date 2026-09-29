@@ -52,7 +52,7 @@ namespace Engine.Timing
                 if (!_animationStopwatch.IsRunning) return;
 
                 long current = _animationStopwatch.ElapsedMilliseconds;
-                DeltaTimeInSeconds = (current - _lastAnimationTimestamp) / 1000f;
+                DeltaTimeInSeconds = Math.Clamp((current - _lastAnimationTimestamp) / 1000f, 0f, TimerSettings.MaxDeltaTimeInSeconds);
                 _lastAnimationTimestamp = current;
 
                 OnAnimationFrame?.Invoke();

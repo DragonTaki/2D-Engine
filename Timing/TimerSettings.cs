@@ -23,6 +23,13 @@ namespace Engine.Timing
         public const int GameAnimationInterval = 1000 / GameAnimationFPS;
 
         /// <summary>
+        /// Upper bound on a single frame's delta time, in seconds. A stall (window
+        /// drag, modal loop, GC pause, debugger break) would otherwise feed one huge
+        /// step into physics/animation integration; standard "max frame time" guard.
+        /// </summary>
+        public const float MaxDeltaTimeInSeconds = 0.1f;
+
+        /// <summary>
         /// Gets the timer interval in milliseconds for the red player's timer.
         /// </summary>
         public const int RedPlayerTimerInterval = 1000;
