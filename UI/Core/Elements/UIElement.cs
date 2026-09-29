@@ -15,6 +15,7 @@ using System.Threading;
 
 using Engine.Geometry;
 using Engine.Mathematics;
+using Engine.Physics;
 using Engine.Platform;
 using Engine.UI.Constants.Components;
 using Engine.UI.Constants.Core;
@@ -446,11 +447,15 @@ namespace Engine.UI.Core.Elements
         #region Update / Draw / Reset
 
         /// <summary>
-        /// Update element and children, including physics and handler updates.
+        /// Update element and children (handler updates).
         /// </summary>
+        /// <remarks>
+        /// <see cref="Physics"/> is not integrated here: every <see cref="Physics2D"/>
+        /// registers itself with <see cref="PhysicsRegistry"/>, and the frame loop's
+        /// <see cref="PhysicsRegistry.UpdateAll"/> already steps it once per frame.
+        /// </remarks>
         public override void Update()
         {
-            Physics?.SmoothUpdate();
             HandlerBase?.OnUpdate();
 
             foreach (var child in Children)
