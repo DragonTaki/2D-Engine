@@ -15,10 +15,21 @@ namespace Engine.Logging
     public static class LogFileManager
     {
         private static readonly string LogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "log.txt");
+        private static readonly object _lock = new();
 
         public static void SaveLog(string message)
         {
-            File.AppendAllText(LogPath, $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} > {message}\n");
+            // Serialized: concurrent AppendAllText calls on the same file throw IOException.
+            // A logging failure (disk full, read-only folder) must not crash the caller.
+            try
+            {
+                lock (_lock)
+                    File.AppendAllText(LogPath, $"{DateTime.Now:yyyy/MM/dd HH:mm:ss} > {message}{Environment.NewLine}");
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+            {
+                Console.WriteLine($"[LogFileManager] Failed to write {LogPath}: {ex.Message}");
+            }
         }
     }
 }
