@@ -99,7 +99,10 @@ namespace Engine.UI.Core.Elements
             ScrollContainer = _factory.CreateScrollContainer();
             ScrollContainer.Layout = MenuDefaults.Scroll.Layout;
             ScrollContainer.OverscrollLimit = MenuDefaults.Scroll.OverscrollLimit;
-            ScrollContainer.VerticalAlignment = ScrollAlignment.Bottom;
+            // Menus open at their first entry. (This said Bottom, but the scroll
+            // container's first layout pass used to reset the scroll offset, so menus
+            // always actually opened at the top; that reset is fixed now.)
+            ScrollContainer.VerticalAlignment = ScrollAlignment.Top;
             AddChild(ScrollContainer);
         }
 
