@@ -200,6 +200,19 @@ namespace Engine.UI.Core.Elements
                 newSize = new Vector2F(parentBounds.Size.X * percent.X, parentBounds.Size.Y * percent.Y);
             }
 
+            // Anchoring both opposite edges (Anchor.StretchX / StretchY) stretches between
+            // them, minus the margins. Without this the Right/Bottom rule below simply
+            // overrode Left/Top and the element kept its size. (A new vector: newSize may
+            // still be this element's own Size instance.)
+            bool stretchX = anchor.HasFlag(Anchor.Left) && anchor.HasFlag(Anchor.Right);
+            bool stretchY = anchor.HasFlag(Anchor.Top) && anchor.HasFlag(Anchor.Bottom);
+            if (stretchX || stretchY)
+            {
+                newSize = new Vector2F(
+                    stretchX ? Math.Max(0f, parentBounds.Size.X - margin.Left - margin.Right) : newSize.X,
+                    stretchY ? Math.Max(0f, parentBounds.Size.Y - margin.Top - margin.Bottom) : newSize.Y);
+            }
+
             // Compute position
             float x = newPos.X, y = newPos.Y;
 
