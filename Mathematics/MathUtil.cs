@@ -47,7 +47,9 @@ namespace Engine.Mathematics
 
         public static float LinearMap(float inputValue, float minInput, float maxInput, float minOutput, float maxOutput)
         {
-            if ((maxInput - minInput) == 0) return float.NaN;
+            // Degenerate input range: every input maps to the start of the output range
+            // (NaN would silently propagate into positions/colors).
+            if ((maxInput - minInput) == 0) return minOutput;
             // Normalize inputValue to the range [0, 1]
             float normalizedInput = (inputValue - minInput) / (maxInput - minInput);
 
@@ -57,19 +59,29 @@ namespace Engine.Mathematics
 
         public static float SigmoidMap(float inputValue, float minInput, float maxInput, float minOutput, float maxOutput)
         {
-            if ((maxInput - minInput) == 0) return float.NaN;
+            // Degenerate input range: every input maps to the start of the output range
+            // (NaN would silently propagate into positions/colors).
+            if ((maxInput - minInput) == 0) return minOutput;
             // Normalize inputValue to the range [0, 1]
             float normalizedInput = (inputValue - minInput) / (maxInput - minInput);
 
             // Sigmoid function, mapping values ​​from [0, 1] to the [0, 1] interval
             float sigmoidValue = 1 / (1 + (float)Math.Exp(-10 * (normalizedInput - 0.5f))); // 10 is the smoothness factor of the adjustment
 
+            // The raw logistic curve only reaches ~0.0067 / ~0.9933 at the ends; rescale so
+            // minInput/maxInput map exactly to minOutput/maxOutput like the other Map functions.
+            float sigmoidAt0 = 1 / (1 + (float)Math.Exp(5));
+            float sigmoidAt1 = 1 / (1 + (float)Math.Exp(-5));
+            sigmoidValue = (sigmoidValue - sigmoidAt0) / (sigmoidAt1 - sigmoidAt0);
+
             // Map the sigmoid value to the range [minOutput, maxOutput]
             return minOutput + sigmoidValue * (maxOutput - minOutput);
         }
         public static float LogMap(float inputValue, float minInput, float maxInput, float minOutput, float maxOutput)
         {
-            if ((maxInput - minInput) == 0) return float.NaN;
+            // Degenerate input range: every input maps to the start of the output range
+            // (NaN would silently propagate into positions/colors).
+            if ((maxInput - minInput) == 0) return minOutput;
             // Normalize inputValue to the range [0, 1]
             float normalizedInput = (inputValue - minInput) / (maxInput - minInput);
 
@@ -82,12 +94,17 @@ namespace Engine.Mathematics
 
         public static float NormalDistributionMap(float inputValue, float minInput, float maxInput, float minOutput, float maxOutput)
         {
-            if ((maxInput - minInput) == 0) return float.NaN;
+            // Degenerate input range: every input maps to the start of the output range
+            // (NaN would silently propagate into positions/colors).
+            if ((maxInput - minInput) == 0) return minOutput;
             // Normalize inputValue to the range [0, 1]
             float normalizedInput = (inputValue - minInput) / (maxInput - minInput);
 
-            // Normal distribution function, with a mean of 0.5 and a standard deviation of 0.1
-            float gaussianValue = (float)(1 / Math.Sqrt(2 * Math.PI * 0.1f) * Math.Exp(-Math.Pow(normalizedInput - 0.5f, 2) / (2 * 0.1f * 0.1f)));
+            // Normal distribution function, with a mean of 0.5 and a standard deviation of 0.1,
+            // scaled to a peak of 1 at the mean so the result stays within [minOutput, maxOutput].
+            // (The previous 1/sqrt(2*pi*0.1) coefficient was neither the pdf's 1/(sigma*sqrt(2*pi))
+            // nor 1, so the peak overshot maxOutput.)
+            float gaussianValue = (float)Math.Exp(-Math.Pow(normalizedInput - 0.5f, 2) / (2 * 0.1f * 0.1f));
 
             // Map the normal distribution value to the range [minOutput, maxOutput]
             return minOutput + gaussianValue * (maxOutput - minOutput);
@@ -112,7 +129,8 @@ namespace Engine.Mathematics
             int r = ClampToByte(from.R + (int)((to.R - from.R) * t));
             int g = ClampToByte(from.G + (int)((to.G - from.G) * t));
             int b = ClampToByte(from.B + (int)((to.B - from.B) * t));
-            return Color.FromArgb(r, g, b);
+            int a = ClampToByte(from.A + (int)((to.A - from.A) * t));
+            return Color.FromArgb(a, r, g, b);
         }
     }
 }
