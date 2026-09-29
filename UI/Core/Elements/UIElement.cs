@@ -462,7 +462,9 @@ namespace Engine.UI.Core.Elements
         {
             HandlerBase?.OnUpdate();
 
-            foreach (var child in Children)
+            // Snapshot: a handler's OnUpdate (e.g. posted actions) may add/remove children,
+            // which would otherwise throw InvalidOperationException mid-enumeration.
+            foreach (var child in Children.ToArray())
                 child.Update();
         }
 
@@ -503,7 +505,7 @@ namespace Engine.UI.Core.Elements
             if (this is IResettable)
                 OnReset();      // Main reset: clear the content and reset the attributes
 
-            foreach (var child in Children)
+            foreach (var child in Children.ToArray())
                 child.Reset();  // Reset child elements
 
             OnAfterReset();     // Post-stage: restart animation, rebind data, etc.
@@ -531,7 +533,7 @@ namespace Engine.UI.Core.Elements
         {
             HandlerBase?.OnEndFrame();
 
-            foreach (var child in Children)
+            foreach (var child in Children.ToArray())
                 if (child.IsVisible)
                     child.EndFrame();
         }
