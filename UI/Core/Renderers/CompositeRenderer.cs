@@ -33,7 +33,12 @@ namespace Engine.UI.Core.Renderers
         public CompositeRenderer<TElement, THandler, TRenderer> Add(UIRenderer<TElement, THandler, TRenderer> renderer)
         {
             if (renderer != null)
+            {
                 _renderers.Add(renderer);
+                // Bind a renderer added after this composite was initialized too.
+                if (IsInitialized)
+                    renderer.Init(Element);
+            }
             return this;
         }
 
@@ -51,12 +56,24 @@ namespace Engine.UI.Core.Renderers
         }
 
         /// <summary>
+        /// Binds every child renderer to the same element (their Element was never set,
+        /// so e.g. Invalidate() on one of them did nothing).
+        /// </summary>
+        public override void Init(UIElementBase element)
+        {
+            base.Init(element);
+            foreach (var renderer in _renderers)
+                renderer.Init(element);
+        }
+
+        /// <summary>
         /// Draws all renderers in the order they were added.
         /// </summary>
         public override void OnRender(IGraphics g, TElement element)
         {
+            // Render, not OnRender: runs each renderer's BeforeRender/AfterRender hooks too.
             foreach (var renderer in _renderers)
-                renderer.OnRender(g, element);
+                renderer.Render(g, element);
         }
     }
 }
