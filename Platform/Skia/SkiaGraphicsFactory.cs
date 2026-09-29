@@ -98,7 +98,8 @@ namespace Engine.Platform.Skia
             // italic are synthesized rather than switched to a real bold/
             // italic typeface variant.
             if ((style & FontStyleFlags.Bold) != 0) font.Embolden = true;
-            if ((style & FontStyleFlags.Italic) != 0) font.SkewX = 0.25f;
+            // Skia's synthetic oblique leans right with a negative x-skew (-0.25 is its documented typical value).
+            if ((style & FontStyleFlags.Italic) != 0) font.SkewX = -0.25f;
 
             return new SkiaFont(font, fontFamily, style);
         }
