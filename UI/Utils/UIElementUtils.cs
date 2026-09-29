@@ -34,8 +34,13 @@ namespace Engine.UI.Utils
         {
             foreach (var element in elements)
             {
-                float y = element.LocalPosition.Current.Y;  // Current Y position relative to parent/root
-                float h = element.Size.Y;                   // Height of the element
+                // Absolute bounds (including the scroll offset), the same space as clippingRect.
+                // LocalPosition is relative to the scroll content and never moves when
+                // scrolling, so comparing it against the absolute viewport culled the wrong
+                // buttons (e.g. ones scrolled into view from below stayed hidden).
+                var bounds = element.GetCurrentAbsoluteBounds();
+                float y = bounds.Position.Y;
+                float h = bounds.Size.Y;
 
                 // Enable element if any portion is visible inside clipping rectangle
                 element.IsEnabled = y + h > clippingRect.Top && y < clippingRect.Bottom;
