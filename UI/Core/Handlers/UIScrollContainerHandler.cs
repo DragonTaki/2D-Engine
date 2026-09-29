@@ -31,7 +31,9 @@ namespace Engine.UI.Core.Handlers
             float targetOffset = Math.Sign(velocity) * Math.Min(Math.Abs(velocity), 60); // You can adjust this multiplier (e.g., 60) for higher velocities.
 
             // Apply target offset depending on scroll direction
-            Element.Physics.Position.Target = Element.Physics.Position.Current + targetOffset;
+            // Vertical only: adding the bare float went through the implicit
+            // float -> Vector2F(f, f) conversion and shifted X by the same amount.
+            Element.Physics.Position.Target = Element.Physics.Position.Current + new Vector2F(0, targetOffset);
             Element.Physics.Position.HasTarget = true;
         }
 
