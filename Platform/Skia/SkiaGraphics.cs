@@ -22,6 +22,7 @@ namespace Engine.Platform.Skia
 
         private readonly SKSurface _ownedSurface;
         private int _clipDepth;
+        private readonly Stack<(int saveCount, int clipDepth)> _transformSaves = new();
 
         public SkiaGraphics(SKCanvas native, SKSurface ownedSurface = null)
         {
@@ -239,12 +240,22 @@ namespace Engine.Platform.Skia
 
         public void PushTransform(float scale, float offsetX, float offsetY)
         {
-            Native.Save();
+            // Remember the exact save level: SetClip shares the canvas save stack, so a
+            // plain Restore() in PopTransform would undo an unpaired clip instead of this.
+            _transformSaves.Push((Native.Save(), _clipDepth));
             Native.Translate(offsetX, offsetY);
             Native.Scale(scale, scale);
         }
 
-        public void PopTransform() => Native.Restore();
+        public void PopTransform()
+        {
+            if (_transformSaves.Count == 0)
+                return;
+
+            var (saveCount, clipDepth) = _transformSaves.Pop();
+            Native.RestoreToCount(saveCount);
+            _clipDepth = clipDepth;
+        }
 
         // Skia is always anti-aliased per-paint (each IBrush/IPen is created
         // with IsAntialias = true — see SkiaGraphicsFactory), so there is no
