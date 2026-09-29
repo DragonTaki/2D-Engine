@@ -114,7 +114,32 @@ namespace Engine.UI.Core.Elements
         /// <summary>
         /// Maximum overscroll allowed at edges.
         /// </summary>
+        /// <remarks>
+        /// Not what bounds overscroll: by design the content can be pulled until its far
+        /// edge meets the opposite viewport edge (see <see cref="ClampToOverscrollRange"/>).
+        /// </remarks>
         public float OverscrollLimit { get; set; } = 40.0f;
+
+        /// <summary>
+        /// Scroll offset at which content bottom meets the viewport bottom (0 if it fits).
+        /// ScrollY between this and 0 is the normal, non-overscrolled range.
+        /// </summary>
+        public float MinNormalScrollY => OverContent ? -(ContentHeight - Size.Y) : 0f;
+
+        /// <summary>
+        /// Keeps ScrollY within the allowed overscroll range: pulling up stops when the
+        /// content's bottom edge reaches the viewport top, pulling down stops when the
+        /// content's top edge reaches the viewport bottom.
+        /// </summary>
+        public void ClampToOverscrollRange()
+        {
+            float min = -ContentHeight;
+            float max = Size.Y;
+            if (ScrollY < min)
+                ScrollY = min;
+            else if (ScrollY > max)
+                ScrollY = max;
+        }
 
         /// <summary>
         /// Defines how content is aligned vertically when initialized or refreshed.
@@ -237,7 +262,10 @@ namespace Engine.UI.Core.Elements
             {
                 AllowDragY = true,
                 AllowDragX = false,
-                AllowWheel = true
+                AllowWheel = true,
+                // Handler is bound after construction, hence the lazy lookups.
+                OnRelease = velocity => ScrollHandler?.StartInertia(velocity.Y),
+                OnPress = () => ScrollHandler?.StopInertia()
             });
 
             Physics.Movement.CanSpring = true;

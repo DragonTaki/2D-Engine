@@ -11,6 +11,7 @@ using System;
 using Engine.Platform;
 
 using Engine.Mathematics;
+using Engine.Timing;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Renderers;
 
@@ -20,6 +21,46 @@ namespace Engine.UI.Core.Handlers
     {
         private UIScrollContainer ScrollContainer => Element as UIScrollContainer;
         public UIScrollContainerHandler() { }
+
+        #region Inertia
+
+        // A short post-release glide, not a long fling: velocity decays exponentially with
+        // this time constant (~95% gone after 3x it), capped at MaxInertiaSpeed.
+        private const float InertiaTimeConstant = 0.08f;
+        private const float MaxInertiaSpeed = 2000f;      // units/second
+        private const float InertiaStopSpeed = 20f;       // units/second
+        // Past the normal range the glide dies this much faster, then the edge spring rebounds.
+        private const float OverscrollInertiaDecayFactor = 4f;
+
+        private float _inertiaVelocityY;
+
+        /// <summary>Starts the post-release glide with the drag's release velocity.</summary>
+        public void StartInertia(float velocityY) =>
+            _inertiaVelocityY = Math.Clamp(velocityY, -MaxInertiaSpeed, MaxInertiaSpeed);
+
+        /// <summary>Stops any glide in progress (e.g. on a new press or wheel scroll).</summary>
+        public void StopInertia() => _inertiaVelocityY = 0f;
+
+        /// <returns>True while the glide is still moving the content.</returns>
+        private bool StepInertia()
+        {
+            if (_inertiaVelocityY == 0f)
+                return false;
+
+            float dt = GlobalTime.Timer.DeltaTimeInSeconds;
+            ScrollContainer.ScrollY += _inertiaVelocityY * dt;
+
+            bool overscrolled = ScrollContainer.ScrollY > 0f || ScrollContainer.ScrollY < ScrollContainer.MinNormalScrollY;
+            float tau = overscrolled ? InertiaTimeConstant / OverscrollInertiaDecayFactor : InertiaTimeConstant;
+            _inertiaVelocityY *= MathF.Exp(-dt / tau);
+
+            if (Math.Abs(_inertiaVelocityY) < InertiaStopSpeed)
+                _inertiaVelocityY = 0f;
+
+            return _inertiaVelocityY != 0f;
+        }
+
+        #endregion
 
         /// <summary>
         /// Applies a physics target offset based on current scrolling velocity for rebound/inertia.
@@ -114,6 +155,16 @@ namespace Engine.UI.Core.Handlers
         /// </summary>
         internal override void OnUpdate()
         {
+            bool gliding = StepInertia();
+            ScrollContainer.ClampToOverscrollRange();
+
+            // Let the glide finish before the edge spring (below) pulls the content back.
+            if (gliding)
+            {
+                Element.Physics.Position.HasTarget = false;
+                return;
+            }
+
             //Console.WriteLine($"ScrollY: {ScrollY}, gap: {-(ContentHeight - Size.Y)}, Physics.Position.Base: {Physics.Position.Base}, Physics.Position.Current: {Physics.Position.Current}, Physics.Position.Target: {Physics.Position.Target}");
             // If content fits within viewport, return to base position
             if (!ScrollContainer.OverContent)

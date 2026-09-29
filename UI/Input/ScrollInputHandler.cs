@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using Engine.Platform;
@@ -59,6 +60,11 @@ namespace Engine.UI.Input
         #endregion
 
         private int _nextTargetOrder;
+
+        // Recent drag steps, for the release velocity. Only the last ReleaseVelocityWindow
+        // counts: if the pointer stopped before being released, there's no fling.
+        private readonly List<(long Timestamp, Vector2F Delta)> _dragSamples = new();
+        private const double ReleaseVelocityWindowSeconds = 0.08;
 
         #region Constructor
 
@@ -159,6 +165,8 @@ namespace Engine.UI.Input
                 return false;
 
             _activeTarget = target;
+            _dragSamples.Clear();
+            target.Behavior?.OnPress?.Invoke();
             _dragHandler.OnMouseDown(e);
             return true;
         }
@@ -221,8 +229,41 @@ namespace Engine.UI.Input
         /// <returns>True if a drag was active and released; otherwise false.</returns>
         public bool OnMouseUp(IMouseEvent e)
         {
+            var target = _activeTarget;
+            bool wasDragging = _dragHandler.IsDragging && _dragHandler.HasMovedEnoughToDrag;
+
             bool handled = _dragHandler.OnMouseUp(e);
+
+            if (wasDragging && target != null)
+                target.Behavior?.OnRelease?.Invoke(ComputeReleaseVelocity());
+            _dragSamples.Clear();
+
             return handled;
+        }
+
+        /// <summary>
+        /// Average drag velocity (units/second) over the last ReleaseVelocityWindowSeconds.
+        /// </summary>
+        private Vector2F ComputeReleaseVelocity()
+        {
+            long now = Stopwatch.GetTimestamp();
+            long windowStart = now - (long)(ReleaseVelocityWindowSeconds * Stopwatch.Frequency);
+
+            float sumX = 0f, sumY = 0f;
+            long oldest = now;
+            foreach (var (timestamp, delta) in _dragSamples)
+            {
+                if (timestamp < windowStart)
+                    continue;
+                sumX += delta.X;
+                sumY += delta.Y;
+                oldest = Math.Min(oldest, timestamp);
+            }
+
+            // At least one 60 Hz frame of span, so a single last-moment step can't yield
+            // an absurd speed.
+            double span = Math.Max((now - oldest) / (double)Stopwatch.Frequency, 1.0 / 60.0);
+            return new Vector2F((float)(sumX / span), (float)(sumY / span));
         }
 
         /// <summary>
@@ -236,6 +277,8 @@ namespace Engine.UI.Input
             var target = FindTargetAt(e.Location);
             if (target?.Physics == null || target.Behavior?.AllowWheel != true)
                 return false;
+
+            target.Behavior.OnPress?.Invoke();
 
             target.Physics.Position.Current += new Vector2F(0, -e.Delta * 0.25f);
             return true;
@@ -270,6 +313,11 @@ namespace Engine.UI.Input
 
             // Apply delta directly to Physics position
             _activeTarget.Physics.Position.Current += new Vector2F(dx, dy);
+
+            long now = Stopwatch.GetTimestamp();
+            _dragSamples.Add((now, new Vector2F(dx, dy)));
+            long windowStart = now - (long)(ReleaseVelocityWindowSeconds * Stopwatch.Frequency);
+            _dragSamples.RemoveAll(s => s.Timestamp < windowStart);
 
             // Reset instantaneous velocity to zero while dragging
             _activeTarget.Physics.Velocity.Current = Vector2F.Zero;
@@ -310,7 +358,11 @@ namespace Engine.UI.Input
         /// <summary>
         /// Abandons any drag in progress (see <see cref="DragHandler.Cancel"/>).
         /// </summary>
-        public void CancelDrag() => _dragHandler.Cancel();
+        public void CancelDrag()
+        {
+            _dragHandler.Cancel();
+            _dragSamples.Clear();
+        }
 
         /// <summary>
         /// Returns the configured drag threshold for detection.
@@ -348,6 +400,17 @@ namespace Engine.UI.Input
 
             /// <summary>If true, allows scrolling with mouse wheel.</summary>
             public bool AllowWheel { get; set; } = true;
+
+            /// <summary>
+            /// Called when a drag on this target is released, with the drag velocity at that
+            /// moment (units per second) - e.g. to start a short inertia animation.
+            /// </summary>
+            public Action<Vector2F> OnRelease { get; set; }
+
+            /// <summary>
+            /// Called when this target is pressed or wheel-scrolled - e.g. to stop inertia.
+            /// </summary>
+            public Action OnPress { get; set; }
         }
 
         #endregion
