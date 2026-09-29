@@ -62,7 +62,12 @@ namespace Engine.UI.Core.Infrastructure
         public static TDialog Dialog => _dialog;
 
         /// <summary>Shows the overlay mask behind the dialog.</summary>
-        public static void ShowMask() => _overlayMask.Show();
+        public static void ShowMask()
+        {
+            if (_overlayMask == null)
+                throw new InvalidOperationException("DialogManager not initialized: call Init(root) before ShowMask().");
+            _overlayMask.Show();
+        }
 
         /// <summary>Hides both the overlay mask and the dialog.</summary>
         public static void HideAll()
