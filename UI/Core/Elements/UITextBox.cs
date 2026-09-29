@@ -173,6 +173,43 @@ namespace Engine.UI.Elements
 
         #endregion
 
+        /// <summary>
+        /// Appends one line made of inline text fragments (each with its own color and
+        /// bold/italic), as a single label, e.g. a multi-colored log message.
+        /// </summary>
+        public void AppendFragmentLine(IReadOnlyList<TextFragment> fragments)
+        {
+            if (fragments == null || fragments.Count == 0)
+                return;
+
+            using var g = GraphicsBackend.Factory.CreateMeasurementContext();
+
+            float y = ScrollContainer.ContentHeight;
+            if (y != 0)
+                y += ParagraphSpacing;  // Same spacing as a new AppendLine paragraph
+
+            // Line height = the tallest fragment (bold/italic variants can differ slightly).
+            float height = 0f;
+            foreach (var frag in fragments)
+            {
+                var style = FontStyleFlags.Regular;
+                if (frag.Bold) style |= FontStyleFlags.Bold;
+                if (frag.Italic) style |= FontStyleFlags.Italic;
+                height = Math.Max(height, g.MeasureString(string.IsNullOrEmpty(frag.Text) ? " " : frag.Text, GetLineFont(style)).Height);
+            }
+
+            var label = _factory.CreateElement<UILabel, UILabelHandler, UILabelRenderer>();
+            label.Font = GetLineFont(FontStyleFlags.Regular);
+            label.ForeColor = TextColor;
+            label.Layout = new Geometry.LayoutF(0, y, Size.X, height);
+            label.WordWrap = false;
+            label.TextAlign = ContentAlign.MiddleLeft;
+            label.Handler.SetTextFragments(new List<TextFragment>(fragments));
+
+            ScrollContainer.AddChild(label);
+            ScrollContainer.ContentHeight = y + height;
+        }
+
         private IFont GetLineFont(FontStyleFlags style)
         {
             foreach (var f in _lineFonts)

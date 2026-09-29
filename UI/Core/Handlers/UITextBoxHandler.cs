@@ -50,13 +50,15 @@ namespace Engine.UI.Core.Handlers
         /// </summary>
         public void AddMessage(IEnumerable<TextFragment> fragments)
         {
-            foreach (var frag in fragments)
-            {
-                TextBox.AppendLine(frag.Text, frag.Color, frag.Bold, frag.Italic);
-            }
+            // Materialize once: the sequence used to be enumerated twice (a one-shot
+            // iterator would log an empty message on the second pass).
+            var list = fragments?.ToList() ?? new List<TextFragment>();
+
+            // One message = one line of inline runs (it used to become one line per fragment).
+            TextBox.AppendFragmentLine(list);
 
             // 可以傳送事件，也可改為傳 fragments
-            OnMessageAdded?.Invoke(string.Join("\n", fragments.Select(f => f.Text)));
+            OnMessageAdded?.Invoke(string.Concat(list.Select(f => f.Text)));
         }
     }
 }
