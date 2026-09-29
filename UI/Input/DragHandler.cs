@@ -8,6 +8,7 @@
 /* ----- ----- ----- ----- */
 
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using Engine.Platform;
 
@@ -40,10 +41,12 @@ namespace Engine.UI.Input
         private Vector2F _dragLastPoint = Vector2F.Zero;
 
         /// <summary>Records when the mouse button was first pressed.</summary>
-        private DateTime _dragStartTime;
+        // Stopwatch timestamps: monotonic, unlike DateTime.Now (wall clock), which can jump
+        // with clock/DST adjustments and has coarse resolution on some platforms.
+        private long _dragStartTime;
 
         /// <summary>Records the timestamp of the last movement or release event.</summary>
-        private DateTime _dragLastTime;
+        private long _dragLastTime;
 
         /// <summary>Tracks the total accumulated movement distance since drag start.</summary>
         private float _totalDragDistance = 0.0f;
@@ -65,7 +68,7 @@ namespace Engine.UI.Input
         /// <summary>
         /// Checks if the total drag duration has exceeded the time threshold.
         /// </summary>
-        public bool DragTimeOverThreshold => (_dragLastTime - _dragStartTime).TotalMilliseconds > DragTimeThreshold;
+        public bool DragTimeOverThreshold => Stopwatch.GetElapsedTime(_dragStartTime, _dragLastTime).TotalMilliseconds > DragTimeThreshold;
 
         #endregion
 
@@ -117,8 +120,8 @@ namespace Engine.UI.Input
             // Copy: Vector2F is a mutable reference type.
             _dragStartPoint = new Vector2F(e.X, e.Y);
             _dragLastPoint = new Vector2F(e.X, e.Y);
-            _dragStartTime = DateTime.Now;
-            _dragLastTime = DateTime.Now;
+            _dragStartTime = Stopwatch.GetTimestamp();
+            _dragLastTime = _dragStartTime;
             
             _totalDragDistance = 0.0f;
 
@@ -187,7 +190,7 @@ namespace Engine.UI.Input
             IsDragging = false;
             
             _dragLastPoint = new Vector2F(e.X, e.Y);
-            _dragLastTime = DateTime.Now;
+            _dragLastTime = Stopwatch.GetTimestamp();
 
             // Determine if this was a click instead of a drag
             bool isClick = !HasMovedEnoughToDrag ||
