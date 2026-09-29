@@ -134,6 +134,20 @@ namespace Engine.UI.Input
                 _activeTarget = null;
             }
 
+            var target = FindTargetAt(e.Location);
+            if (target == null)
+                return false;
+
+            _activeTarget = target;
+            _dragHandler.OnMouseDown(e);
+            return true;
+        }
+
+        /// <summary>
+        /// Returns the top-most interactable scroll target whose viewport contains the point, or null.
+        /// </summary>
+        private ScrollTarget FindTargetAt(Vector2F location)
+        {
             // Iterate from top-most target (higher index) to bottom
             for (int i = _scrollTargets.Count - 1; i >= 0; i--)
             {
@@ -144,20 +158,15 @@ namespace Engine.UI.Input
                     continue;
 
                 var bounds = target.ViewportGetter();
-                if (bounds == RectangleF.Empty || !bounds.Contains(e.Location))
+                if (bounds == RectangleF.Empty || !bounds.Contains(location))
                     continue;
 
                 // Hit test for child elements
-                var hitElement = target.Element.HitTestDeep(e.Location);
-                if (hitElement != null)
-                {
-                    _activeTarget = target;
-                    _dragHandler.OnMouseDown(e);
-                    return true;
-                }
+                if (target.Element.HitTestDeep(location) != null)
+                    return target;
             }
 
-            return false;
+            return null;
         }
 
         /// <summary>
@@ -183,16 +192,18 @@ namespace Engine.UI.Input
         }
 
         /// <summary>
-        /// Handles mouse wheel input for the active scroll target.
+        /// Handles mouse wheel input for the scroll target under the cursor.
         /// </summary>
         /// <param name="e">Mouse wheel event arguments.</param>
-        /// <returns>True if the event affected the active target; otherwise false.</returns>
+        /// <returns>True if the event affected a target; otherwise false.</returns>
         public bool OnMouseWheel(IMouseEvent e)
         {
-            if (_activeTarget?.Physics == null || _activeTarget?.Behavior?.AllowWheel != true)
+            // The wheel scrolls what's under the cursor, not whichever target was last pressed.
+            var target = FindTargetAt(e.Location);
+            if (target?.Physics == null || target.Behavior?.AllowWheel != true)
                 return false;
 
-            _activeTarget.Physics.Position.Current += new Vector2F(0, -e.Delta * 0.25f);
+            target.Physics.Position.Current += new Vector2F(0, -e.Delta * 0.25f);
             return true;
         }
 
