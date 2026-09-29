@@ -141,8 +141,11 @@ namespace Engine.Physics
                     // distance >= CalculateThreshold — that made damping dead code.)
                     if (Movement.CanDamping)
                     {
-                        float dampingForce = Velocity.Current.Length() * Movement.Damping;
-                        Acceleration.Target -= direction * dampingForce;
+                        // Viscous damping opposes the velocity itself (-c * v). It used to
+                        // act along the direction to the target with magnitude |v| * c, which
+                        // is only right while moving toward the target: moving away, it
+                        // pushed the object further away instead of slowing it.
+                        Acceleration.Target -= Velocity.Current * Movement.Damping;
                     }
 
                     // Adjust only if the velocity direction deviates from the target direction
