@@ -137,14 +137,21 @@ namespace Engine.UI.Core.Infrastructure
         {
             var type = typeof(TElement);
 
+            // A custom factory registered via RegisterFactory<T>(Func) takes precedence.
+            // (Previously both registries were filled but never consulted, so a custom
+            // factory - and ClearCache - had no effect.)
+            if (_factories.TryGetValue(type, out var customFactory))
+                return (TElement)customFactory(this);
+
             // 如果尚未註冊 factory，自動註冊
             if (!_factoriesWithContext.ContainsKey(type))
             {
                 RegisterFactory<TElement, THandler, TRenderer>();
             }
 
-            // 用統一的三參數 Create
-            return CreateDI<TElement, THandler, TRenderer>();
+            // The registered context factory resolves from DI and runs the same
+            // handler/renderer/element Init sequence as CreateDI.
+            return (TElement)_factoriesWithContext[type](new UiFactoryContext(_sp, this));
         }
 
         public TElement CreateDI<TElement, THandler, TRenderer>()
@@ -229,6 +236,7 @@ namespace Engine.UI.Core.Infrastructure
         public void ClearAllCache()
         {
             _factories.Clear();
+            _factoriesWithContext.Clear();
         }
 
         /// <summary>
