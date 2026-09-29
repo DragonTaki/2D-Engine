@@ -62,7 +62,8 @@ namespace Engine.UI.Core.Elements
     public class UIButton<TEnum> : UIButton
         where TEnum : Enum
     {
-        public TEnum Type { get; }
+        /// <summary>Value passed to the typed click action (UIButtonHandler&lt;TEnum&gt;.Action).</summary>
+        public TEnum Type { get; set; }
 
         public UIButton() { }
 

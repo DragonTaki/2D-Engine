@@ -50,5 +50,18 @@ namespace Engine.UI.Core.Handlers
         {
             Action?.Invoke(type);
         }
+
+        // The typed Action hides the base one, and nothing ever invoked it: an onClick
+        // passed to UiFactory.CreateButton<TEnum> was stored here and silently dropped.
+        // Run the base (untyped) Action as before, then the typed one with the button's Type.
+        internal override bool HandleMouseClick(IMouseEvent e)
+        {
+            if (!base.HandleMouseClick(e))
+                return false;
+
+            if (Element is UIButton<TEnum> typedButton)
+                OnClick(typedButton.Type);
+            return true;
+        }
     }
 }
