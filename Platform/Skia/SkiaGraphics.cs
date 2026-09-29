@@ -84,13 +84,12 @@ namespace Engine.Platform.Skia
             var metrics = skFont.Metrics;
             float lineHeight = metrics.Descent - metrics.Ascent + metrics.Leading;
 
-            // fmt.EllipsisTrimming (truncating an overflowing final line
-            // with "…") is still not implemented — only WordWrap is, since
-            // that's the gap that actually made CJK text render wrong
-            // (see WrapText's doc comment), not just look slightly worse.
             var lines = fmt.WordWrap
                 ? WrapText(text, skFont, paint, bounds.Width)
-                : new List<string> { text };
+                : SplitLines(text);
+
+            if (fmt.EllipsisTrimming)
+                lines = TrimWithEllipsis(lines, skFont, paint, bounds.Width, bounds.Height, lineHeight);
 
             float totalHeight = lineHeight * Math.Max(lines.Count, 1);
 
@@ -103,29 +102,83 @@ namespace Engine.Platform.Skia
                 _ => bounds.Y,
             };
 
-            for (int i = 0; i < lines.Count; i++)
+            // Clip to the layout rectangle, as GDI+ DrawString does by default
+            // (StringFormatFlags.NoClip unset).
+            int saveCount = Native.Save();
+            Native.ClipRect(ToSKRect(bounds));
+            try
             {
-                string line = lines[i];
-                float lineWidth = skFont.MeasureText(line, paint);
-
-                float x = fmt.Alignment switch
+                for (int i = 0; i < lines.Count; i++)
                 {
-                    TextAlign.Center => bounds.X + (bounds.Width - lineWidth) / 2f,
-                    TextAlign.Far => bounds.X + bounds.Width - lineWidth,
-                    _ => bounds.X,
-                };
-                float baselineY = startTopY + i * lineHeight - metrics.Ascent;
+                    string line = lines[i];
+                    float lineWidth = skFont.MeasureText(line, paint);
 
-                Native.DrawText(line, x, baselineY, SKTextAlign.Left, skFont, paint);
+                    float x = fmt.Alignment switch
+                    {
+                        TextAlign.Center => bounds.X + (bounds.Width - lineWidth) / 2f,
+                        TextAlign.Far => bounds.X + bounds.Width - lineWidth,
+                        _ => bounds.X,
+                    };
+                    float baselineY = startTopY + i * lineHeight - metrics.Ascent;
+
+                    Native.DrawText(line, x, baselineY, SKTextAlign.Left, skFont, paint);
+                }
             }
+            finally
+            {
+                Native.RestoreToCount(saveCount);
+            }
+        }
+
+        /// <summary>
+        /// Splits on explicit line breaks ("\n", "\r\n"), like GDI+ does even without wrapping.
+        /// </summary>
+        private static List<string> SplitLines(string text) =>
+            new List<string>((text ?? string.Empty).Replace("\r\n", "\n").Split('\n'));
+
+        /// <summary>
+        /// GDI+ <c>StringTrimming.EllipsisCharacter</c>: keep only the lines that fit the
+        /// box's height (at least one), and if anything was cut - more lines, or a last line
+        /// wider than the box - end the last kept line with "…" trimmed to fit.
+        /// </summary>
+        private static List<string> TrimWithEllipsis(List<string> lines, SKFont skFont, SKPaint paint,
+            float maxWidth, float maxHeight, float lineHeight)
+        {
+            const string Ellipsis = "\u2026";
+
+            // Small tolerance: boxes are usually sized to exactly N * lineHeight (from
+            // MeasureString), and float error must not drop the last of those N lines.
+            int fitCount = lineHeight > 0 ? Math.Max(1, (int)(maxHeight / lineHeight + 0.01f)) : lines.Count;
+            bool truncated = lines.Count > fitCount;
+            var result = truncated ? lines.GetRange(0, fitCount) : new List<string>(lines);
+
+            int last = result.Count - 1;
+            if (last < 0)
+                return result;
+
+            string lastLine = result[last];
+            if (!truncated && skFont.MeasureText(lastLine, paint) <= maxWidth)
+                return result;
+
+            while (lastLine.Length > 0 && skFont.MeasureText(lastLine + Ellipsis, paint) > maxWidth)
+                lastLine = lastLine.Substring(0, lastLine.Length - 1);
+
+            result[last] = lastLine.TrimEnd() + Ellipsis;
+            return result;
         }
 
         public SizeF MeasureString(string text, IFont font)
         {
             var skFont = ((SkiaFont)font).Native;
             using var paint = new SKPaint();
-            float width = skFont.MeasureText(text, paint);
-            return new SizeF(width, ((SkiaFont)font).Height);
+
+            // Explicit line breaks count, as in GDI+ MeasureString.
+            var lines = SplitLines(text);
+            float width = 0f;
+            foreach (var line in lines)
+                width = Math.Max(width, skFont.MeasureText(line, paint));
+
+            return new SizeF(width, ((SkiaFont)font).Height * lines.Count);
         }
 
         public SizeF MeasureString(string text, IFont font, int maxWidth)
@@ -152,26 +205,50 @@ namespace Engine.Platform.Skia
         /// </summary>
         private static List<string> WrapText(string text, SKFont skFont, SKPaint paint, float maxWidth)
         {
-            var atoms = TokenizeForWrap(text);
             var lines = new List<string>();
-            var current = "";
 
-            foreach (var atom in atoms)
+            // Explicit line breaks always start a new line (an empty paragraph stays an
+            // empty line), as in GDI+; each paragraph is then wrapped on its own.
+            foreach (var paragraph in SplitLines(text))
             {
-                string candidate = current + atom;
-                if (current.Length > 0 && skFont.MeasureText(candidate, paint) > maxWidth)
+                if (paragraph.Length == 0)
                 {
+                    lines.Add(string.Empty);
+                    continue;
+                }
+
+                int linesBefore = lines.Count;
+                var current = "";
+                foreach (var atom in TokenizeForWrap(paragraph))
+                {
+                    string candidate = current + atom;
+                    if (current.Length > 0 && skFont.MeasureText(candidate, paint) > maxWidth)
+                    {
+                        lines.Add(current.TrimEnd());
+                        // Drop a whitespace atom that would otherwise lead the new line.
+                        current = atom.TrimStart();
+                    }
+                    else
+                    {
+                        current = candidate;
+                    }
+
+                    // A single word wider than the whole line: break it between characters
+                    // (as GDI+ does) instead of letting it overflow the box.
+                    while (current.Length > 1 && skFont.MeasureText(current, paint) > maxWidth)
+                    {
+                        int fit = 1;
+                        while (fit < current.Length && skFont.MeasureText(current.Substring(0, fit + 1), paint) <= maxWidth)
+                            fit++;
+                        lines.Add(current.Substring(0, fit));
+                        current = current.Substring(fit);
+                    }
+                }
+                if (current.Trim().Length > 0)
                     lines.Add(current.TrimEnd());
-                    // Drop a whitespace atom that would otherwise lead the new line.
-                    current = atom.TrimStart();
-                }
-                else
-                {
-                    current = candidate;
-                }
+                else if (lines.Count == linesBefore)
+                    lines.Add(string.Empty);  // Whitespace-only paragraph: still one (blank) line
             }
-            if (current.Trim().Length > 0)
-                lines.Add(current.TrimEnd());
 
             return lines;
         }
