@@ -66,8 +66,13 @@ namespace Engine.Platform.Skia
         public void FillRegion(IBrush brush, IRegion region) =>
             Native.DrawRegion(((SkiaRegion)region).Native, ((SkiaBrush)brush).Native);
 
-        public void DrawString(string text, IFont font, IBrush brush, float x, float y) =>
-            Native.DrawText(text, x, y, SKTextAlign.Left, ((SkiaFont)font).Native, ((SkiaBrush)brush).Native);
+        public void DrawString(string text, IFont font, IBrush brush, float x, float y)
+        {
+            // GDI+ treats (x, y) as the top-left of the text, Skia's DrawText as the
+            // baseline origin; shift down by the ascent (negative in Skia) to match.
+            var skFont = ((SkiaFont)font).Native;
+            Native.DrawText(text, x, y - skFont.Metrics.Ascent, SKTextAlign.Left, skFont, ((SkiaBrush)brush).Native);
+        }
 
         public void DrawString(string text, IFont font, IBrush brush, RectangleF bounds, IStringFormat format)
         {
