@@ -33,7 +33,10 @@ namespace Engine.UI.Core.Handlers
             if (IsInitialized) return;
             IsInitialized = true;
 
+            // Same hook sequence as the generic Init(factory, element) overload.
+            BeforeInit();
             OnInit();
+            AfterInit();
         }
 
         protected virtual void BeforeInit() { }
