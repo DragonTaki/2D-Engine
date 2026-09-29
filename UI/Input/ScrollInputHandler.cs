@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using Engine.Platform;
 
 using Engine.Mathematics;
@@ -57,6 +58,8 @@ namespace Engine.UI.Input
 
         #endregion
 
+        private int _nextTargetOrder;
+
         #region Constructor
 
         /// <summary>
@@ -93,15 +96,18 @@ namespace Engine.UI.Input
         {
             if (_scrollTargets.Exists(t => t.Element == element)) return;
 
+            // zIndex is this target's priority among overlapping targets. It used to be
+            // written to the handler-wide ZIndex (overwritten by every registration) and
+            // never read, so target priority was just reverse registration order.
             _scrollTargets.Add(new ScrollTarget
             {
                 Element = element,
                 Physics = physics,
                 ViewportGetter = viewportGetter,
-                Behavior = behavior ?? new ScrollBehavior()
+                Behavior = behavior ?? new ScrollBehavior(),
+                ZIndex = zIndex,
+                Order = _nextTargetOrder++
             });
-
-            ZIndex = zIndex;
         }
 
         /// <summary>
@@ -162,11 +168,11 @@ namespace Engine.UI.Input
         /// </summary>
         private ScrollTarget FindTargetAt(Vector2F location)
         {
-            // Iterate from top-most target (higher index) to bottom
-            for (int i = _scrollTargets.Count - 1; i >= 0; i--)
+            // Top-most first: higher ZIndex wins, then the later-registered target.
+            foreach (var target in _scrollTargets
+                .OrderByDescending(t => t.ZIndex)
+                .ThenByDescending(t => t.Order))
             {
-                var target = _scrollTargets[i];
-
                 // If not IsVisible or not IsEnabled
                 if (!target.Element.IsInteractable || target.Element.Parent == null)
                     continue;
@@ -310,6 +316,8 @@ namespace Engine.UI.Input
             public Physics2D Physics;
             public Func<RectangleF> ViewportGetter;
             public ScrollBehavior Behavior;
+            public int ZIndex;
+            public int Order;
         }
 
         /// <summary>
