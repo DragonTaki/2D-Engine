@@ -83,35 +83,43 @@ namespace Engine.UI.Core.Renderers
         {
             var _label = (UILabel)element;
 
-            if (_label.ClipRect.HasValue)
+            bool clipped = _label.ClipRect.HasValue;
+            if (clipped)
                 g.SetClip(_label.ClipRect.Value);
 
-            RectangleF rect = _label.GetCurrentAbsoluteBounds();
-
-            if (Label._fragments != null && Label._fragments.Count > 0)
+            // try/finally: the fragments branch returns early, and an unpaired SetClip
+            // leaks the clip on GDI+ and unbalances Skia's canvas save stack.
+            try
             {
-                float y = rect.Y;
-                foreach (var frag in Label._fragments)
-                {
-                    using var brush = GraphicsBackend.Factory.CreateSolidBrush(frag.Color);
-                    g.DrawString(frag.Text, Label.Font, brush, rect.X, y);
-                    y += Label.Font.Height; // 或使用 frag.LineHeight
-                }
-                return;
-            }
+                RectangleF rect = _label.GetCurrentAbsoluteBounds();
 
-            // 原本單純文字模式
-            if (!string.IsNullOrEmpty(Label.Text))
+                if (Label._fragments != null && Label._fragments.Count > 0)
+                {
+                    float y = rect.Y;
+                    foreach (var frag in Label._fragments)
+                    {
+                        using var brush = GraphicsBackend.Factory.CreateSolidBrush(frag.Color);
+                        g.DrawString(frag.Text, Label.Font, brush, rect.X, y);
+                        y += Label.Font.Height; // 或使用 frag.LineHeight
+                    }
+                    return;
+                }
+
+                // 原本單純文字模式
+                if (!string.IsNullOrEmpty(Label.Text))
+                {
+                    using (var brush = GraphicsBackend.Factory.CreateSolidBrush(Color.FromArgb(128, Color.Red))) // 半透明紅色
+                    {
+                        g.FillRectangle(brush, rect);
+                    }
+                    g.DrawString(Label.Text, Label.Font, GetBrush(), rect, GetStringFormat(Label.TextAlign, Label.WordWrap));
+                }
+            }
+            finally
             {
-                using (var brush = GraphicsBackend.Factory.CreateSolidBrush(Color.FromArgb(128, Color.Red))) // 半透明紅色
-                {
-                    g.FillRectangle(brush, rect);
-                }
-                g.DrawString(Label.Text, Label.Font, GetBrush(), rect, GetStringFormat(Label.TextAlign, Label.WordWrap));
+                if (clipped)
+                    g.ResetClip();
             }
-
-            if (element.ClipRect.HasValue)
-                g.ResetClip();
         }
 
         #endregion
