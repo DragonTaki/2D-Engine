@@ -26,10 +26,20 @@ namespace Engine.UI.Core.Bases
             if (IsInitialized) 
                 return;  // Skip if already initialized
 
+            // Set before OnInit so a re-entrant Init call is a no-op, but roll back if
+            // OnInit throws - otherwise a failed init could never be retried.
             IsInitialized = true;
 
-            // Call derived class implementation
-            OnInit();
+            try
+            {
+                // Call derived class implementation
+                OnInit();
+            }
+            catch
+            {
+                IsInitialized = false;
+                throw;
+            }
         }
 
         protected virtual void OnInit() { }
@@ -65,10 +75,20 @@ namespace Engine.UI.Core.Bases
             if (IsInitialized) 
                 return;  // Skip if already initialized
 
+            // Set before OnInit so a re-entrant Init call is a no-op, but roll back if
+            // OnInit throws - otherwise a failed init could never be retried.
             IsInitialized = true;
 
-            // Call derived class implementation
-            OnInit(arg);
+            try
+            {
+                // Call derived class implementation
+                OnInit(arg);
+            }
+            catch
+            {
+                IsInitialized = false;
+                throw;
+            }
         }
 
         /// <summary>
