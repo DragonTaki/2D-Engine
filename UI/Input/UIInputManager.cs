@@ -47,15 +47,10 @@ namespace Engine.UI.Input
         public UIInputManager(UIElement root, IScrollInputHandler? scroll = null)
 #nullable disable
         {
-            // Create the centralized mouse router
+            // Create the centralized mouse router. It is called directly below and owns the
+            // scroll handler, so neither is registered as a general handler as well: that made
+            // Root.EndFrame() run twice and the scroll handler's EndFrame three times a frame.
             MouseRouter = new MouseInputRouter(root, scroll);
-
-            // Register mouse router itself to receive general event processing
-            RegisterHandler(MouseRouter);  // Add mouse router itself to the general processor
-
-            // Optionally register scroll handler as general input
-            if (scroll != null)
-                RegisterHandler(scroll);
         }
 
         #endregion
@@ -91,53 +86,88 @@ namespace Engine.UI.Input
         #region Mouse Event Routing
 
         /// <summary>
-        /// Processes MouseDown events by forwarding to the mouse router.
+        /// Processes MouseDown events: forwards to the mouse router, then to every registered general handler.
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
-        /// <returns>True if the event was handled by the router.</returns>
+        /// <returns>True if the router or any general handler handled the event.</returns>
         public bool OnMouseDown(IMouseEvent e)
         {
-            return MouseRouter.OnMouseDown(e);
+            bool handled = MouseRouter.OnMouseDown(e);
+
+            // Every registered general handler observes every event (a handler that missed
+            // e.g. MouseUp because the router consumed it would be left mid-gesture).
+            foreach (var h in _generalHandlers.ToArray())
+                handled |= h.OnMouseDown(e);
+
+            return handled;
         }
 
         /// <summary>
-        /// Processes MouseMove events by forwarding to the mouse router.
+        /// Processes MouseMove events: forwards to the mouse router, then to every registered general handler.
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
-        /// <returns>True if the event was handled by the router.</returns>
+        /// <returns>True if the router or any general handler handled the event.</returns>
         public bool OnMouseMove(IMouseEvent e)
         {
-            return MouseRouter.OnMouseMove(e);
+            bool handled = MouseRouter.OnMouseMove(e);
+
+            // Every registered general handler observes every event (a handler that missed
+            // e.g. MouseUp because the router consumed it would be left mid-gesture).
+            foreach (var h in _generalHandlers.ToArray())
+                handled |= h.OnMouseMove(e);
+
+            return handled;
         }
 
         /// <summary>
-        /// Processes MouseUp events by forwarding to the mouse router.
+        /// Processes MouseUp events: forwards to the mouse router, then to every registered general handler.
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
-        /// <returns>True if the event was handled by the router.</returns>
+        /// <returns>True if the router or any general handler handled the event.</returns>
         public bool OnMouseUp(IMouseEvent e)
         {
-            return MouseRouter.OnMouseUp(e);
+            bool handled = MouseRouter.OnMouseUp(e);
+
+            // Every registered general handler observes every event (a handler that missed
+            // e.g. MouseUp because the router consumed it would be left mid-gesture).
+            foreach (var h in _generalHandlers.ToArray())
+                handled |= h.OnMouseUp(e);
+
+            return handled;
         }
 
         /// <summary>
-        /// Processes MouseClick events by forwarding to the mouse router.
+        /// Processes MouseClick events: forwards to the mouse router, then to every registered general handler.
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
-        /// <returns>True if the event was handled by the router.</returns>
+        /// <returns>True if the router or any general handler handled the event.</returns>
         public bool OnMouseClick(IMouseEvent e)
         {
-            return MouseRouter.OnMouseClick(e);
+            bool handled = MouseRouter.OnMouseClick(e);
+
+            // Every registered general handler observes every event (a handler that missed
+            // e.g. MouseUp because the router consumed it would be left mid-gesture).
+            foreach (var h in _generalHandlers.ToArray())
+                handled |= h.OnMouseClick(e);
+
+            return handled;
         }
 
         /// <summary>
-        /// Processes MouseWheel events by forwarding to the mouse router.
+        /// Processes MouseWheel events: forwards to the mouse router, then to every registered general handler.
         /// </summary>
         /// <param name="e">Mouse wheel event arguments.</param>
-        /// <returns>True if the event was handled by the router.</returns>
+        /// <returns>True if the router or any general handler handled the event.</returns>
         public bool OnMouseWheel(IMouseEvent e)
         {
-            return MouseRouter.OnMouseWheel(e);
+            bool handled = MouseRouter.OnMouseWheel(e);
+
+            // Every registered general handler observes every event (a handler that missed
+            // e.g. MouseUp because the router consumed it would be left mid-gesture).
+            foreach (var h in _generalHandlers.ToArray())
+                handled |= h.OnMouseWheel(e);
+
+            return handled;
         }
 
         #endregion
