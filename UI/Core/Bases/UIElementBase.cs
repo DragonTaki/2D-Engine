@@ -3,12 +3,13 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/27
-// Update Date: 2025/10/27
-// Version: v1.0
+// Update Date: 2026/09/29
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Drawing;
 
 using Engine.Geometry;
@@ -16,6 +17,7 @@ using Engine.Mathematics;
 using Engine.Physics;
 using Engine.Platform;
 using Engine.UI.Constants.Components;
+using Engine.UI.Constants.Core;
 using Engine.UI.Core.Interfaces;
 using Engine.UI.Models;
 
@@ -27,6 +29,12 @@ namespace Engine.UI.Core.Bases
     /// </summary>
     public abstract class UIElementBase : IDisposable
     {
+        protected UIElementBase()
+        {
+            LayoutRules = new UILayout();
+            _layoutDirty = true;
+        }
+
         #region Core References
 
         /// <summary>
@@ -113,20 +121,87 @@ namespace Engine.UI.Core.Bases
 
         #region Layout & Geometry
 
+        private UIPosition _localPosition = new UIPosition(Vector2F.Zero);
+        private Vector2F _size = Vector2F.Zero;
+        private Vector2F _declaredSize = Vector2F.Zero;
+        private UILayout _layoutRules;
+
+        /// <summary>
+        /// True while the layout system writes its result into <see cref="LocalPosition"/>/
+        /// <see cref="Size"/>, so those writes neither count as the declared size nor
+        /// re-invalidate the parent that is doing the arranging.
+        /// </summary>
+        private bool _applyingLayoutResult;
+
         /// <summary>
         /// The element's position relative to its parent container.
+        /// <para>
+        /// Assigning a different position invalidates the layout (see <see cref="InvalidateLayout"/>).
+        /// For a layout-managed element the position belongs to the layout system and is
+        /// overwritten by the next pass - use <see cref="UILayout.Offset"/> to nudge it.
+        /// Mutating the vectors in place does not invalidate anything.
+        /// </para>
         /// </summary>
-        public virtual UIPosition LocalPosition { get; set; } = new UIPosition(Vector2F.Zero);
+        public virtual UIPosition LocalPosition
+        {
+            get => _localPosition;
+            set
+            {
+                bool changed = !SamePosition(_localPosition, value);
+                _localPosition = value;
+                if (changed)
+                    OnGeometryAssigned();
+            }
+        }
 
         /// <summary>
         /// The element's visual size (Width, Height).
+        /// <para>
+        /// Assigning a different size invalidates the layout. Outside of a layout pass the
+        /// value also becomes the <see cref="DeclaredSize"/>. Mutating the vector in place
+        /// does not invalidate anything.
+        /// </para>
         /// </summary>
-        public virtual Vector2F Size { get; set; } = Vector2F.Zero;
+        public virtual Vector2F Size
+        {
+            get => _size;
+            set
+            {
+                bool changed = !SameVector(_size, value);
+                _size = value;
+                if (!_applyingLayoutResult)
+                    _declaredSize = value;
+                if (changed)
+                    OnGeometryAssigned();
+            }
+        }
+
+        /// <summary>
+        /// The size last assigned to <see cref="Size"/> by code other than the layout system -
+        /// what <see cref="LayoutSize.Declared"/> (the default Width/Height mode) resolves to,
+        /// and the default intrinsic size of an element without in-flow children. Kept apart
+        /// from <see cref="Size"/> so grow/shrink results never feed back into the next pass.
+        /// </summary>
+        public Vector2F DeclaredSize => _declaredSize;
 
         /// <summary>
         /// Defines layout constraints and rules for automatic positioning or anchoring.
+        /// Changing any of its properties (or replacing it) invalidates the layout.
         /// </summary>
-        public UILayout LayoutRules { get; set; } = new UILayout();
+        public UILayout LayoutRules
+        {
+            get => _layoutRules;
+            set
+            {
+                if (ReferenceEquals(_layoutRules, value))
+                    return;
+                if (_layoutRules != null)
+                    _layoutRules.Changed -= InvalidateLayout;
+                _layoutRules = value ?? new UILayout();
+                _layoutRules.Changed += InvalidateLayout;
+                InvalidateLayout();
+            }
+        }
 
         /// <summary>
         /// Cached final layout information representing absolute position and size.
@@ -154,7 +229,9 @@ namespace Engine.UI.Core.Bases
         public RectangleF? ClipRect { get; set; } = null;
 
         /// <summary>
-        /// Indicates whether the layout must be recalculated.
+        /// Indicates whether the layout must be recalculated: this element's layout-managed
+        /// children need to be (re)arranged. Set by <see cref="InvalidateLayout"/>, cleared by
+        /// the layout pass (<c>UIElement.UpdateLayout</c>, run before drawing).
         /// </summary>
         protected bool _layoutDirty = true;
 
@@ -166,6 +243,29 @@ namespace Engine.UI.Core.Bases
             get => _layoutDirty;
             protected set => _layoutDirty = value;
         }
+
+        /// <summary>
+        /// Whether the one-shot legacy layout rules (<see cref="UILayout.Anchor"/>,
+        /// <see cref="UILayout.SizePercent"/>) are still to be applied. They run once, on the
+        /// element's first layout pass, exactly as before the layout system existed; later
+        /// invalidations do not re-run them, so legacy elements keep their positions.
+        /// </summary>
+        public bool LegacyLayoutPending { get; protected set; } = true;
+
+        /// <summary>
+        /// Whether the parent's layout system positions and sizes this element
+        /// (<see cref="PositionMode.Flow"/> or <see cref="PositionMode.Absolute"/>, and not
+        /// <see cref="UILayout.IgnoreParentLayout"/>).
+        /// </summary>
+        public bool IsLayoutManaged =>
+            LayoutRules.PositionMode != PositionMode.Legacy && !LayoutRules.IgnoreParentLayout;
+
+        /// <summary>
+        /// False when <see cref="UILayout.Display"/> is <see cref="DisplayMode.None"/>: the element
+        /// takes no space, is not drawn and receives no input. Unlike <see cref="IsVisible"/>,
+        /// which keeps the element's space in layout.
+        /// </summary>
+        public bool IsDisplayed => LayoutRules.Display != DisplayMode.None;
 
         #endregion
 
@@ -208,7 +308,7 @@ namespace Engine.UI.Core.Bases
         /// <summary>
         /// Indicates if this element can receive interaction based on visibility and enabled state.
         /// </summary>
-        public virtual bool IsInteractable => IsVisible && IsEnabled;
+        public virtual bool IsInteractable => IsVisible && IsEnabled && IsDisplayed;
 
         /// <summary>
         /// Allows hit testing even if invisible. Usually false.
@@ -216,9 +316,9 @@ namespace Engine.UI.Core.Bases
         public virtual bool AllowHitWhenInvisible => false;
 
         /// <summary>
-        /// Determines whether rendering should be skipped when invisible.
+        /// Determines whether rendering should be skipped when invisible (or not displayed).
         /// </summary>
-        public virtual bool DisableRender => !IsVisible;
+        public virtual bool DisableRender => !IsVisible || !IsDisplayed;
 
         #endregion
 
@@ -304,6 +404,116 @@ namespace Engine.UI.Core.Bases
         /// Computes and updates layout positions based on parent layout and rules.
         /// </summary>
         public abstract void UpdateLayout();
+
+        /// <summary>
+        /// Marks this element's layout as needing recomputation before the next draw.
+        /// <para>
+        /// Called automatically when <see cref="Size"/>, <see cref="LocalPosition"/> or
+        /// <see cref="LayoutRules"/> change and when children are added or removed. For a
+        /// layout-managed element the parent is invalidated too (its arrangement, and possibly
+        /// its Auto size, depend on this element), recursively up to the nearest non-managed
+        /// ancestor, whose draw then runs the pass for the whole affected subtree.
+        /// </para>
+        /// </summary>
+        public void InvalidateLayout()
+        {
+            _layoutDirty = true;
+            if (IsLayoutManaged)
+                Parent?.InvalidateLayout();
+        }
+
+        /// <summary>
+        /// Invalidates this element and its whole subtree, e.g. when the viewport scale
+        /// changes (pixel snapping depends on it). Legacy positions are not recomputed.
+        /// </summary>
+        public void InvalidateLayoutRecursive()
+        {
+            _layoutDirty = true;
+            foreach (var child in Children.ToArray())
+                child.InvalidateLayoutRecursive();
+        }
+
+        /// <summary>
+        /// Called on every descendant of an element that the layout system just moved (the
+        /// descendant's own LocalPosition is unchanged but its absolute position is not).
+        /// Elements that cache absolute positions (e.g. scroll physics) resync here.
+        /// </summary>
+        protected internal virtual void OnAbsolutePositionChanged() { }
+
+        /// <summary>
+        /// Writes a layout pass result without treating it as a user assignment: the size
+        /// does not become the <see cref="DeclaredSize"/> and the parent (which is doing the
+        /// arranging) is not re-invalidated. Marks this element dirty so its own children
+        /// are (re)arranged, and notifies descendants when it moved.
+        /// </summary>
+        /// <returns>True when the position or size actually changed.</returns>
+        internal bool ApplyLayoutResult(Vector2F position, Vector2F size)
+        {
+            bool moved = !SameVector(LocalPosition.Current, position) || !SameVector(LocalPosition.Base, position);
+            bool resized = !SameVector(Size, size);
+            if (!moved && !resized)
+                return false;
+
+            _applyingLayoutResult = true;
+            try
+            {
+                // Through the (virtual) setters, so overrides - UIScrollContainer rebasing its
+                // physics - still see the change.
+                if (moved)
+                    LocalPosition = new UIPosition(position);
+                if (resized)
+                    Size = new Vector2F(size.X, size.Y);
+            }
+            finally
+            {
+                _applyingLayoutResult = false;
+            }
+
+            _layoutDirty = true;
+            if (moved)
+                NotifyDescendantsMoved(this);
+            return true;
+        }
+
+        private static void NotifyDescendantsMoved(UIElementBase element)
+        {
+            foreach (var child in element.Children.ToArray())
+            {
+                child.OnAbsolutePositionChanged();
+                NotifyDescendantsMoved(child);
+            }
+        }
+
+        /// <summary>
+        /// A user (non-layout) assignment changed Size or LocalPosition: invalidate normally.
+        /// A layout-result write only marks this element (its children need re-arranging),
+        /// never the parent.
+        /// </summary>
+        private void OnGeometryAssigned()
+        {
+            if (_applyingLayoutResult)
+                _layoutDirty = true;
+            else
+                InvalidateLayout();
+        }
+
+        private static bool SameVector(Vector2F a, Vector2F b)
+        {
+            if (ReferenceEquals(a, b))
+                return true;
+            if (a is null || b is null)
+                return false;
+            return a.X == b.X && a.Y == b.Y;
+        }
+
+        private static bool SamePosition(UIPosition a, UIPosition b)
+        {
+            if (ReferenceEquals(a, b))
+                return true;
+            if (a is null || b is null)
+                return false;
+            return SameVector(a.Base, b.Base) && SameVector(a.Current, b.Current);
+        }
 
         /// <summary>
         /// Returns the current absolute bounds (in screen coordinates) of the element.

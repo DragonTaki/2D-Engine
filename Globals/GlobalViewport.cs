@@ -3,9 +3,11 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/09/24
-// Update Date: 2026/09/24
-// Version: v1.0
+// Update Date: 2026/09/29
+// Version: v1.1
 /* ----- ----- ----- ----- */
+
+using System;
 
 using Engine.Geometry;
 using Engine.Mathematics;
@@ -62,24 +64,56 @@ namespace Engine.Globals
         public static LayoutF Bounds => new LayoutF(Vector2F.Zero, DesignSize);
 
         /// <summary>
+        /// Raised by <see cref="Recalculate"/> after <see cref="Scale"/>,
+        /// <see cref="Offset"/> or <see cref="DesignSize"/> changed (window
+        /// resize). The UI root listens to invalidate its layout, since
+        /// pixel snapping depends on the scale.
+        /// </summary>
+        public static event Action Changed;
+
+        private static Vector2F s_lastDesignSize = new Vector2F(0, 0);
+
+        /// <summary>
         /// Recomputes <see cref="Scale"/> and <see cref="Offset"/> for the
         /// actual window/framebuffer size. Call once at startup and again
         /// whenever the window is resized.
         /// </summary>
         public static void Recalculate(float actualWidth, float actualHeight)
         {
+            float oldScale = Scale;
+            var oldOffset = Offset;
+
             if (DesignSize.X <= 0 || DesignSize.Y <= 0 || actualWidth <= 0 || actualHeight <= 0)
             {
                 Scale = 1f;
                 Offset = Vector2F.Zero;
-                return;
+            }
+            else
+            {
+                Scale = System.Math.Min(actualWidth / DesignSize.X, actualHeight / DesignSize.Y);
+
+                float contentWidth = DesignSize.X * Scale;
+                float contentHeight = DesignSize.Y * Scale;
+                Offset = new Vector2F((actualWidth - contentWidth) / 2f, (actualHeight - contentHeight) / 2f);
             }
 
-            Scale = System.Math.Min(actualWidth / DesignSize.X, actualHeight / DesignSize.Y);
+            bool designChanged = DesignSize.X != s_lastDesignSize.X || DesignSize.Y != s_lastDesignSize.Y;
+            s_lastDesignSize = new Vector2F(DesignSize.X, DesignSize.Y);
 
-            float contentWidth = DesignSize.X * Scale;
-            float contentHeight = DesignSize.Y * Scale;
-            Offset = new Vector2F((actualWidth - contentWidth) / 2f, (actualHeight - contentHeight) / 2f);
+            if (designChanged || Scale != oldScale || Offset.X != oldOffset.X || Offset.Y != oldOffset.Y)
+                Changed?.Invoke();
+        }
+
+        /// <summary>
+        /// Rounds a design-space coordinate to the nearest device (framebuffer)
+        /// pixel boundary under the current transform: device = v * Scale + offset,
+        /// where <paramref name="deviceOffset"/> is <see cref="Offset"/>.X or .Y.
+        /// </summary>
+        public static float SnapToDevicePixel(float value, float deviceOffset)
+        {
+            if (Scale <= 0f || float.IsNaN(value) || float.IsInfinity(value))
+                return value;
+            return (MathF.Round(value * Scale + deviceOffset) - deviceOffset) / Scale;
         }
 
         /// <summary>

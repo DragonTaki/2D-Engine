@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/15
-// Update Date: 2025/10/24
-// Version: v1.1
+// Update Date: 2026/09/29
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using System;
@@ -178,10 +178,65 @@ namespace Engine.UI.Core.Elements
         }
 
         /// <summary>
-        /// Updates element's layout based on parent bounds and layout rules.
-        /// Also recursively updates children if AutoUpdate is enabled.
+        /// The layout pass for this element, run by <see cref="Draw"/> whenever
+        /// <see cref="UIElementBase.LayoutDirty"/> or <see cref="UIElementBase.LegacyLayoutPending"/>
+        /// is set (and callable directly, see also <see cref="PerformLayout"/>):
+        /// <list type="number">
+        /// <item>Legacy elements: the one-shot legacy rules (<see cref="ApplyLegacyLayout"/>),
+        /// unchanged from before the layout system.</item>
+        /// <item>If dirty: arranges this element's layout-managed children and recurses into
+        /// the dirty ones (<see cref="UpdateManagedLayout"/>).</item>
+        /// </list>
         /// </summary>
         public override void UpdateLayout()
+        {
+            if (LegacyLayoutPending && !IsLayoutManaged)
+                ApplyLegacyLayout();
+
+            if (_layoutDirty)
+                UpdateManagedLayout();
+        }
+
+        /// <summary>
+        /// Runs the layout pass for this element and then for every descendant, instead of
+        /// waiting for each one's next draw. Use when positions are needed before drawing
+        /// (e.g. to hit-test or measure right after building a subtree).
+        /// </summary>
+        public void PerformLayout()
+        {
+            UpdateLayout();
+            foreach (var child in Children.ToArray())
+                if (child is UIElement element)
+                    element.PerformLayout();
+        }
+
+        /// <summary>
+        /// Clears the dirty flag, (re)arranges the layout-managed children, then recurses into
+        /// every child that is (still or newly) dirty. Never re-applies legacy rules, so
+        /// legacy elements keep their positions exactly.
+        /// </summary>
+        protected void UpdateManagedLayout()
+        {
+            _layoutDirty = false;
+
+            // Snapshot: arranging may run measure hooks, which must not see a list mid-change.
+            foreach (var child in Children.ToArray())
+                if (child.LayoutDirty && child is UIElement element)
+                    element.UpdateManagedLayout();
+        }
+
+        /// <summary>
+        /// Updates element's layout based on parent bounds and legacy layout rules
+        /// (<see cref="UILayout.Anchor"/>, <see cref="UILayout.Margin"/>, <see cref="UILayout.SizePercent"/>).
+        /// Also recursively updates children if AutoUpdate is enabled.
+        /// <para>
+        /// One-shot, as it always was: it runs on the element's first layout pass and then
+        /// never again (<see cref="UIElementBase.LegacyLayoutPending"/>). The root, and elements
+        /// with <see cref="UILayout.IgnoreParentLayout"/>, return early and stay pending, which
+        /// is harmless.
+        /// </para>
+        /// </summary>
+        protected void ApplyLegacyLayout()
         {
             if (Parent == null || LayoutRules.IgnoreParentLayout)
                 return;
@@ -232,12 +287,12 @@ namespace Engine.UI.Core.Elements
 
             LocalPosition = new UIPosition(new Vector2F(x, y));
             Size = newSize;
-            _layoutDirty = false;
+            LegacyLayoutPending = false;
             Bounds = new LayoutF(GetCurrentAbsolutePosition(), Size);
 
             // Apply recursively
             foreach (var child in Children)
-                if (child.LayoutRules.AutoUpdate && child.LayoutDirty)
+                if (child.LayoutRules.AutoUpdate && child.LegacyLayoutPending)
                     child.UpdateLayout();
         }
 
@@ -251,6 +306,10 @@ namespace Engine.UI.Core.Elements
             Children.Add(child);
             child.OnAddedToParent();
             _isChildrenSortedDirty = true;
+
+            // New context for the child's own children (snapping), new item for this layout.
+            child.InvalidateLayout();
+            InvalidateLayout();
         }
 
         public override void OnAddedToParent()
@@ -265,6 +324,7 @@ namespace Engine.UI.Core.Elements
             {
                 child.Parent = null;
                 _isChildrenSortedDirty = true;
+                InvalidateLayout();
             }
         }
 
@@ -302,6 +362,7 @@ namespace Engine.UI.Core.Elements
 
                 child.Parent = null;
                 Children.RemoveAt(i);
+                InvalidateLayout();
             }
         }
 
@@ -325,7 +386,7 @@ namespace Engine.UI.Core.Elements
         /// </summary>
         public virtual bool HitTest(PointF point)
         {
-            if (!IsEnabled) return false;
+            if (!IsEnabled || !IsDisplayed) return false;
             if (!IsVisible && !AllowHitWhenInvisible) return false;
             return GetCurrentAbsoluteBounds().Contains(point);
         }
@@ -356,6 +417,8 @@ namespace Engine.UI.Core.Elements
             var current = this.Parent;
             while (current != null)
             {
+                if (!current.IsDisplayed)
+                    return null;
                 if (!current.IsVisible && !current.AllowHitWhenInvisible)
                     return null;
                 current = current.Parent;
@@ -483,7 +546,7 @@ namespace Engine.UI.Core.Elements
         /// </summary>
         public override void Draw(IGraphics g)
         {
-            if (_layoutDirty)
+            if (_layoutDirty || LegacyLayoutPending)
                 UpdateLayout();
 
             if (DisableRender || IsDisposed)
@@ -544,7 +607,7 @@ namespace Engine.UI.Core.Elements
             HandlerBase?.OnEndFrame();
 
             foreach (var child in Children.ToArray())
-                if (child.IsVisible)
+                if (child.IsVisible && child.IsDisplayed)
                     child.EndFrame();
         }
 

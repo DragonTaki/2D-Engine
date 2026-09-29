@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/14
-// Update Date: 2025/10/25
-// Version: v1.1
+// Update Date: 2026/09/29
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using System.Drawing;
@@ -222,6 +222,12 @@ namespace Engine.UI.Core.Elements
         }
 
         public override void OnAddedToParent() => RebasePhysics();
+
+        /// <summary>
+        /// The layout system moved an ancestor: this container's absolute position changed
+        /// without its LocalPosition setter running, so rebase here too.
+        /// </summary>
+        protected internal override void OnAbsolutePositionChanged() => RebasePhysics();
 
         /// <summary>
         /// Undoes the constructor's registration with the shared scroll input handler, so a
