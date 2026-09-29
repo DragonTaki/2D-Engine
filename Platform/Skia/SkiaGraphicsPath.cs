@@ -33,7 +33,13 @@ namespace Engine.Platform.Skia
         }
 
         public void StartFigure() => _figureEmpty = true;
-        public void CloseFigure() => Native.Close();
+        public void CloseFigure()
+        {
+            Native.Close();
+            // Like GDI+, the next segment after a close starts a new figure
+            // rather than connecting back from the closed contour.
+            _figureEmpty = true;
+        }
 
         public void AddLine(float x1, float y1, float x2, float y2)
         {
