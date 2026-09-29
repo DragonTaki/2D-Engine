@@ -42,6 +42,16 @@ namespace Engine.UI.Core.Infrastructure
         }
 
         /// <summary>
+        /// Runs per-frame cleanup (handler OnEndFrame, e.g. scroll delta reset) after input
+        /// and drawing - the third step of the Update/Draw/EndFrame frame cycle that the
+        /// element tree expects and the frame loops perform.
+        /// </summary>
+        public void EndFrame()
+        {
+            Root?.EndFrame();
+        }
+
+        /// <summary>
         /// Forwards mouse down events to the root element.
         /// </summary>
         public void OnMouseDown(IMouseEvent e)
