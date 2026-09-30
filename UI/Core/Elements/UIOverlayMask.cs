@@ -3,15 +3,15 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/20
-// Update Date: 2025/05/20
-// Version: v1.0
+// Update Date: 2026/09/30
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System.Drawing;
 
-using Engine.Globals;
 using Engine.Mathematics;
 using Engine.Platform;
+using Engine.UI.Constants.Core;
 using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Renderers;
 using Engine.UI.Dialogs;
@@ -38,7 +38,17 @@ namespace Engine.UI.Core.Elements
             RendererBase = new UIOverlayMaskRenderer(this);
             HandlerBase = new UIOverlayMaskHandler(this);
 
+            // Covers its parent (the overlay layer, which covers the root, i.e. the whole
+            // UI area) on all four edges, so area-tested events (wheel, click) and hit
+            // testing see the mask everywhere and it follows window resizes. It used to be
+            // sized to GlobalViewport.Size once per Show(), which stopped matching the
+            // window as soon as the window was resized while a dialog was open.
             LocalPosition = Vector2F.Zero;
+            LayoutRules.PositionMode = PositionMode.Absolute;
+            LayoutRules.Left = 0f;
+            LayoutRules.Top = 0f;
+            LayoutRules.Right = 0f;
+            LayoutRules.Bottom = 0f;
         }
 
         /// <summary>
@@ -46,11 +56,7 @@ namespace Engine.UI.Core.Elements
         /// </summary>
         public void Show()
         {
-            // Cover the whole UI design space, so area-tested events (wheel, click) and hit
-            // testing see the mask too - with a zero size only move/up were intercepted.
-            // Sized here, not in the constructor, which can run before the launcher sets
-            // GlobalViewport.DesignSize.
-            Size = new Vector2F(GlobalViewport.Size.X, GlobalViewport.Size.Y);
+            // Sized by the layout (all four edges pinned, see the constructor).
             IsVisible = true;
             IsEnabled = true;
         }
@@ -112,8 +118,9 @@ namespace Engine.UI.Core.Elements
             if (_element._dialog.ShowMaskEffect)
             {
                 using var brush = GraphicsBackend.Factory.CreateSolidBrush(_element.MaskColor);
-                var bounds = new RectangleF(0, 0, GlobalViewport.Size.X, GlobalViewport.Size.Y);
-                g.FillRectangle(brush, bounds);
+                // The mask's own laid-out bounds, which cover the whole UI area.
+                var bounds = element.GetCurrentAbsoluteBounds();
+                g.FillRectangle(brush, new RectangleF(bounds.X, bounds.Y, bounds.Width, bounds.Height));
             }
         }
     }

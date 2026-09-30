@@ -77,6 +77,12 @@ namespace Engine.Geometry
         // Optionally, helper properties or methods
         public Vector2F Center => new Vector2F(Position.X + Size.X / 2f, Position.Y + Size.Y / 2f);
 
+        /// <summary>
+        /// A layout of <paramref name="size"/> centered in the UI area
+        /// (<see cref="GlobalViewport.Center"/>, which is the whole window in design units
+        /// now that there is no letterbox). For elements under the layout system prefer
+        /// <c>AlignX</c>/<c>AlignY = Center</c> in their parent; this is a pre-layout helper.
+        /// </summary>
         public static LayoutF FromSizeCentered(Vector2F size) =>
             new LayoutF(GlobalViewport.Center - new Vector2F(size.Width, size.Height) / 2f, size);
 

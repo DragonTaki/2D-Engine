@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/17
-// Update Date: 2026/09/29
-// Version: v1.1
+// Update Date: 2026/09/30
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using Engine.Globals;
@@ -54,9 +54,9 @@ namespace Engine.UI.Core.Elements
         }
 
         /// <summary>
-        /// Keeps the root's size equal to the viewport's design size (the box its
-        /// layout-managed children are arranged in), then draws the tree - which runs any
-        /// pending layout pass first.
+        /// Keeps the root's size equal to the viewport's UI area (<see cref="GlobalViewport.Size"/>,
+        /// the whole window in design units - the box its layout-managed children are
+        /// arranged in), then draws the tree - which runs any pending layout pass first.
         /// </summary>
         public override void Draw(IGraphics g)
         {
@@ -65,9 +65,10 @@ namespace Engine.UI.Core.Elements
         }
 
         /// <summary>
-        /// Window resize (<see cref="GlobalViewport.Recalculate"/>): the scale that pixel
-        /// snapping rounds to changed, so the whole tree's layout is invalidated. Legacy
-        /// elements keep their positions (their rules are one-shot).
+        /// Window resize (<see cref="GlobalViewport.Recalculate"/>): the UI area's size and/or
+        /// the scale that pixel snapping rounds to changed, so the root is resized and the
+        /// whole tree's layout is invalidated. Legacy elements keep their positions (their
+        /// rules are one-shot).
         /// </summary>
         private void OnViewportChanged()
         {
@@ -76,8 +77,8 @@ namespace Engine.UI.Core.Elements
         }
 
         /// <summary>
-        /// Phase 1 keeps the letterboxed design space: the root is exactly
-        /// <see cref="GlobalViewport.Size"/>. (Nothing read the root's size before; it was 0.)
+        /// The root is exactly <see cref="GlobalViewport.Size"/>: the whole window in design
+        /// units (no letterbox), so full-window layouts stretch with the window.
         /// </summary>
         private void SyncToViewport()
         {
