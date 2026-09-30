@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/24
-// Update Date: 2026/09/24
-// Version: v2.0
+// Update Date: 2026/09/30
+// Version: v2.1
 /* ----- ----- ----- ----- */
 
 using System.Drawing;
@@ -44,8 +44,10 @@ namespace Engine.UI.Core.Renderers
         public override void OnRender(IGraphics g, TElement element)
         {
             // Container Style (background/border) first - overriding without calling base
-            // meant a Style set on this container was never drawn.
-            base.OnRender(g, element);
+            // meant a Style set on this container was never drawn. Drawn over the menu's
+            // panel, not the whole element: a screen-sized menu (PanelWidth set) would
+            // otherwise paint its panel background over the rest of the screen.
+            element.Style?.Draw(g, element.GetPanelAbsoluteBounds());
             _composite.Render(g, element);
         }
 
@@ -58,9 +60,9 @@ namespace Engine.UI.Core.Renderers
                 {
                     debugPen.DashStyle = PenDashStyle.Dash;
 
-                    // 使用 UIElement 提供的絕對邊界
+                    // The panel's absolute bounds (the whole element unless PanelWidth is set)
                     var menu = (UIMenu<TElement, THandler, TRenderer>)element;
-                    var bounds = menu.GetCurrentAbsoluteBounds();
+                    var bounds = menu.GetPanelAbsoluteBounds();
 
                     // 可以加入 margin
                     float margin = 3.0f;

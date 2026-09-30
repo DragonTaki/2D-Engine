@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/24
-// Update Date: 2025/10/24
-// Version: v1.0
+// Update Date: 2026/09/30
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
+using Engine.Geometry;
 using Engine.Mathematics;
 using Engine.UI.Constants.Components;
 using Engine.UI.Core.Bases;
@@ -38,6 +39,14 @@ namespace Engine.UI.Core.Elements
         public float ButtonSpacing { get; set; } = 10f;
         protected float ButtonMargin = 5.0f;
         public bool IsVerticalLayout { get; set; } = true;
+
+        /// <summary>
+        /// Width of the menu's own panel (the column its buttons and outline live in),
+        /// measured from the menu's left edge, for a menu element that is wider than its
+        /// panel - e.g. a screen-sized menu whose box also hosts the screen's other
+        /// content next to the panel. <c>null</c> (default): the panel is the whole element.
+        /// </summary>
+        public float? PanelWidth { get; set; }
 
         #endregion
 
@@ -165,6 +174,18 @@ namespace Engine.UI.Core.Elements
         }
 
         public RectangleF GetAbsClipRect() => ScrollContainer.GetAbsClippingRect();
+
+        /// <summary>
+        /// Absolute bounds of the menu's panel: the element's bounds, narrowed to
+        /// <see cref="PanelWidth"/> when set.
+        /// </summary>
+        public LayoutF GetPanelAbsoluteBounds()
+        {
+            var bounds = GetCurrentAbsoluteBounds();
+            if (PanelWidth is not float width)
+                return bounds;
+            return new LayoutF(bounds.Position, Math.Clamp(width, 0f, bounds.Size.X), bounds.Size.Y);
+        }
 
         public IReadOnlyList<UIButton> ButtonList => Buttons;
         
