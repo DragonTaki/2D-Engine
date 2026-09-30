@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/15
-// Update Date: 2026/09/29
-// Version: v1.2
+// Update Date: 2026/09/30
+// Version: v1.3
 /* ----- ----- ----- ----- */
 
 using System;
@@ -252,12 +252,21 @@ namespace Engine.UI.Core.Elements
         {
             _layoutDirty = false;
             LayoutEngine.ArrangeChildren(this);
+            OnChildrenArranged();
 
             // Snapshot: arranging may run measure hooks, which must not see a list mid-change.
             foreach (var child in Children.ToArray())
                 if (child.LayoutDirty && child is UIElement element)
                     element.UpdateManagedLayout();
         }
+
+        /// <summary>
+        /// Called by the layout pass right after this element's layout-managed children were
+        /// arranged (legacy children keep their own positions), before recursing into them.
+        /// Containers that derive state from their children's rectangles (e.g. a scroll
+        /// container's content size) update it here.
+        /// </summary>
+        protected virtual void OnChildrenArranged() { }
 
         /// <summary>
         /// Updates element's layout based on parent bounds and legacy layout rules
@@ -344,6 +353,10 @@ namespace Engine.UI.Core.Elements
             // New context for the child's own children (snapping), new item for this layout.
             child.InvalidateLayout();
             InvalidateLayout();
+
+            // The child's own OnAddedToParent resynced it; its descendants' absolute
+            // positions changed too (e.g. a scroll container inside an attached submenu).
+            NotifyDescendantsMoved(child);
         }
 
         public override void OnAddedToParent()

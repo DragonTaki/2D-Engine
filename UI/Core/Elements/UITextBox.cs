@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/24
-// Update Date: 2025/10/24
-// Version: v1.0
+// Update Date: 2026/09/30
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -168,7 +168,9 @@ namespace Engine.UI.Elements
                 y += size.Height;
             }
 
-            ScrollContainer.ContentHeight = y;
+            // Automatic content size (the last label's bottom edge, = y); refreshed now so
+            // the next append in the same frame starts below this line.
+            ScrollContainer.RefreshContentSize(forceAlignment: true);
         }
 
         #endregion
@@ -207,7 +209,7 @@ namespace Engine.UI.Elements
             label.Handler.SetTextFragments(new List<TextFragment>(fragments));
 
             ScrollContainer.AddChild(label);
-            ScrollContainer.ContentHeight = y + height;
+            ScrollContainer.RefreshContentSize(forceAlignment: true);  // = y + height
         }
 
         private IFont GetLineFont(FontStyleFlags style)
@@ -272,7 +274,7 @@ namespace Engine.UI.Elements
         private void ResetState()
         {
             // Example: reset scroll position or internal log buffer
-            ScrollContainer.ContentHeight = 0f;
+            ScrollContainer.RefreshContentSize(forceAlignment: true);  // No labels left: 0
             // if you have an internal string buffer, clear it too
             // _logBuffer.Clear();
         }

@@ -3,15 +3,17 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/14
-// Update Date: 2026/09/29
-// Version: v1.2
+// Update Date: 2026/09/30
+// Version: v1.3
 /* ----- ----- ----- ----- */
 
+using System;
 using System.Drawing;
 
 using Engine.Mathematics;
 using Engine.Physics;
 using Engine.UI.Constants.Components;
+using Engine.UI.Constants.Core;
 using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Renderers;
 using Engine.UI.Input;
@@ -96,6 +98,18 @@ namespace Engine.UI.Core.Elements
 
         /// <summary>
         /// Total content height of the scrollable area.
+        /// <para>
+        /// Computed automatically by default (<see cref="AutoContentSize"/>, see
+        /// <see cref="RefreshContentSize"/>): the lowest bottom edge among the displayed
+        /// children, recomputed by the layout pass whenever children are added, removed,
+        /// moved or resized. Nobody has to set it.
+        /// </para>
+        /// <para>
+        /// Assigning it is the <b>manual override</b> for special cases (content that isn't
+        /// made of child elements, extra trailing space, ...): it turns
+        /// <see cref="AutoContentSize"/> off, so the assigned value stays until auto sizing is
+        /// switched back on. Either way a new value re-applies the scroll alignment.
+        /// </para>
         /// </summary>
         private float _contentHeight;
         public float ContentHeight
@@ -103,13 +117,100 @@ namespace Engine.UI.Core.Elements
             get => _contentHeight;
             set
             {
-                _contentHeight = value;
-                if (ScrollHandler != null)
-                    ScrollHandler.ApplyAlignment();
-                else
-                    _pendingApplyAlignment = true;
+                AutoContentSize = false;
+                SetContentHeight(value);
             }
         }
+
+        /// <summary>
+        /// The one path every content-height change goes through (automatic or manual):
+        /// store it and re-apply the scroll alignment, which OverContent, MinNormalScrollY,
+        /// ClampToOverscrollRange and the inertia/rebound logic all read from.
+        /// </summary>
+        private void SetContentHeight(float value)
+        {
+            _contentHeight = value;
+            if (ScrollHandler != null)
+                ScrollHandler.ApplyAlignment();
+            else
+                _pendingApplyAlignment = true;
+        }
+
+        private bool _autoContentSize = true;
+
+        /// <summary>
+        /// Whether <see cref="ContentHeight"/>/<see cref="ContentWidth"/> follow the children
+        /// automatically (default <see langword="true"/>, like CSS overflow or Unity's
+        /// ScrollRect + ContentSizeFitter). Assigning <see cref="ContentHeight"/> sets this to
+        /// <see langword="false"/>; setting it back to <see langword="true"/> recomputes at once.
+        /// </summary>
+        public bool AutoContentSize
+        {
+            get => _autoContentSize;
+            set
+            {
+                if (_autoContentSize == value)
+                    return;
+                _autoContentSize = value;
+                if (value)
+                    RefreshContentSize(forceAlignment: true);
+            }
+        }
+
+        /// <summary>
+        /// Horizontal content extent (rightmost right edge among the displayed children, plus
+        /// padding), maintained alongside <see cref="ContentHeight"/> when
+        /// <see cref="AutoContentSize"/> is on. Informational: the container scrolls vertically only.
+        /// </summary>
+        public float ContentWidth { get; private set; }
+
+        /// <summary>
+        /// Recomputes the automatic content size from the children's current rectangles:
+        /// the lowest bottom edge (and rightmost right edge) among displayed Legacy and Flow
+        /// children - for a flex container that is where the flex solver put its items -
+        /// including their bottom/right margins and this container's bottom/right padding.
+        /// Absolute children are overlays and don't count (as in CSS).
+        /// <para>
+        /// Runs automatically after every layout pass of this container; call it directly to
+        /// get the value right away (e.g. after appending children in the same frame).
+        /// No-op while <see cref="AutoContentSize"/> is off.
+        /// </para>
+        /// </summary>
+        /// <param name="forceAlignment">
+        /// Re-apply the scroll alignment even if the height didn't change. By default only a
+        /// changed height does, so e.g. a window resize doesn't jump the scroll position.
+        /// </param>
+        public void RefreshContentSize(bool forceAlignment = false)
+        {
+            if (!_autoContentSize)
+                return;
+
+            float bottom = 0f, right = 0f;
+            foreach (var child in Children)
+            {
+                if (!child.IsDisplayed || (child.IsLayoutManaged && child.LayoutRules.PositionMode == PositionMode.Absolute))
+                    continue;
+
+                var margin = child.IsLayoutManaged ? child.LayoutRules.Margin : Constants.Core.PaddingF.Zero;
+                var position = child.LocalPosition.Current;
+                bottom = Math.Max(bottom, position.Y + child.Size.Y + margin.Bottom);
+                right = Math.Max(right, position.X + child.Size.X + margin.Right);
+            }
+
+            bool hasChildren = bottom > 0f || right > 0f;
+            var padding = LayoutRules.Padding;
+            float height = hasChildren ? bottom + padding.Bottom : 0f;
+            ContentWidth = hasChildren ? right + padding.Right : 0f;
+
+            if (forceAlignment || height != _contentHeight)
+                SetContentHeight(height);
+        }
+
+        /// <summary>The automatic content size depends on every child's rectangle.</summary>
+        protected internal override bool TracksChildGeometry => _autoContentSize;
+
+        /// <summary>After each layout pass: keep the automatic content size current.</summary>
+        protected override void OnChildrenArranged() => RefreshContentSize();
 
         /// <summary>
         /// Maximum overscroll allowed at edges.

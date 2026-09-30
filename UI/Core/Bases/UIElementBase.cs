@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/27
-// Update Date: 2026/09/29
-// Version: v1.1
+// Update Date: 2026/09/30
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using System;
@@ -419,9 +419,16 @@ namespace Engine.UI.Core.Bases
         public void InvalidateLayout()
         {
             _layoutDirty = true;
-            if (IsLayoutManaged)
-                Parent?.InvalidateLayout();
+            if (Parent != null && (IsLayoutManaged || Parent.TracksChildGeometry))
+                Parent.InvalidateLayout();
         }
+
+        /// <summary>
+        /// True for containers whose own state depends on where their children are, even
+        /// legacy (non-managed) ones - e.g. <c>UIScrollContainer</c>'s automatic content size.
+        /// A child of such a container invalidates it on every geometry change.
+        /// </summary>
+        protected internal virtual bool TracksChildGeometry => false;
 
         /// <summary>
         /// Invalidates this element and its whole subtree, e.g. when the viewport scale
@@ -492,7 +499,11 @@ namespace Engine.UI.Core.Bases
             return true;
         }
 
-        private static void NotifyDescendantsMoved(UIElementBase element)
+        /// <summary>
+        /// Calls <see cref="OnAbsolutePositionChanged"/> on every descendant of
+        /// <paramref name="element"/> (their absolute positions changed with it).
+        /// </summary>
+        protected static void NotifyDescendantsMoved(UIElementBase element)
         {
             foreach (var child in element.Children.ToArray())
             {
