@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/09/29
-// Update Date: 2026/09/29
-// Version: v1.0
+// Update Date: 2026/09/30
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -144,7 +144,22 @@ namespace Engine.UI.Layout
             float stretchW, float stretchH,
             float percentW, float percentH,
             float measureW, float measureH,
-            bool forceStretchW = false, bool forceStretchH = false)
+            bool forceStretchW = false, bool forceStretchH = false) =>
+            ResolveSize(item, stretchW, stretchH, percentW, percentH, measureW, measureH,
+                forceStretchW, forceStretchH, out _);
+
+        /// <summary>
+        /// <see cref="ResolveSize(LayoutItem, float, float, float, float, float, float, bool, bool)"/>,
+        /// also returning the box the size was resolved to before aspect-ratio fitting
+        /// (equal to the result when no fitting happened), so callers can align a fitted
+        /// element inside it.
+        /// </summary>
+        public static Vector2F ResolveSize(LayoutItem item,
+            float stretchW, float stretchH,
+            float percentW, float percentH,
+            float measureW, float measureH,
+            bool forceStretchW, bool forceStretchH,
+            out Vector2F box)
         {
             var rules = item.Rules;
             float? ratio = GetAspectRatio(rules);
@@ -161,6 +176,7 @@ namespace Engine.UI.Layout
             {
                 w = Clamp(w, rules.MinWidth, rules.MaxWidth);
                 h = Clamp(h, rules.MinHeight, rules.MaxHeight);
+                box = new Vector2F(w, h);
                 if (ratio.HasValue)
                     FitAspect(ratio.Value, rules.AspectFit, ref w, ref h);
                 return new Vector2F(w, h);
@@ -171,6 +187,7 @@ namespace Engine.UI.Layout
                 w = Clamp(w, rules.MinWidth, rules.MaxWidth);
                 h = ratio.HasValue ? w / ratio.Value : item.Measure(w, measureH).Y;
                 h = Clamp(h, rules.MinHeight, rules.MaxHeight);
+                box = new Vector2F(w, h);
                 return new Vector2F(w, h);
             }
 
@@ -179,6 +196,7 @@ namespace Engine.UI.Layout
                 h = Clamp(h, rules.MinHeight, rules.MaxHeight);
                 w = ratio.HasValue ? h * ratio.Value : item.Measure(measureW, h).X;
                 w = Clamp(w, rules.MinWidth, rules.MaxWidth);
+                box = new Vector2F(w, h);
                 return new Vector2F(w, h);
             }
 
@@ -190,6 +208,7 @@ namespace Engine.UI.Layout
             else
                 h = w == content.X ? content.Y : item.Measure(w, measureH).Y;
             h = Clamp(h, rules.MinHeight, rules.MaxHeight);
+            box = new Vector2F(w, h);
             return new Vector2F(w, h);
         }
 
@@ -239,23 +258,24 @@ namespace Engine.UI.Layout
             bool stretchX = rules.Left.HasValue && rules.Right.HasValue;
             bool stretchY = rules.Top.HasValue && rules.Bottom.HasValue;
 
-            var size = ResolveSize(item, spaceW, spaceH, boxW, boxH, spaceW, spaceH, stretchX, stretchY);
+            var size = ResolveSize(item, spaceW, spaceH, boxW, boxH, spaceW, spaceH, stretchX, stretchY, out var fitBox);
 
             item.Width = size.X;
             item.Height = size.Y;
-            item.X = PlaceAbsoluteAxis(rules.Left, rules.Right, margin.Left, margin.Right, boxW, spaceW, size.X, rules.AlignX);
-            item.Y = PlaceAbsoluteAxis(rules.Top, rules.Bottom, margin.Top, margin.Bottom, boxH, spaceH, size.Y, rules.AlignY);
+            item.X = PlaceAbsoluteAxis(rules.Left, rules.Right, margin.Left, margin.Right, boxW, spaceW, fitBox.X, size.X, rules.AlignX);
+            item.Y = PlaceAbsoluteAxis(rules.Top, rules.Bottom, margin.Top, margin.Bottom, boxH, spaceH, fitBox.Y, size.Y, rules.AlignY);
         }
 
+        /// <param name="slot">The size before aspect-ratio fitting; a fitted element is aligned inside it.</param>
         private static float PlaceAbsoluteAxis(float? start, float? end, float marginStart, float marginEnd,
-            float box, float space, float size, Alignment align)
+            float box, float space, float slot, float size, Alignment align)
         {
             if (start.HasValue && end.HasValue)
                 return start.Value + marginStart + AlignFactor(align) * (space - size);
             if (start.HasValue)
-                return start.Value + marginStart;
+                return start.Value + marginStart + AlignFactor(align) * (slot - size);
             if (end.HasValue)
-                return box - end.Value - marginEnd - size;
+                return box - end.Value - marginEnd - slot + AlignFactor(align) * (slot - size);
             return marginStart + AlignFactor(align) * (space - size);
         }
 
