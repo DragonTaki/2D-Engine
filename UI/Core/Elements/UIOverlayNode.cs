@@ -3,11 +3,12 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/20
-// Update Date: 2025/05/20
-// Version: v1.0
+// Update Date: 2026/09/30
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using Engine.UI.Constants.Components;
+using Engine.UI.Constants.Core;
 
 namespace Engine.UI.Core.Elements
 {
@@ -36,7 +37,14 @@ namespace Engine.UI.Core.Elements
         public UIOverlayNode(int zIndex = int.MaxValue, bool isPersistent = true, UIElementType type = UIElementType.Overlay)
             : base(zIndex, isPersistent, type)
         {
-            /* no-op */
+            // Spans its parent (the root, i.e. the whole viewport), so layout-managed
+            // overlays such as dialogs can be centered in it. Hit testing is unaffected
+            // (UINode always hits); before this its size was 0 and nothing read it.
+            LayoutRules.PositionMode = PositionMode.Absolute;
+            LayoutRules.Left = 0f;
+            LayoutRules.Top = 0f;
+            LayoutRules.Right = 0f;
+            LayoutRules.Bottom = 0f;
         }
     }
 }
