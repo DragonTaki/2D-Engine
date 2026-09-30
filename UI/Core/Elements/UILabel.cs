@@ -3,13 +3,16 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/19
-// Update Date: 2025/10/27
-// Version: v1.2
+// Update Date: 2026/09/30
+// Version: v1.3
 /* ----- ----- ----- ----- */
 
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 
+using Engine.Globals;
+using Engine.Mathematics;
 using Engine.Platform;
 using Engine.UI.Constants.Components;
 using Engine.UI.Core.Handlers;
@@ -26,9 +29,22 @@ namespace Engine.UI.Core.Elements
         #region Fields
 
         /// <summary>
-        /// Text content to be displayed.
+        /// Text content to be displayed. Changing it invalidates the layout (Auto sizes
+        /// depend on it).
         /// </summary>
-        public string Text { get; set; } = string.Empty;
+        public string Text
+        {
+            get => _text;
+            set
+            {
+                if (_text == value)
+                    return;
+                _text = value;
+                InvalidateLayout();
+            }
+        }
+
+        private string _text = string.Empty;
 
 #nullable enable
         public List<TextFragment>? _fragments;
@@ -60,6 +76,7 @@ namespace Engine.UI.Core.Elements
                     _font?.Dispose();
                 _font = value;
                 _ownsFont = false;
+                InvalidateLayout();
             }
         }
 
@@ -115,9 +132,21 @@ namespace Engine.UI.Core.Elements
         public ContentAlign TextAlign { get; set; } = ContentAlign.MiddleCenter;
 
         /// <summary>
-        /// Indicates whether text wrapping is enabled.
+        /// Indicates whether text wrapping is enabled. Changing it invalidates the layout.
         /// </summary>
-        public bool WordWrap { get; set; } = true;
+        public bool WordWrap
+        {
+            get => _wordWrap;
+            set
+            {
+                if (_wordWrap == value)
+                    return;
+                _wordWrap = value;
+                InvalidateLayout();
+            }
+        }
+
+        private bool _wordWrap = true;
 
         public IBrush _cachedBrush;
         public Color _lastForeColor;
@@ -139,6 +168,58 @@ namespace Engine.UI.Core.Elements
         public UILabel() : base(type: UIElementType.Label)
         {
 
+        }
+
+        /// <summary>
+        /// Intrinsic size for Auto Width/Height: the text measured with <see cref="Font"/>
+        /// (wrapped to the available width when <see cref="WordWrap"/> is on and that width is
+        /// finite), plus <see cref="Models.UILayout.Padding"/>. Fragments measure as one line of
+        /// runs, as <c>UILabelRenderer</c> draws them. Empty text keeps one line's height.
+        /// <para>
+        /// One device pixel of slack is added on each axis: pixel snapping can shrink the final
+        /// box by up to a device pixel, which would otherwise make the drawn text wrap or be
+        /// trimmed differently from what was measured.
+        /// </para>
+        /// <para>
+        /// The renderer still draws the text across the whole bounds (padding is not inset
+        /// yet), so padding only adds space around the measured text.
+        /// </para>
+        /// </summary>
+        public override Vector2F MeasureIntrinsicSize(Vector2F available)
+        {
+            var padding = LayoutRules.Padding;
+            float availableWidth = available.X - padding.Horizontal;
+
+            using var g = GraphicsBackend.Factory.CreateMeasurementContext();
+
+            float width = 0f, height = 0f;
+            if (_fragments != null && _fragments.Count > 0)
+            {
+                foreach (var fragment in _fragments)
+                {
+                    var size = g.MeasureString(fragment.Text ?? string.Empty, GetFragmentFont(fragment.Bold, fragment.Italic));
+                    width += size.Width;
+                    height = Math.Max(height, size.Height);
+                }
+            }
+            else if (string.IsNullOrEmpty(Text))
+            {
+                height = g.MeasureString(" ", Font).Height;
+            }
+            else
+            {
+                bool wrap = WordWrap && !float.IsInfinity(availableWidth) && !float.IsNaN(availableWidth) && availableWidth >= 1f;
+                var size = wrap
+                    ? g.MeasureString(Text, Font, (int)MathF.Floor(availableWidth))
+                    : g.MeasureString(Text, Font);
+                width = size.Width;
+                height = size.Height;
+            }
+
+            float slack = GlobalViewport.Scale > 0f ? 1f / GlobalViewport.Scale : 1f;
+            return new Vector2F(
+                width + slack + padding.Horizontal,
+                height + slack + padding.Vertical);
         }
 
         protected override void DisposeUI()
