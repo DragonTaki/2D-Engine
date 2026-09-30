@@ -178,7 +178,8 @@ namespace Engine.UI.Core.Elements
         /// </summary>
         /// <param name="forceAlignment">
         /// Re-apply the scroll alignment even if the height didn't change. By default only a
-        /// changed height does, so e.g. a window resize doesn't jump the scroll position.
+        /// real change (more than a design unit) does, so e.g. a window resize, which only
+        /// re-snaps the children, doesn't jump the scroll position.
         /// </param>
         public void RefreshContentSize(bool forceAlignment = false)
         {
@@ -202,9 +203,19 @@ namespace Engine.UI.Core.Elements
             float height = hasChildren ? bottom + padding.Bottom : 0f;
             ContentWidth = hasChildren ? right + padding.Right : 0f;
 
-            if (forceAlignment || height != _contentHeight)
+            // Sub-unit changes (pixel snapping re-rounding the children after a window
+            // resize) update the value without re-aligning, so the scroll position is kept.
+            if (forceAlignment || Math.Abs(height - _contentHeight) > ContentChangeTolerance)
                 SetContentHeight(height);
+            else
+                _contentHeight = height;
         }
+
+        /// <summary>
+        /// Content-height changes up to this size (design units) are treated as re-rounding,
+        /// not as new content: they don't re-apply the scroll alignment.
+        /// </summary>
+        private const float ContentChangeTolerance = 1f;
 
         /// <summary>The automatic content size depends on every child's rectangle.</summary>
         protected internal override bool TracksChildGeometry => _autoContentSize;
