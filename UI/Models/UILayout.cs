@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/24
-// Update Date: 2026/09/29
-// Version: v2.0
+// Update Date: 2026/09/30
+// Version: v2.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -331,6 +331,72 @@ namespace Engine.UI.Models
 
         /// <summary>Layout order among siblings (CSS <c>order</c>); ties keep child order. Does not affect drawing.</summary>
         public int Order { get => _order; set => Set(ref _order, value); }
+
+        #endregion
+
+        #region Styles
+
+        /// <summary>
+        /// Applies a declarative <see cref="UILayoutStyle"/>: every setting the style declares
+        /// (non-null) is assigned to the property of the same name; everything else is left
+        /// as it is. Vectors are copied, so elements sharing one style never share a mutable
+        /// vector.
+        /// </summary>
+        public void Apply(UILayoutStyle style)
+        {
+            if (style == null)
+                throw new ArgumentNullException(nameof(style));
+
+            // Legacy
+            if (style.Anchor is Anchor anchor) Anchor = anchor;
+            if (style.Alignment is Alignment alignment) Alignment = alignment;
+            if (style.SizePercent is Vector2F sizePercent) SizePercent = new Vector2F(sizePercent.X, sizePercent.Y);
+            if (style.AutoUpdate is bool autoUpdate) AutoUpdate = autoUpdate;
+            if (style.IgnoreParentLayout is bool ignoreParentLayout) IgnoreParentLayout = ignoreParentLayout;
+
+            // Positioning
+            if (style.PositionMode is PositionMode positionMode) PositionMode = positionMode;
+            if (style.Display is DisplayMode display) Display = display;
+            if (style.Left.HasValue) Left = style.Left;
+            if (style.Top.HasValue) Top = style.Top;
+            if (style.Right.HasValue) Right = style.Right;
+            if (style.Bottom.HasValue) Bottom = style.Bottom;
+            if (style.Offset is Vector2F offset) Offset = new Vector2F(offset.X, offset.Y);
+
+            // Size
+            if (style.Width is LayoutSize width) Width = width;
+            if (style.Height is LayoutSize height) Height = height;
+            if (style.MinWidth.HasValue) MinWidth = style.MinWidth;
+            if (style.MaxWidth.HasValue) MaxWidth = style.MaxWidth;
+            if (style.MinHeight.HasValue) MinHeight = style.MinHeight;
+            if (style.MaxHeight.HasValue) MaxHeight = style.MaxHeight;
+            if (style.AspectRatio.HasValue) AspectRatio = style.AspectRatio;
+            if (style.AspectFit is AspectFit aspectFit) AspectFit = aspectFit;
+
+            // Alignment and spacing
+            if (style.AlignX is Alignment alignX) AlignX = alignX;
+            if (style.AlignY is Alignment alignY) AlignY = alignY;
+            if (style.Margin is PaddingF margin) Margin = margin;
+            if (style.Padding is PaddingF padding) Padding = padding;
+
+            // Container
+            if (style.Container is LayoutContainer container) Container = container;
+            if (style.Overflow is OverflowMode overflow) Overflow = overflow;
+            if (style.FlexDirection is FlexDirection flexDirection) FlexDirection = flexDirection;
+            if (style.FlexWrap is FlexWrap flexWrap) FlexWrap = flexWrap;
+            if (style.JustifyContent is JustifyContent justifyContent) JustifyContent = justifyContent;
+            if (style.AlignItems is FlexAlign alignItems) AlignItems = alignItems;
+            if (style.AlignContent is AlignContent alignContent) AlignContent = alignContent;
+            if (style.RowGap is float rowGap) RowGap = rowGap;
+            if (style.ColumnGap is float columnGap) ColumnGap = columnGap;
+
+            // Flex item
+            if (style.FlexGrow is float flexGrow) FlexGrow = flexGrow;
+            if (style.FlexShrink is float flexShrink) FlexShrink = flexShrink;
+            if (style.FlexBasis is LayoutSize flexBasis) FlexBasis = flexBasis;
+            if (style.AlignSelf.HasValue) AlignSelf = style.AlignSelf;
+            if (style.Order is int order) Order = order;
+        }
 
         #endregion
 
