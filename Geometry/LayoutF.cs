@@ -74,7 +74,7 @@ namespace Engine.Geometry
         /// </summary>
         public static LayoutF Zero => new LayoutF(Vector2F.Zero, Vector2F.Zero);
 
-        // Optionally, helper properties or methods
+        // The center point of the layout.
         public Vector2F Center => new Vector2F(Position.X + Size.X / 2f, Position.Y + Size.Y / 2f);
 
         /// <summary>
