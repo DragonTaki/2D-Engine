@@ -177,7 +177,7 @@ namespace Engine.Randomization
         }
 
         /// <summary>
-        /// Thread-safe advancement of the current _index.
+        /// Advances the current _index (circular). Not locked itself: every caller already holds <c>_lockObj</c>.
         /// </summary>
         private void Advance()
         {

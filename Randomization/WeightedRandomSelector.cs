@@ -25,7 +25,7 @@ namespace Engine.Randomization
         /// <param name="weights">The list of weights corresponding to each item (must be same length as items).</param>
         /// <param name="random">An IRandomProvider instance for generating random values.</param>
         /// <returns>One element from the list, selected according to its weight.</returns>
-        /// <exception cref="ArgumentException">Thrown when items and weights count mismatch, or total weight is non-positive.</exception>
+        /// <exception cref="ArgumentException">Thrown when items is empty, items and weights count mismatch, a weight is negative/NaN/infinite, or the total weight is non-positive.</exception>
         public static T ChooseByWeight<T>(IReadOnlyList<T> items, IReadOnlyList<float> weights, IRandomProvider random)
         {
             if (items.Count != weights.Count)
