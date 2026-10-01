@@ -88,13 +88,21 @@ namespace Engine.UI.Core.Renderers
                 var buttons = menu.GetVisibleButtons();
                 var clip = menu.GetAbsClipRect();
 
+                // Balanced with try/finally like the other SetClip sites: a throwing style
+                // would leak the clip on GDI+ and unbalance Skia's save stack.
                 g.SetClip(clip);
-                foreach (var button in buttons)
+                try
                 {
-                    IButtonDrawStyle style = button.Style ?? DefaultStyles.DefaultButtonStyle;
-                    style.Draw(g, button.Text, button.GetCurrentAbsolutePosition(), button.Size);
+                    foreach (var button in buttons)
+                    {
+                        IButtonDrawStyle style = button.Style ?? DefaultStyles.DefaultButtonStyle;
+                        style.Draw(g, button.Text, button.GetCurrentAbsolutePosition(), button.Size);
+                    }
                 }
-                g.ResetClip();
+                finally
+                {
+                    g.ResetClip();
+                }
             }
         }
     }
