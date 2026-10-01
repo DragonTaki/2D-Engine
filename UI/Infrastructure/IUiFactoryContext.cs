@@ -11,7 +11,7 @@ using System;
 
 using Engine.UI.Core.Interfaces;
 
-namespace Engine.UI.Core.Infrastructure
+namespace Engine.UI.Infrastructure
 {
     public interface IUiFactoryContext
     {

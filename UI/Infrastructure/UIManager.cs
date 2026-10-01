@@ -11,7 +11,7 @@
 using Engine.Platform;
 using Engine.UI.Core.Elements;
 
-namespace Engine.UI.Core.Infrastructure
+namespace Engine.UI.Infrastructure
 {
     /// <summary>
     /// Manages UI root, dispatching updates, rendering, and input events.

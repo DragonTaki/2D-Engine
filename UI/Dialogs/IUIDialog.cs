@@ -11,7 +11,7 @@ namespace Engine.UI.Dialogs
 {
     /// <summary>
     /// Minimal contract a modal dialog must satisfy to be hosted by the
-    /// generic <see cref="Engine.UI.Core.Infrastructure.DialogManager{TDialog}"/>
+    /// generic <see cref="Engine.UI.Infrastructure.DialogManager{TDialog}"/>
     /// and <see cref="Engine.UI.Core.Elements.UIOverlayMask"/>. Concrete
     /// dialog content (e.g. a confirm/cancel dialog) is defined by Game,
     /// which implements this interface.

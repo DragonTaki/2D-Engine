@@ -14,7 +14,7 @@ using Engine.UI.Core.Elements;
 using Engine.UI.Dialogs;
 using Engine.UI.Utils;
 
-namespace Engine.UI.Core.Infrastructure
+namespace Engine.UI.Infrastructure
 {
     /// <summary>
     /// Generic single-instance modal dialog manager: hosts exactly one

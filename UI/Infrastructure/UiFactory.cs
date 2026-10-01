@@ -19,7 +19,7 @@ using Engine.UI.Input;
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Engine.UI.Core.Infrastructure
+namespace Engine.UI.Infrastructure
 {
     /// <summary>
     /// Central factory responsible for creating UI elements, screens, and scroll containers.

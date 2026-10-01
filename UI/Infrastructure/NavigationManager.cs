@@ -17,7 +17,7 @@ using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Interfaces;
 using Engine.UI.Core.Renderers;
 
-namespace Engine.UI.Core.Infrastructure
+namespace Engine.UI.Infrastructure
 {
     /// <summary>
     /// NavigationManager manages switching between the game's main UI screens.
