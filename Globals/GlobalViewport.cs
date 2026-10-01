@@ -63,7 +63,7 @@ namespace Engine.Globals
         public static Vector2F Offset { get; private set; } = Vector2F.Zero;
 
         // null until Recalculate has a valid window and design size.
-        private static Vector2F s_size;
+        private static Vector2F _size;
 
         /// <summary>
         /// The UI area's size in design units: the whole window divided by
@@ -72,7 +72,7 @@ namespace Engine.Globals
         /// <see cref="Recalculate"/> it is <see cref="DesignSize"/>.
         /// A copy per access (<see cref="Vector2F"/> is mutable).
         /// </summary>
-        public static Vector2F Size => s_size != null ? new Vector2F(s_size.X, s_size.Y) : DesignSize;
+        public static Vector2F Size => _size != null ? new Vector2F(_size.X, _size.Y) : DesignSize;
 
         /// <summary>The center point of the UI area (<see cref="Size"/>).</summary>
         public static Vector2F Center => Size / 2f;
@@ -89,7 +89,7 @@ namespace Engine.Globals
         /// </summary>
         public static event Action Changed;
 
-        private static Vector2F s_lastDesignSize = new Vector2F(0, 0);
+        private static Vector2F _lastDesignSize = new Vector2F(0, 0);
 
         /// <summary>
         /// Recomputes <see cref="Scale"/>, <see cref="Offset"/> and
@@ -106,7 +106,7 @@ namespace Engine.Globals
             if (DesignSize.X <= 0 || DesignSize.Y <= 0 || actualWidth <= 0 || actualHeight <= 0)
             {
                 Scale = 1f;
-                s_size = null;
+                _size = null;
             }
             else
             {
@@ -114,11 +114,11 @@ namespace Engine.Globals
                 // the whole window in design units - DesignSize on the limiting axis, larger
                 // on the other.
                 Scale = System.Math.Min(actualWidth / DesignSize.X, actualHeight / DesignSize.Y);
-                s_size = new Vector2F(actualWidth / Scale, actualHeight / Scale);
+                _size = new Vector2F(actualWidth / Scale, actualHeight / Scale);
             }
 
-            bool designChanged = DesignSize.X != s_lastDesignSize.X || DesignSize.Y != s_lastDesignSize.Y;
-            s_lastDesignSize = new Vector2F(DesignSize.X, DesignSize.Y);
+            bool designChanged = DesignSize.X != _lastDesignSize.X || DesignSize.Y != _lastDesignSize.Y;
+            _lastDesignSize = new Vector2F(DesignSize.X, DesignSize.Y);
 
             var size = Size;
             if (designChanged || Scale != oldScale || Offset.X != oldOffset.X || Offset.Y != oldOffset.Y
