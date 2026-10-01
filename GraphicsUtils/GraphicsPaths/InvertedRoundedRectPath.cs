@@ -23,7 +23,7 @@ namespace Engine.GraphicsUtils.GraphicsPaths
         /// </summary>
         /// <param name="width">Width of the rectangle.</param>
         /// <param name="height">Height of the rectangle.</param>
-        /// <param name="cornerRadius">Optional: Radius of the inward corner curve (default: auto-calculated).</param>
+        /// <param name="cornerRadius">Optional: size of each 45-degree corner cut, measured along each edge (default: 10% of the smaller side; clamped to half the smaller side).</param>
         /// <returns>GraphicsPath representing the chamfered rectangle.</returns>
         public static IGraphicsPath Create(float width, float height, float? cornerRadius = null)
         {
@@ -67,27 +67,27 @@ namespace Engine.GraphicsUtils.GraphicsPaths
             height = System.MathF.Max(0f, height);
 
             float cut = cornerRadius ?? System.Math.Min(width, height) * 0.1f;
-            cut = System.MathF.Min(cut, System.MathF.Min(width, height) / 2f); // 避免超出尺寸
+            cut = System.MathF.Min(cut, System.MathF.Min(width, height) / 2f); // Keep the cut within the rectangle's size
             cut = System.MathF.Max(0f, cut); // A negative cut would make the path self-intersect
 
-            // 依順時針方向從左上角開始建立封閉路徑
+            // Build a closed path clockwise, starting from the top-left corner
             path.StartFigure();
 
             // Top edge
-            path.AddLine(cut, 0, width - cut, 0);                         // 上橫
-            path.AddLine(width - cut, 0, width, cut);                    // 右上角切角
+            path.AddLine(cut, 0, width - cut, 0);                         // Top edge
+            path.AddLine(width - cut, 0, width, cut);                    // Top-right chamfer
 
             // Right edge
-            path.AddLine(width, cut, width, height - cut);              // 右側
-            path.AddLine(width, height - cut, width - cut, height);     // 右下角切角
+            path.AddLine(width, cut, width, height - cut);              // Right edge
+            path.AddLine(width, height - cut, width - cut, height);     // Bottom-right chamfer
 
             // Bottom edge
-            path.AddLine(width - cut, height, cut, height);             // 下橫
-            path.AddLine(cut, height, 0, height - cut);                 // 左下角切角
+            path.AddLine(width - cut, height, cut, height);             // Bottom edge
+            path.AddLine(cut, height, 0, height - cut);                 // Bottom-left chamfer
 
             // Left edge
-            path.AddLine(0, height - cut, 0, cut);                      // 左側
-            path.AddLine(0, cut, cut, 0);                               // 左上角切角
+            path.AddLine(0, height - cut, 0, cut);                      // Left edge
+            path.AddLine(0, cut, cut, 0);                               // Top-left chamfer
 
             path.CloseFigure();
 

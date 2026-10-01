@@ -18,6 +18,9 @@ namespace Engine.GraphicsUtils.GraphicsPaths
         /// <summary>
         /// Create a basic shield-shaped path.
         /// </summary>
+        /// <param name="width">Width of the shield.</param>
+        /// <param name="height">Height of the shield.</param>
+        /// <returns>GraphicsPath representing the shield.</returns>
         public static IGraphicsPath Create(float width, float height)
         {
             IGraphicsPath path = GraphicsBackend.Factory.CreatePath();

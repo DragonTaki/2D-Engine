@@ -21,7 +21,8 @@ namespace Engine.GraphicsUtils.GraphicsPaths
         /// </summary>
         /// <param name="width">Width of the rectangle.</param>
         /// <param name="height">Height of the rectangle.</param>
-        /// <param name="cornerRadius">Optional: Radius of the corner (default: auto-calculated).</param>
+        /// <param name="cornerRadius">Optional: Radius of the corner (default: 8% of the smaller side; clamped to half the smaller side).</param>
+        /// <returns>GraphicsPath representing the rounded rectangle.</returns>
         public static IGraphicsPath Create(float width, float height, float? cornerRadius = null)
         {
             IGraphicsPath path = GraphicsBackend.Factory.CreatePath();
