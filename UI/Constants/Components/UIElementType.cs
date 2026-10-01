@@ -9,6 +9,10 @@
 
 namespace Engine.UI.Constants.Components
 {
+    /// <summary>
+    /// Category tag of a UI element (<c>UIElementBase.ElementType</c>), used to filter
+    /// children by kind (e.g. <c>UIElement.RemoveAllChild</c>'s only/exclude type lists).
+    /// </summary>
     public enum UIElementType
     {
         Generic,
