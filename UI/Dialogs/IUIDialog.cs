@@ -18,8 +18,16 @@ namespace Engine.UI.Dialogs
     /// </summary>
     public interface IUIDialog
     {
+        /// <summary>
+        /// Whether the overlay mask behind the dialog dims the screen (it blocks input below
+        /// the dialog either way).
+        /// </summary>
         bool ShowMaskEffect { get; }
+
+        /// <summary>Whether the dialog is drawn (the element's own flag).</summary>
         bool IsVisible { get; set; }
+
+        /// <summary>Whether the dialog receives input (the element's own flag).</summary>
         bool IsEnabled { get; set; }
 
         /// <summary>Hides the dialog.</summary>
