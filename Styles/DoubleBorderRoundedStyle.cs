@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/19
-// Update Date: 2026/09/24
-// Version: v2.0
+// Update Date: 2026/10/01
+// Version: v2.1
 /* ----- ----- ----- ----- */
 
 using Engine.Geometry;
@@ -67,14 +67,8 @@ namespace Engine.Styles
         {
             DrawBox(g, bounds);
 
-            // Text needs both a brush and a font (MeasureString/DrawString with a null font throw).
-            if (!string.IsNullOrEmpty(text) && TextBrush != null && Font != null)
-            {
-                var textSize = g.MeasureString(text, Font);
-                float textX = bounds.Position.X + (bounds.Size.X - textSize.Width) / 2f;
-                float textY = bounds.Position.Y + (bounds.Size.Y - textSize.Height) / 2f;
-                g.DrawString(text, Font, TextBrush, textX, textY);
-            }
+            // Centered, one line per line break (skipped without a font or brush).
+            ButtonText.DrawCentered(g, text, Font, TextBrush, bounds);
         }
 
         public void Draw(IGraphics g, string text, Vector2F position, Vector2F size)
