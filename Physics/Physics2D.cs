@@ -226,6 +226,10 @@ namespace Engine.Physics
         /// </summary>
         private void CleanupInvalidEffectReferences(ISet<Guid> validEffectIds)
         {
+            // The setter is public, so it can be null here too (SmoothUpdate guards the same way).
+            if (AccelerationContributions == null)
+                return;
+
             var keysToRemove = AccelerationContributions.Keys
                 .Where(id => !validEffectIds.Contains(id))
                 .ToList();
