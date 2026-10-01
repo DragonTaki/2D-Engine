@@ -114,7 +114,10 @@ namespace Engine.Randomization
         /// <returns>A float in [0.0, max).</returns>
         public float NextFloat(float max)
         {
-            return NextFloat() * max;
+            // The product can round up to exactly max (e.g. the largest float below 1 times a
+            // large max); keep the documented exclusive bound.
+            float value = NextFloat() * max;
+            return max > 0f && value >= max ? MathF.BitDecrement(max) : value;
         }
 
         /// <summary>
@@ -125,7 +128,10 @@ namespace Engine.Randomization
         /// <returns>A float in [min, max).</returns>
         public float NextFloat(float min, float max)
         {
-            return min + NextFloat(max - min);
+            // Computed in one step (not min + NextFloat(max - min)): the sum can round up to
+            // exactly max even when the scaled part stays below max - min.
+            float value = min + NextFloat() * (max - min);
+            return max > min && value >= max ? MathF.BitDecrement(max) : value;
         }
 
         /// <summary>
@@ -146,7 +152,9 @@ namespace Engine.Randomization
         /// <returns>A double in [0.0, max).</returns>
         public double NextDouble(double max)
         {
-            return NextDouble() * max;
+            // Same exclusive-bound guard as NextFloat(float).
+            double value = NextDouble() * max;
+            return max > 0d && value >= max ? Math.BitDecrement(max) : value;
         }
 
         /// <summary>
@@ -157,7 +165,9 @@ namespace Engine.Randomization
         /// <returns>A double in [min, max).</returns>
         public double NextDouble(double min, double max)
         {
-            return min + NextDouble(max - min);
+            // Same exclusive-bound guard as NextFloat(float, float).
+            double value = min + NextDouble() * (max - min);
+            return max > min && value >= max ? Math.BitDecrement(max) : value;
         }
 
         /// <summary>
