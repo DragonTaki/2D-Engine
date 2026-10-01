@@ -42,6 +42,5 @@ namespace Engine.Timing
         /// Gets the timer interval in milliseconds for the black player's timer.
         /// </summary>
         public const int BlackPlayerTimerInterval = 1000;
-        
     }
 }

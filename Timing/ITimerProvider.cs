@@ -11,6 +11,10 @@ using System;
 
 namespace Engine.Timing
 {
+    /// <summary>
+    /// The frame clock animation and physics read (via <see cref="GlobalTime.Timer"/>): raises
+    /// <see cref="OnAnimationFrame"/> once per frame and reports that frame's delta time.
+    /// </summary>
     public interface ITimerProvider
     {
         /// <summary>
