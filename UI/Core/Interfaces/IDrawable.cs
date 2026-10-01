@@ -25,7 +25,7 @@ namespace Engine.UI.Core.Interfaces
         /// Called every frame to render the object.
         /// </summary>
         /// <param name="g">
-        /// The <see cref="Graphics"/> object to draw on. This provides the rendering context,
+        /// The <see cref="IGraphics"/> object to draw on. This provides the rendering context,
         /// including clipping, transform, and drawing surface.
         /// </param>
         /// <remarks>
