@@ -77,6 +77,7 @@ namespace Engine.Styles
                 return GraphicsBackend.Factory.CreateSolidBrush(DefaultColor);  // Return default if error
             }
         }
+
         public static IBrush GetBrush(Color color, float alpha = 1.0f)
         {
             try
@@ -147,6 +148,7 @@ namespace Engine.Styles
             AppLogger.Log($"[StyleHelper] Unrecognized color '{colorValue}', using default.", LogLevel.WARN);
             return DefaultColor;  // Return default if error
         }
+
         public static Color GetColor(Color color, float alpha = 1.0f)
         {
             try
@@ -159,6 +161,7 @@ namespace Engine.Styles
                 return DefaultColor;  // Return default if error
             }
         }
+
         private static int ClampAlpha(float alpha)
         {
             return Math.Max(0, Math.Min(255, (int)(alpha * 255)));
