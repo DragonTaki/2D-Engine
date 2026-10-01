@@ -266,6 +266,11 @@ namespace Engine.UI.Layout
             item.Y = PlaceAbsoluteAxis(rules.Top, rules.Bottom, margin.Top, margin.Bottom, boxH, spaceH, fitBox.Y, size.Y, rules.AlignY);
         }
 
+        /// <summary>
+        /// One axis of <see cref="PlaceAbsolute"/>: the start coordinate of an absolute child
+        /// (both insets: aligned in the space between them; one inset: pinned to that edge;
+        /// none: aligned in the box).
+        /// </summary>
         /// <param name="slot">The size before aspect-ratio fitting; a fitted element is aligned inside it.</param>
         private static float PlaceAbsoluteAxis(float? start, float? end, float marginStart, float marginEnd,
             float box, float space, float slot, float size, Alignment align)
