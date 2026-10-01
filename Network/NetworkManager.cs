@@ -51,19 +51,42 @@ namespace Engine.Network
 
         public async Task<bool> ConnectAsync()
         {
+            TcpClient client;
+            CancellationTokenSource cts;
             lock (_lock)
             {
-                if (IsConnected)
+                // _client stays set from here until Disconnect, so a second call while this
+                // one is still connecting/authenticating returns instead of opening a
+                // parallel connection (IsConnected is still false at that point).
+                if (_client != null)
                     return false;
 
-                _cts = new CancellationTokenSource();
-                _client = new TcpClient();
+                cts = _cts = new CancellationTokenSource();
+                client = _client = new TcpClient();
             }
 
-            await _client.ConnectAsync(_host, _port);
-            _stream = _client.GetStream();
+            try
+            {
+                await client.ConnectAsync(_host, _port);
+                _stream = client.GetStream();
+            }
+            catch (Exception ex) when (ex is SocketException || ex is ObjectDisposedException || ex is InvalidOperationException)
+            {
+                // Server unreachable, or Disconnect closed the client meanwhile. Release
+                // this attempt (only if it is still the current one) so a retry can start,
+                // instead of leaving a dead _client behind and an unobserved exception.
+                Console.WriteLine("[NetworkManager] Connect failed: " + ex.Message);
+                bool isCurrent;
+                lock (_lock)
+                    isCurrent = _client == client;
+                if (isCurrent)
+                    Disconnect();
+                else
+                    client.Dispose();
+                return false;
+            }
 
-            StartListening(_cts.Token);
+            StartListening(cts.Token);
 
             // Initialize AuthManager
             _authManager = new AuthManager(this);
