@@ -23,7 +23,7 @@ using Engine.UI.Utils;
 namespace Engine.UI.Elements
 {
     /// <summary>
-    /// Pure Engine LoggerBox: 渲染文字、支援滾動，不依賴 WinForms 控件
+    /// Pure Engine text box (used as a log box): renders lines of text inside a scroll container, with no dependency on WinForms controls.
     /// </summary>
     public abstract class UITextBox<TElement, THandler, TRenderer> : UIContainer<TElement, THandler, TRenderer>
         where TElement : UITextBox<TElement, THandler, TRenderer>
@@ -87,12 +87,12 @@ namespace Engine.UI.Elements
 
             OnBeforeInit(factory);
 
-            // 綁定 Handler
+            // Bind Handler
             Handler = handler;
             Handler.Element = (TElement)(object)this;
             Console.WriteLine($"[UITextBox]Handler type: {Handler?.GetType().FullName ?? "null"}");
 
-            // 綁定 Renderer
+            // Bind Renderer
             Renderer = renderer;
             Renderer.Element = (TElement)(object)this;
             Console.WriteLine($"[UITextBox]Renderer type: {Renderer?.GetType().FullName ?? "null"}");
@@ -123,7 +123,7 @@ namespace Engine.UI.Elements
         #region Text Operations
 
         /// <summary>
-        /// 新增一行文字
+        /// Appends text to the box, one label per line; lines are split on '\n' and the whole text forms one paragraph.
         /// </summary>
         public void AppendLine(string text, Color? color = null, bool bold = false, bool italic = false)
         {
@@ -144,11 +144,11 @@ namespace Engine.UI.Elements
 
                 SizeF size = g.MeasureString(line, font);
     
-                // 段落第一行前加段落間距（第一段不加）
+                // Add paragraph spacing before a paragraph's first line (not for the first paragraph)
                 if (i == 0 && !isFirstParagraph)
                     y += ParagraphSpacing;
 
-                // 段落內後續行加行間距（每段第一行不加）
+                // Add line spacing before later lines within a paragraph (not for a paragraph's first line)
                 if (i > 0)
                     y += LineSpacing;
 
@@ -158,7 +158,7 @@ namespace Engine.UI.Elements
                 label.Font = font;
                 label.ForeColor = color ?? TextColor;
                 label.Layout = new Geometry.LayoutF(0, y, Size.X, size.Height);
-                label.WordWrap = false; // 一行一個 Label
+                label.WordWrap = false; // One Label per line
                 label.TextAlign = ContentAlign.MiddleLeft;
 
                 label.LocalPosition.Current.Y = y;
@@ -281,7 +281,7 @@ namespace Engine.UI.Elements
     }
 
     /// <summary>
-    /// 單行文字顯示元素
+    /// Single-line text display element.
     /// </summary>
     public class UITextLine : UIElement
     {
@@ -317,7 +317,7 @@ namespace Engine.UI.Elements
     }
 
     /// <summary>
-    /// 文字資料結構
+    /// A run of text with its own color and bold/italic style (data only).
     /// </summary>
     public struct TextFragment
     {

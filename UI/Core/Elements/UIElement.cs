@@ -637,8 +637,8 @@ namespace Engine.UI.Core.Elements
 
         public override void RequestRedraw()
         {
-            Parent?.RequestRedraw();  // 遞迴向上通知
-            // 或者直接觸發 Invalidate() / Refresh() 在畫布上
+            Parent?.RequestRedraw();  // Notify upward recursively
+            // TODO: Alternatively trigger Invalidate() / Refresh() on the canvas directly.
         }
 
         /// <summary>
@@ -772,7 +772,7 @@ namespace Engine.UI.Core.Elements
         protected virtual TRenderer CreateRenderer(Func<TRenderer> factory)
         {
             var renderer = factory();
-            renderer.Element = (TElement)(object)this;  // this 是 UIElementBase
+            renderer.Element = (TElement)(object)this;  // 'this' is a UIElementBase; cast to TElement via object
             return renderer;
         }
     }

@@ -277,7 +277,7 @@ namespace Engine.UI.Core.Elements
             set
             {
                 Physics.Position.Current = new Vector2F(
-                    Physics.Position.Current.X,  // X axis no changed
+                    Physics.Position.Current.X,  // X axis unchanged
                     Physics.Position.Base.Y + value
                 );
             }
@@ -292,7 +292,7 @@ namespace Engine.UI.Core.Elements
             set
             {
                 Physics.Velocity.Current = new Vector2F(
-                    Physics.Velocity.Current.X,  // X axis no changed
+                    Physics.Velocity.Current.X,  // X axis unchanged
                     Physics.Velocity.Base.Y + value
                 );
             }

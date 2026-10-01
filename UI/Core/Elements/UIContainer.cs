@@ -20,7 +20,7 @@ using Engine.UI.Core.Renderers;
 namespace Engine.UI.Core.Elements
 {
     /// <summary>
-    /// Engine層通用 UIContainer
+    /// Engine-level generic UIContainer.
     /// </summary>
     public abstract class UIContainer<TElement, THandler, TRenderer> : UIElement<TElement, THandler, TRenderer>, IUiContainer
         where TElement : UIContainer<TElement, THandler, TRenderer>
@@ -64,12 +64,12 @@ namespace Engine.UI.Core.Elements
 
             OnBeforeInit(factory);
 
-            // 綁定 Handler
+            // Bind Handler
             Handler = handler;
             Handler.Element = (TElement)(object)this;
             Console.WriteLine($"[UIContainer]Handler type: {Handler?.GetType().FullName ?? "null"}");
 
-            // 綁定 Renderer
+            // Bind Renderer
             Renderer = renderer;
             Renderer.Element = (TElement)(object)this;
             Console.WriteLine($"[UIContainer]Renderer type: {Renderer?.GetType().FullName ?? "null"}");

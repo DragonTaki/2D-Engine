@@ -25,7 +25,7 @@ namespace Engine.UI.Core.Elements
 
         #region Properties
 
-        // 文字可讀寫
+        // Button text (read/write)
         public string Text { get; set; }
 
         public IButtonDrawStyle Style { get; set; } = null;

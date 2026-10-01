@@ -14,7 +14,9 @@ using Engine.UI.Constants.Components;
 namespace Engine.UI.Core.Elements
 {
     /// <summary>
-    /// A generic node element that does not render itself and always participates in hit testing.
+    /// A generic node element that does not render itself. Its <see cref="HitTest"/> always
+    /// succeeds, but it is never <see cref="IsInteractable"/>, so deep hit testing
+    /// (<c>HitTestDeep</c>) never returns the node itself - only its interactable descendants.
     /// Serves as a structural container for other UI elements in the UI hierarchy.
     /// </summary>
     public abstract class UINode : UIElement
@@ -47,7 +49,8 @@ namespace Engine.UI.Core.Elements
         #region Methods
 
         /// <summary>
-        /// Always returns true to indicate this element participates in hit testing.
+        /// Always returns true: the node's own bounds test passes for any point. Note that
+        /// <c>HitTestDeep</c> still skips the node itself because <see cref="IsInteractable"/> is false.
         /// </summary>
         /// <param name="point">The point in absolute coordinates to test against this element.</param>
         /// <returns>Always returns <c>true</c>.</returns>

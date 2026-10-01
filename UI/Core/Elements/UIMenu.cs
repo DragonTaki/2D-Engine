@@ -25,7 +25,7 @@ using Engine.UI.Utils;
 namespace Engine.UI.Core.Elements
 {
     /// <summary>
-    /// Engine層通用 Menu
+    /// Engine-level generic Menu.
     /// </summary>
     public abstract class UIMenu<TElement, THandler, TRenderer>
     : UIContainer<TElement, THandler, TRenderer>
@@ -59,7 +59,7 @@ namespace Engine.UI.Core.Elements
         #region Methods
 
         /// <summary>
-        /// 通用初始化流程
+        /// Generic initialization flow: binds handler and renderer, then builds the scroll container, UI objects and buttons.
         /// </summary>
         public override void Init(IUiFactory factory, THandler handler, TRenderer renderer)
         {
@@ -74,12 +74,12 @@ namespace Engine.UI.Core.Elements
 
             OnBeforeInit(factory);
 
-            // 綁定 Handler
+            // Bind Handler
             Handler = handler;
             Handler.Element = (TElement)(object)this;
             Console.WriteLine($"[UIMenu]Handler type: {Handler?.GetType().FullName ?? "null"}");
 
-            // 綁定 Renderer
+            // Bind Renderer
             Renderer = renderer;
             Renderer.Element = (TElement)(object)this;
             Console.WriteLine($"[UIMenu]Renderer type: {Renderer?.GetType().FullName ?? "null"}");
