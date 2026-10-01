@@ -19,9 +19,15 @@ namespace Engine.UI.Core.Handlers
     {
         private UILabel Label => (UILabel)Element;
 
+        /// <summary>
+        /// Replaces the label's inline text fragments (null or empty: plain Text is drawn).
+        /// Invalidates the layout like setting Text does, since Auto sizes measure the fragments.
+        /// </summary>
+        /// <param name="fragments">The runs to draw as one line.</param>
         public void SetTextFragments(List<TextFragment> fragments)
         {
             Label._fragments = fragments;
+            Label.InvalidateLayout();
         }
 
         /*protected override bool HandleMouseDown(MouseEventArgs e)
