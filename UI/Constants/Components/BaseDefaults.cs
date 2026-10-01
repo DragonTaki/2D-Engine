@@ -23,7 +23,7 @@ namespace Engine.UI.Constants.Components
 
         public const float Margin = 5.0f;
 
-        public static readonly Anchor Anchor = Anchor.None | Anchor.None;
+        public static readonly Anchor Anchor = Anchor.None;
 
         public static readonly PaddingF Padding = new PaddingF(10);
     }
