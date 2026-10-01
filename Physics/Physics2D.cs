@@ -436,8 +436,8 @@ namespace Engine.Physics
         /// <summary>
         /// Constructor with a given initial acceleration value.
         /// </summary>
-        /// <param name="speedX">Initial X acceleration.</param>
-        /// <param name="speedY">Initial Y acceleration.</param>
+        /// <param name="accelX">Initial X acceleration.</param>
+        /// <param name="accelY">Initial Y acceleration.</param>
         public Acceleration(float accelX, float accelY)
             : this(new Vector2F(accelX, accelY)) { }
 
@@ -478,7 +478,8 @@ namespace Engine.Physics
         public float SpringK { get; set; } = 0.9f;
 
         /// <summary>
-        /// Determines when close to target position, whether spring movement is enabled.
+        /// Whether the spring force toward the target is applied while moving toward a target
+        /// (<see cref="Position.HasTarget"/>, farther away than the arrival threshold). When false the object is pulled straight toward the target instead.
         /// </summary>
         public bool CanSpring { get; set; } = false;
 
@@ -488,7 +489,8 @@ namespace Engine.Physics
         public float Damping { get; set; } = 0.2f;
 
         /// <summary>
-        /// Determines when close to target position, whether damping movement is enabled.
+        /// Whether velocity damping is applied while moving toward a target
+        /// (<see cref="Position.HasTarget"/>, farther away than the arrival threshold).
         /// </summary>
         public bool CanDamping { get; set; } = false;
     }
