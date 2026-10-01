@@ -15,7 +15,7 @@ namespace Engine.UI.Constants.Components
 {
     public static class TextBoxDefaults
     {
-        // TextBox 整體大小與位置
+        // Overall size and position of the TextBox
         public static readonly Vector2F Position = BaseDefaults.Position;
 
         public static readonly Vector2F Size = BaseDefaults.Size;
@@ -28,7 +28,7 @@ namespace Engine.UI.Constants.Components
 
         public static readonly PaddingF Padding = ScrollContainerDefaults.Padding;
 
-        // ScrollContainer 預設值
+        // Defaults for the inner ScrollContainer
         public static class Scroll
         {
             public static readonly Vector2F Position = ScrollContainerDefaults.Position;
