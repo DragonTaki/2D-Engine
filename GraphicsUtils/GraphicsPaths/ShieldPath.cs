@@ -28,6 +28,11 @@ namespace Engine.GraphicsUtils.GraphicsPaths
             width = MathF.Max(0f, width);
             height = MathF.Max(0f, height);
 
+            // Nothing to outline; also keeps the corner arcs below from getting a zero-size
+            // bounding box (GDI+ rejects those, like RoundedRectPath's radius <= 0 case).
+            if (width <= 0f || height <= 0f)
+                return path;
+
             // Fixed shape sizes, clamped so a small shield doesn't fold over itself (the
             // top corners need 2x curveHeight of width; the straight sides need
             // curveHeight + bottomPointHeight of height).
