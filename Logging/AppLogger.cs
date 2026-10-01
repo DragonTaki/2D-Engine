@@ -82,7 +82,7 @@ namespace Engine.Logging
     public static class AppLogger
     {
 #nullable enable
-        private static Action<string>? externalLogger = null;
+        private static Action<string>? _externalLogger = null;
 #nullable disable
         // Pushed in by the app's composition root (Launcher/Program.cs) at
         // startup from Game.Configs.Settings — Engine must not read Game's
@@ -92,7 +92,7 @@ namespace Engine.Logging
 
         public static void SetExternalLogger(Action<string> callback)
         {
-            externalLogger = callback;
+            _externalLogger = callback;
         }
 
         public static void Log(string message, LogLevel level = LogLevel.INFO)
@@ -103,11 +103,11 @@ namespace Engine.Logging
             var record = new LogRecord(message, level);
             Console.WriteLine(record.ToText());
 
-            if (externalLogger != null)
+            if (_externalLogger != null)
             {
                 try
                 {
-                    externalLogger(record.ToJson());
+                    _externalLogger(record.ToJson());
                 }
                 catch (Exception ex)
                 {
@@ -118,7 +118,7 @@ namespace Engine.Logging
 
         public static void LogWelcomeMessage()
         {
-            if (externalLogger == null)
+            if (_externalLogger == null)
                 return;
 
             var rainbowColors = new[]
@@ -167,9 +167,9 @@ namespace Engine.Logging
 
             try
             {
-                externalLogger(greetingJson);
-                externalLogger(welcomeJson);
-                externalLogger(authorJson);
+                _externalLogger(greetingJson);
+                _externalLogger(welcomeJson);
+                _externalLogger(authorJson);
             }
             catch (Exception ex)
             {
