@@ -29,6 +29,8 @@ namespace Engine.UI.Core.Renderers
         protected override void AfterInit()
         {
             SetupRendererChildren();
+            // Bind the composite and its parts to this element (nothing else initializes it).
+            _composite.Init(Element);
         }
 
         private void SetupRendererChildren()
