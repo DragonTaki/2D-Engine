@@ -187,11 +187,13 @@ namespace Engine.Network
                         continue;
                     }
 
+                    // Only the parse is guarded here; the packet is raised once, below
+                    // (it used to also be raised inside this try, so every non-heartbeat
+                    // packet reached subscribers twice and heartbeats once).
                     Packet packet;
                     try
                     {
                         packet = Packet.Deserialize(line);
-                        OnPacketReceived?.Invoke(packet);
                     }
                     catch (Exception ex)
                     {
