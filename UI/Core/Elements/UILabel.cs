@@ -17,7 +17,6 @@ using Engine.Platform;
 using Engine.UI.Constants.Components;
 using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Renderers;
-using Engine.UI.Elements;
 
 namespace Engine.UI.Core.Elements
 {

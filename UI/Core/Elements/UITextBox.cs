@@ -14,13 +14,12 @@ using System.Linq;
 using Engine.Mathematics;
 using Engine.Platform;
 using Engine.UI.Constants.Components;
-using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Interfaces;
 using Engine.UI.Core.Renderers;
 using Engine.UI.Utils;
 
-namespace Engine.UI.Elements
+namespace Engine.UI.Core.Elements
 {
     /// <summary>
     /// Pure Engine text box (used as a log box): renders lines of text inside a scroll container, with no dependency on WinForms controls.

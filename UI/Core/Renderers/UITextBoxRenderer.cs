@@ -13,7 +13,6 @@ using System.Linq;
 using Engine.Platform;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
-using Engine.UI.Elements;
 
 namespace Engine.UI.Core.Renderers
 {
