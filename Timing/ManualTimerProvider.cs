@@ -35,8 +35,14 @@ namespace Engine.Timing
         {
             if (!_running) return;
 
-            DeltaTimeInSeconds = Math.Clamp(deltaTimeInSeconds, 0f, TimerSettings.MaxDeltaTimeInSeconds);
-            ElapsedTimeInSeconds += deltaTimeInSeconds;
+            // The frame delta is capped for integration; the elapsed total keeps the real
+            // (uncapped) time, like WinFormsTimerProvider's stopwatch-based elapsed time,
+            // but never runs backward on a negative (or NaN) delta from the host.
+            DeltaTimeInSeconds = float.IsNaN(deltaTimeInSeconds)
+                ? 0f
+                : Math.Clamp(deltaTimeInSeconds, 0f, TimerSettings.MaxDeltaTimeInSeconds);
+            if (deltaTimeInSeconds > 0f)
+                ElapsedTimeInSeconds += deltaTimeInSeconds;
             OnAnimationFrame?.Invoke();
         }
     }
