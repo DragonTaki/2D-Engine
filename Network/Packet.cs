@@ -18,7 +18,7 @@ namespace Engine.Network
         public string SenderId { get; set; } = "";
         public string RoomId { get; set; } = "";
         public string Token { get; set; } = "";    // Used for authentication
-        public string Data { get; set; }
+        public string Data { get; set; } = "";
 
         private static readonly JsonSerializerOptions _options = new()
         {

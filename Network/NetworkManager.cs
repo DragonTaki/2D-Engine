@@ -201,6 +201,13 @@ namespace Engine.Network
                         continue;
                     }
 
+                    // The JSON literal "null" deserializes to no packet at all.
+                    if (packet == null)
+                    {
+                        Console.WriteLine($"[NetworkManager] Empty packet ignored: {line}");
+                        continue;
+                    }
+
                     if (packet.Type == PacketType.Heartbeat)
                     {
                         ReceiveHeartbeat();

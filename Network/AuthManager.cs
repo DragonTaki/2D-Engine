@@ -74,7 +74,7 @@ namespace Engine.Network
             {
                 // Wait for the server to ask for username/password
                 if (packet.Type == PacketType.AuthRequest &&
-                    packet.Data.Trim() == "Please provide username/password")
+                    packet.Data?.Trim() == "Please provide username/password")
                 {
                     Console.WriteLine("[AuthManager] Server requests credentials.");
 
