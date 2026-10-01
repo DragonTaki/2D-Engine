@@ -220,7 +220,10 @@ namespace Engine.UI.Input
                 _pressedElement = null;  // reset
             }
 
-            _dragStarted = false;  // reset drag state
+            // Reset drag state (both flags: IsDragging stayed true after the release until
+            // the next MouseDown when only _dragStarted was cleared here)
+            _dragStarted = false;
+            _hasDragged = false;
             return true;
         }
 
