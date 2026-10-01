@@ -73,7 +73,7 @@ namespace Engine.Network
             if (_currentStep == AuthStep.VersionSent)
             {
                 // Wait for the server to ask for username/password
-                if (packet.Type == PacketType.AuthRequest && 
+                if (packet.Type == PacketType.AuthRequest &&
                     packet.Data.Trim() == "Please provide username/password")
                 {
                     Console.WriteLine("[AuthManager] Server requests credentials.");

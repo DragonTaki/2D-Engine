@@ -15,14 +15,14 @@ namespace Engine.Network
 {
     public class GameClient
     {
-        private TcpClient client;
-        private NetworkStream stream;
+        private TcpClient _client;
+        private NetworkStream _stream;
 
         public void Connect(string host, int port)
         {
-            client = new TcpClient();
-            client.Connect(host, port);
-            stream = client.GetStream();
+            _client = new TcpClient();
+            _client.Connect(host, port);
+            _stream = _client.GetStream();
 
             BeginRead();
         }
@@ -30,9 +30,9 @@ namespace Engine.Network
         private void BeginRead()
         {
             var buffer = new byte[4096];
-            stream.BeginRead(buffer, 0, buffer.Length, ar =>
+            _stream.BeginRead(buffer, 0, buffer.Length, ar =>
             {
-                int bytesRead = stream.EndRead(ar);
+                int bytesRead = _stream.EndRead(ar);
                 if (bytesRead > 0)
                 {
                     string json = Encoding.UTF8.GetString(buffer, 0, bytesRead);
@@ -48,9 +48,9 @@ namespace Engine.Network
 
         public void Send(Packet packet)
         {
-            if (!client.Connected) return;
+            if (!_client.Connected) return;
             var bytes = Encoding.UTF8.GetBytes(Packet.Serialize(packet) + "\n");
-            stream.Write(bytes, 0, bytes.Length);
+            _stream.Write(bytes, 0, bytes.Length);
         }
     }
 }

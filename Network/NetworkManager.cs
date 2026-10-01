@@ -20,7 +20,7 @@ namespace Engine.Network
         public const string AppVersion = "v1.0.0";
         private readonly string _host;
         private readonly int _port;
-        
+
         public Guid ClientId { get; private set; }
 
         private AuthManager _authManager;
@@ -208,7 +208,7 @@ namespace Engine.Network
                     OnPacketReceived?.Invoke(packet);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine("[NetworkManager] Receive error: " + ex.Message);
                 Disconnect();
