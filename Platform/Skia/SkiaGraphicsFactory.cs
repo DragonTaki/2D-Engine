@@ -3,7 +3,7 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/09/24
-// Update Date: 2026/09/24
+// Update Date: 2026/10/01
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
@@ -63,6 +63,10 @@ namespace Engine.Platform.Skia
             var typeface = SKTypeface.FromFile(filePath)
                 ?? throw new System.IO.InvalidDataException($"No typeface could be loaded from: {filePath}");
             _loadedFontFamilies[key] = new SkiaFontFamily(typeface);
+
+            // Bundled fonts double as per-character fallbacks (after the system match) for
+            // text in any font that lacks a glyph - e.g. NotoSerifCJKtc for CJK in a Latin font.
+            SkiaFontFallback.RegisterBundledTypeface(typeface);
         }
 
         public IFontFamily GetLoadedFontFamily(string key)

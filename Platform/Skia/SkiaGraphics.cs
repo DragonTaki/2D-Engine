@@ -3,7 +3,7 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/09/24
-// Update Date: 2026/09/24
+// Update Date: 2026/10/01
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
@@ -71,13 +71,17 @@ namespace Engine.Platform.Skia
         {
             // GDI+ treats (x, y) as the top-left of the text, Skia's DrawText as the
             // baseline origin; shift down by the ascent (negative in Skia) to match.
-            var skFont = ((SkiaFont)font).Native;
-            Native.DrawText(text, x, y - skFont.Metrics.Ascent, SKTextAlign.Left, skFont, ((SkiaBrush)brush).Native);
+            // Characters the font lacks are drawn with a fallback typeface (SkiaFont.DrawText).
+            var skiaFont = (SkiaFont)font;
+            skiaFont.DrawText(Native, text, x, y - skiaFont.Native.Metrics.Ascent, ((SkiaBrush)brush).Native);
         }
 
         public void DrawString(string text, IFont font, IBrush brush, RectangleF bounds, IStringFormat format)
         {
-            var skFont = ((SkiaFont)font).Native;
+            // Line height and baseline come from the base font only, so the layout of text
+            // the base font fully covers is unchanged; fallback glyphs share that baseline.
+            var skiaFont = (SkiaFont)font;
+            var skFont = skiaFont.Native;
             var paint = ((SkiaBrush)brush).Native;
             var fmt = (SkiaStringFormat)format;
 
@@ -85,11 +89,11 @@ namespace Engine.Platform.Skia
             float lineHeight = metrics.Descent - metrics.Ascent + metrics.Leading;
 
             var lines = fmt.WordWrap
-                ? WrapText(text, skFont, paint, bounds.Width)
+                ? WrapText(text, skiaFont, paint, bounds.Width)
                 : SplitLines(text);
 
             if (fmt.EllipsisTrimming)
-                lines = TrimWithEllipsis(lines, skFont, paint, bounds.Width, bounds.Height, lineHeight);
+                lines = TrimWithEllipsis(lines, skiaFont, paint, bounds.Width, bounds.Height, lineHeight);
 
             float totalHeight = lineHeight * Math.Max(lines.Count, 1);
 
@@ -111,7 +115,7 @@ namespace Engine.Platform.Skia
                 for (int i = 0; i < lines.Count; i++)
                 {
                     string line = lines[i];
-                    float lineWidth = skFont.MeasureText(line, paint);
+                    float lineWidth = skiaFont.MeasureText(line, paint);
 
                     float x = fmt.Alignment switch
                     {
@@ -121,7 +125,7 @@ namespace Engine.Platform.Skia
                     };
                     float baselineY = startTopY + i * lineHeight - metrics.Ascent;
 
-                    Native.DrawText(line, x, baselineY, SKTextAlign.Left, skFont, paint);
+                    skiaFont.DrawText(Native, line, x, baselineY, paint);
                 }
             }
             finally
@@ -141,7 +145,7 @@ namespace Engine.Platform.Skia
         /// box's height (at least one), and if anything was cut - more lines, or a last line
         /// wider than the box - end the last kept line with "…" trimmed to fit.
         /// </summary>
-        private static List<string> TrimWithEllipsis(List<string> lines, SKFont skFont, SKPaint paint,
+        private static List<string> TrimWithEllipsis(List<string> lines, SkiaFont skFont, SKPaint paint,
             float maxWidth, float maxHeight, float lineHeight)
         {
             const string Ellipsis = "\u2026";
@@ -161,7 +165,11 @@ namespace Engine.Platform.Skia
                 return result;
 
             while (lastLine.Length > 0 && skFont.MeasureText(lastLine + Ellipsis, paint) > maxWidth)
-                lastLine = lastLine.Substring(0, lastLine.Length - 1);
+            {
+                // Drop a whole surrogate pair at once, never leaving half of one.
+                int cut = lastLine.Length >= 2 && char.IsSurrogatePair(lastLine, lastLine.Length - 2) ? 2 : 1;
+                lastLine = lastLine.Substring(0, lastLine.Length - cut);
+            }
 
             result[last] = lastLine.TrimEnd() + Ellipsis;
             return result;
@@ -169,7 +177,7 @@ namespace Engine.Platform.Skia
 
         public SizeF MeasureString(string text, IFont font)
         {
-            var skFont = ((SkiaFont)font).Native;
+            var skFont = (SkiaFont)font;
             using var paint = new SKPaint();
 
             // Explicit line breaks count, as in GDI+ MeasureString.
@@ -183,7 +191,7 @@ namespace Engine.Platform.Skia
 
         public SizeF MeasureString(string text, IFont font, int maxWidth)
         {
-            var skFont = ((SkiaFont)font).Native;
+            var skFont = (SkiaFont)font;
             using var paint = new SKPaint();
             float lineHeight = ((SkiaFont)font).Height;
 
@@ -203,7 +211,7 @@ namespace Engine.Platform.Skia
         /// overload, so what gets measured (to size a box, e.g.
         /// <c>UIConfirmDialog</c>) always matches what actually gets drawn.
         /// </summary>
-        private static List<string> WrapText(string text, SKFont skFont, SKPaint paint, float maxWidth)
+        private static List<string> WrapText(string text, SkiaFont skFont, SKPaint paint, float maxWidth)
         {
             var lines = new List<string>();
 
@@ -235,11 +243,17 @@ namespace Engine.Platform.Skia
 
                     // A single word wider than the whole line: break it between characters
                     // (as GDI+ does) instead of letting it overflow the box.
-                    while (current.Length > 1 && skFont.MeasureText(current, paint) > maxWidth)
+                    // Steps by whole code points so a surrogate pair is never split.
+                    while (current.Length > CharLength(current, 0) && skFont.MeasureText(current, paint) > maxWidth)
                     {
-                        int fit = 1;
-                        while (fit < current.Length && skFont.MeasureText(current.Substring(0, fit + 1), paint) <= maxWidth)
-                            fit++;
+                        int fit = CharLength(current, 0);
+                        while (fit < current.Length)
+                        {
+                            int next = fit + CharLength(current, fit);
+                            if (skFont.MeasureText(current.Substring(0, next), paint) > maxWidth)
+                                break;
+                            fit = next;
+                        }
                         lines.Add(current.Substring(0, fit));
                         current = current.Substring(fit);
                     }
@@ -270,18 +284,18 @@ namespace Engine.Platform.Skia
             int i = 0;
             while (i < text.Length)
             {
-                char c = text[i];
-                if (IsCjk(c))
+                int length = CharLength(text, i);
+                if (IsCjk(text, i))
                 {
-                    atoms.Add(c.ToString());
-                    i++;
+                    atoms.Add(text.Substring(i, length));
+                    i += length;
                     continue;
                 }
 
-                bool isSpace = char.IsWhiteSpace(c);
-                int j = i + 1;
-                while (j < text.Length && char.IsWhiteSpace(text[j]) == isSpace && !IsCjk(text[j]))
-                    j++;
+                bool isSpace = char.IsWhiteSpace(text[i]);
+                int j = i + length;
+                while (j < text.Length && char.IsWhiteSpace(text[j]) == isSpace && !IsCjk(text, j))
+                    j += CharLength(text, j);
                 atoms.Add(text.Substring(i, j - i));
                 i = j;
             }
@@ -292,12 +306,25 @@ namespace Engine.Platform.Skia
         /// Rough range check for "this character doesn't rely on spaces to
         /// separate words" scripts — CJK Radicals through CJK Unified
         /// Ideographs, CJK Compatibility Ideographs, and Halfwidth/Fullwidth
-        /// Forms (covers Fullwidth Chinese punctuation). Not exhaustive
-        /// Unicode script detection, just enough for this project's actual
-        /// Traditional Chinese UI text.
+        /// Forms (covers Fullwidth Chinese punctuation), plus the supplementary
+        /// ideograph planes (U+20000-U+3FFFF, CJK Extension B onward, written
+        /// as surrogate pairs). Not exhaustive Unicode script detection, just
+        /// enough for this project's actual Traditional Chinese UI text.
         /// </summary>
-        private static bool IsCjk(char c) =>
-            (c >= 0x2E80 && c <= 0x9FFF) || (c >= 0xF900 && c <= 0xFAFF) || (c >= 0xFF00 && c <= 0xFFEF);
+        private static bool IsCjk(string text, int index)
+        {
+            if (char.IsSurrogatePair(text, index))
+            {
+                int cp = char.ConvertToUtf32(text[index], text[index + 1]);
+                return cp >= 0x20000 && cp <= 0x3FFFF;
+            }
+            char c = text[index];
+            return (c >= 0x2E80 && c <= 0x9FFF) || (c >= 0xF900 && c <= 0xFAFF) || (c >= 0xFF00 && c <= 0xFFEF);
+        }
+
+        /// <summary>UTF-16 length of the code point at <paramref name="index"/>: 2 for a surrogate pair, else 1.</summary>
+        private static int CharLength(string text, int index) =>
+            char.IsSurrogatePair(text, index) ? 2 : 1;
 
         public void SetClip(RectangleF bounds)
         {
