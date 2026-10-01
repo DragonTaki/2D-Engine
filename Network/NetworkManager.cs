@@ -88,17 +88,27 @@ namespace Engine.Network
 
             StartListening(cts.Token);
 
-            // Initialize AuthManager
-            _authManager = new AuthManager(this);
-            _authManager.SendAuth();
+            // Initialize AuthManager (a local: Disconnect may clear the field meanwhile)
+            var authManager = new AuthManager(this);
+            lock (_lock)
+                _authManager = authManager;
+            authManager.SendAuth();
 
-            // Wait for the auth result
-            bool authSuccess = await _authManager.WaitForAuthResponse();
+            // Wait for the auth result (false as well when Disconnect abandoned the attempt)
+            bool authSuccess = await authManager.WaitForAuthResponse();
 
             if (!authSuccess)
             {
-                Console.WriteLine("[NetworkManager] Auth failed, disconnecting...");
-                Disconnect();
+                // Only tear down if this attempt is still the current one: after a
+                // Disconnect (e.g. from Reconnect) a newer attempt may already be running.
+                bool isCurrent;
+                lock (_lock)
+                    isCurrent = _authManager == authManager;
+                if (isCurrent)
+                {
+                    Console.WriteLine("[NetworkManager] Auth failed, disconnecting...");
+                    Disconnect();
+                }
                 return false;
             }
 
@@ -113,10 +123,12 @@ namespace Engine.Network
             {
                 _cts?.Cancel();
                 _heartbeatTimer?.Dispose();
+                _authManager?.Dispose();
                 _stream?.Close();
                 _client?.Close();
 
                 _cts = null;
+                _authManager = null;
                 _stream = null;
                 _client = null;
 

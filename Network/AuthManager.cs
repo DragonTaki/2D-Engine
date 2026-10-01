@@ -13,12 +13,22 @@ using System.Threading.Tasks;
 
 namespace Engine.Network
 {
-    public class AuthManager
+    /// <summary>
+    /// Runs the two-step login for one connection attempt of <see cref="NetworkManager"/>.
+    /// Subscribed to <see cref="NetworkManager.OnPacketReceived"/> only until the attempt
+    /// finishes or is abandoned (<see cref="Dispose"/>), so a reconnect never leaves an old
+    /// instance reacting to the new connection's packets.
+    /// </summary>
+    public class AuthManager : IDisposable
     {
         public static string AuthString => NetworkManager.AppVersion;
         public const string AuthSuccessString = "Taki";
         private readonly NetworkManager _networkManager;
-        private readonly TaskCompletionSource<bool> _authCompletionSource = new();
+        // Continuations run asynchronously: Dispose completes this from inside
+        // NetworkManager.Disconnect (under its lock), and the awaiting ConnectAsync must not
+        // resume on that stack.
+        private readonly TaskCompletionSource<bool> _authCompletionSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private bool _disposed;
 
         // Steps of the two-step authentication (version check, then credentials)
         private enum AuthStep
@@ -106,10 +116,27 @@ namespace Engine.Network
                     bool success = packet.Data == AuthSuccessString;
                     _authCompletionSource.TrySetResult(success);
                     _currentStep = AuthStep.Completed;
+                    _networkManager.OnPacketReceived -= HandlePacket;
 
                     Console.WriteLine($"[AuthManager] Auth completed → success={success}");
                 }
             }
+        }
+
+        /// <summary>
+        /// Stops listening for packets and, if the login hasn't finished, completes
+        /// <see cref="WaitForAuthResponse"/> with false (the connection went away), so the
+        /// caller awaiting it doesn't wait forever.
+        /// </summary>
+        public void Dispose()
+        {
+            if (_disposed)
+                return;
+            _disposed = true;
+
+            _networkManager.OnPacketReceived -= HandlePacket;
+            _currentStep = AuthStep.Completed;
+            _authCompletionSource.TrySetResult(false);
         }
     }
 }
