@@ -15,7 +15,7 @@ namespace Engine.Configs
 {
     public static class EngineSettings
     {
-        // ScrollTextBox 預設字型
+        // Default ScrollTextBox font.
         // Created on first use rather than in the static initializer: touching any member of
         // this class before a launcher set GraphicsBackend.Factory would otherwise throw
         // TypeInitializationException (and make the whole class unusable afterwards).
@@ -27,13 +27,13 @@ namespace Engine.Configs
         }
         private static IFont _defaultScrollTextFont;
 
-        // ScrollTextBox 預設行高
+        // Default ScrollTextBox line height.
         public static float DefaultScrollTextLineHeight { get; set; } = 18f;
 
-        // ScrollTextBox 預設背景顏色
+        // Default ScrollTextBox background color.
         public static Color DefaultScrollTextBackground { get; set; } = Color.Black;
 
-        // ScrollTextBox 預設文字顏色
+        // Default ScrollTextBox text color.
         public static Color DefaultScrollTextColor { get; set; } = Color.White;
     }
 }
