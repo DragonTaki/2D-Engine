@@ -183,7 +183,7 @@ namespace Engine.UI.Infrastructure
         }
 
         /// <summary>
-        /// Registers a default factory for a element, handler, and renderer combination.
+        /// Registers a default factory for an element, handler, and renderer combination.
         /// </summary>
         public void RegisterFactory<TElement, THandler, TRenderer>()
             where TElement : UIElement<TElement, THandler, TRenderer>
