@@ -31,7 +31,7 @@ namespace Engine.UI.Input
         public bool IsDragging { get; private set; } = false;
 
         /// <summary>Indicates whether the current drag distance has exceeded the configured threshold.</summary>
-        public bool HasMovedEnoughToDrag = false;
+        public bool HasMovedEnoughToDrag { get; private set; } = false;
 
         /// <summary>Stores the initial point where the mouse was pressed down.</summary>
         private Vector2F _dragStartPoint = Vector2F.Zero;
