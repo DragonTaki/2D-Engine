@@ -45,7 +45,7 @@ namespace Engine.UI.Infrastructure
         /// <param name="sp">The dependency injection service provider.</param>
         public UiFactory(IServiceProvider sp)
         {
-            _sp = sp;
+            _sp = sp ?? throw new ArgumentNullException(nameof(sp));
         }
 
         /// <summary>
