@@ -409,6 +409,9 @@ namespace Engine.UI.Core.Elements
 
                 child.Parent = null;
                 Children.RemoveAt(i);
+                // Like RemoveChild: the cached Z-order lists still hold the removed child,
+                // which Draw and HitTestDeep iterate.
+                _isChildrenSortedDirty = true;
                 InvalidateLayout();
             }
         }
