@@ -242,12 +242,11 @@ namespace Engine.UI.Input
         }
 
         /// <summary>
-        /// Called at the end of each frame.
-        /// This is a placeholder for potential state cleanup or extension by subclass.
+        /// Called at the end of each frame. Nothing to reset: all drag state lives across
+        /// frames and is cleared by MouseDown/MouseUp/<see cref="Cancel"/>.
         /// </summary>
         public void EndFrame()
         {
-            // Optionally override in subclass
         }
 
         #endregion
