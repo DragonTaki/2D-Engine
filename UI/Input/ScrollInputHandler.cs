@@ -291,7 +291,11 @@ namespace Engine.UI.Input
         /// <summary>Wheel delta of one notch (the WinForms convention, which the backends follow).</summary>
         private const int WheelNotchDelta = 120;
 
-        /// <summary>Scroll distance per wheel notch, in UI design units.</summary>
+        /// <summary>
+        /// Scroll distance per wheel notch, in UI design units. 30 is the engine's own
+        /// default; a host may set it at registration (the launchers set it from the
+        /// player settings, docs/SETTINGS.md).
+        /// </summary>
         public float WheelStep { get; set; } = 30f;
 
         /// <summary>
