@@ -46,7 +46,14 @@ namespace Engine.Platform
         /// <summary>Measures the rendered size of <paramref name="text"/> wrapped to <paramref name="maxWidth"/> pixels.</summary>
         SizeF MeasureString(string text, IFont font, int maxWidth);
 
+        /// <summary>
+        /// Restricts drawing to <paramref name="bounds"/> intersected with the clip already in
+        /// effect (clips nest: a child's clip never reaches outside its container's). Must be
+        /// paired with exactly one matching <see cref="ResetClip"/>.
+        /// </summary>
         void SetClip(RectangleF bounds);
+
+        /// <summary>Undoes the most recent unmatched <see cref="SetClip"/>, restoring the clip that was in effect before it.</summary>
         void ResetClip();
 
         /// <summary>

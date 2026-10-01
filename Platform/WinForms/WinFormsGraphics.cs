@@ -24,6 +24,16 @@ namespace Engine.Platform.WinForms
         // stack rather than a bare counter.
         private readonly Stack<GraphicsState> _transformStates = new();
 
+        // One saved state per open SetClip, restored by the matching ResetClip (see
+        // IGraphics.SetClip), and for each PushTransform the number of clips open at the
+        // push: GDI+ Restore discards every later Save, so PopTransform drops those too.
+        // CA1416 is suppressed only around the code added for nested clips, so the build's
+        // warning baseline doesn't move: this whole folder compiles only for net9.0-windows.
+#pragma warning disable CA1416
+        private readonly Stack<GraphicsState> _clipStates = new();
+#pragma warning restore CA1416
+        private readonly Stack<int> _clipDepthAtTransform = new();
+
         /// <summary>
         /// Whether this instance owns (and should dispose) <see cref="Native"/>.
         /// False for a Graphics handed in by WinForms' own paint event — that
@@ -79,17 +89,41 @@ namespace Engine.Platform.WinForms
         public SizeF MeasureString(string text, IFont font, int maxWidth) =>
             Native.MeasureString(text, ((WinFormsFont)font).Native, maxWidth);
 
-        public void SetClip(RectangleF bounds) => Native.SetClip(bounds);
-        public void ResetClip() => Native.ResetClip();
+        // Nested like the Skia backend: intersect with the clip already in effect, and undo
+        // only this clip on ResetClip. Graphics.SetClip/ResetClip would replace the outer clip
+        // and then clear it entirely, so a clipped child inside a clipped container let the
+        // container's remaining children draw unclipped.
+#pragma warning disable CA1416
+        public void SetClip(RectangleF bounds)
+        {
+            _clipStates.Push(Native.Save());
+            Native.IntersectClip(bounds);
+        }
+
+        public void ResetClip()
+        {
+            if (_clipStates.Count > 0)
+                Native.Restore(_clipStates.Pop());
+        }
+#pragma warning restore CA1416
 
         public void PushTransform(float scale, float offsetX, float offsetY)
         {
+            _clipDepthAtTransform.Push(_clipStates.Count);
             _transformStates.Push(Native.Save());
             Native.TranslateTransform(offsetX, offsetY);
             Native.ScaleTransform(scale, scale);
         }
 
-        public void PopTransform() => Native.Restore(_transformStates.Pop());
+        public void PopTransform()
+        {
+            Native.Restore(_transformStates.Pop());
+            int clipDepth = _clipDepthAtTransform.Pop();
+#pragma warning disable CA1416
+            while (_clipStates.Count > clipDepth)
+                _clipStates.Pop();
+#pragma warning restore CA1416
+        }
 
         public void ApplyHighQualitySettings()
         {
