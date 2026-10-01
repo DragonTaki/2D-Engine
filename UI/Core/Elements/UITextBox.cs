@@ -11,13 +11,12 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using Engine.Mathematics;
+
 using Engine.Platform;
 using Engine.UI.Constants.Components;
 using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Interfaces;
 using Engine.UI.Core.Renderers;
-using Engine.UI.Utils;
 
 namespace Engine.UI.Core.Elements
 {
@@ -30,6 +29,7 @@ namespace Engine.UI.Core.Elements
         where TRenderer : UITextBoxRenderer<TElement, THandler, TRenderer>
     {
         #region Fields / Properties
+
         public UIScrollContainer ScrollContainer { get; private set; }
 
         /// <remarks>Same ownership rule as <see cref="UILabel.Font"/>.</remarks>
@@ -142,7 +142,7 @@ namespace Engine.UI.Core.Elements
                 IFont font = GetLineFont(style);
 
                 SizeF size = g.MeasureString(line, font);
-    
+
                 // Add paragraph spacing before a paragraph's first line (not for the first paragraph)
                 if (i == 0 && !isFirstParagraph)
                     y += ParagraphSpacing;
@@ -171,8 +171,6 @@ namespace Engine.UI.Core.Elements
             // the next append in the same frame starts below this line.
             ScrollContainer.RefreshContentSize(forceAlignment: true);
         }
-
-        #endregion
 
         /// <summary>
         /// Appends one line made of inline text fragments (each with its own color and
@@ -210,6 +208,8 @@ namespace Engine.UI.Core.Elements
             ScrollContainer.AddChild(label);
             ScrollContainer.RefreshContentSize(forceAlignment: true);  // = y + height
         }
+
+        #endregion
 
         private IFont GetLineFont(FontStyleFlags style)
         {

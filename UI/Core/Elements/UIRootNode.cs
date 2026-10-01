@@ -21,8 +21,10 @@ namespace Engine.UI.Core.Elements
     /// </summary>
     public class UIRootNode : UINode
     {
-
 #nullable enable
+        /// <summary>
+        /// The window <see cref="RequestRedraw"/> invalidates (null until the host sets it).
+        /// </summary>
         public IWindow? MainWindow { get; set; }
 #nullable disable
 

@@ -12,7 +12,6 @@ using System.Collections.Generic;
 
 using Engine.Styles;
 using Engine.UI.Constants.Components;
-using Engine.UI.Core.Bases;
 using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Interfaces;
 using Engine.UI.Core.Renderers;
@@ -29,6 +28,10 @@ namespace Engine.UI.Core.Elements
     {
         #region Fields / Properties
 
+        /// <summary>
+        /// Actions queued by <see cref="Post"/>. Only containers whose handler drains this
+        /// queue run them (today only the game board's handler); the base container handler does not.
+        /// </summary>
         public readonly List<Action> PendingActions = new();
 
         /// <summary>
@@ -82,13 +85,17 @@ namespace Engine.UI.Core.Elements
             OnAfterInit(factory);
         }
 
+        /// <summary>
+        /// Hook for building child elements, run during Init after the parameterless init hooks.
+        /// </summary>
         protected virtual void BuildUIObjects() { }
 
-        #endregion
-
+        /// <inheritdoc/>
         public void Post(Action action)
         {
             PendingActions.Add(action);
         }
+
+        #endregion
     }
 }

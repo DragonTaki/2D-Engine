@@ -84,8 +84,6 @@ namespace Engine.UI.Core.Elements
             Dialog.Cancel();
             return true;
         }
-
-
     }
 
     public class UIOverlayMaskHandler : UIHandler

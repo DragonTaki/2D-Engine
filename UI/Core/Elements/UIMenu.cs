@@ -28,12 +28,13 @@ namespace Engine.UI.Core.Elements
     /// Engine-level generic Menu.
     /// </summary>
     public abstract class UIMenu<TElement, THandler, TRenderer>
-    : UIContainer<TElement, THandler, TRenderer>
-    where TElement : UIMenu<TElement, THandler, TRenderer>
-    where THandler : UIMenuHandler<TElement, THandler, TRenderer>
-    where TRenderer : UIMenuRenderer<TElement, THandler, TRenderer>
+        : UIContainer<TElement, THandler, TRenderer>
+        where TElement : UIMenu<TElement, THandler, TRenderer>
+        where THandler : UIMenuHandler<TElement, THandler, TRenderer>
+        where TRenderer : UIMenuRenderer<TElement, THandler, TRenderer>
     {
         #region Fields / Properties
+
         public UIScrollContainer ScrollContainer { get; private set; }
         protected List<UIButton> Buttons { get; } = new();
         public float ButtonSpacing { get; set; } = 10f;
@@ -207,7 +208,7 @@ namespace Engine.UI.Core.Elements
         }
 
         public IReadOnlyList<UIButton> ButtonList => Buttons;
-        
+
         #endregion
     }
 }
