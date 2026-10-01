@@ -26,7 +26,7 @@ namespace Engine.UI.Core.Infrastructure
         }
 
         /// <summary>
-        /// Updates the UI logic (e.g., animation, layout, scroll).
+        /// Updates the UI logic (e.g., handler updates such as scroll inertia and rebound; the layout pass runs during Draw).
         /// </summary>
         public void Update()
         {
@@ -91,6 +91,6 @@ namespace Engine.UI.Core.Infrastructure
             Root?.OnMouseClick(e);
         }
 
-        // 可以擴充 Focus、Hover、Keyboard 等功能
+        // TODO: Extend with Focus, Hover, Keyboard, etc.
     }
 }

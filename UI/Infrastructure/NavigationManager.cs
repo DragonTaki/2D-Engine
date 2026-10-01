@@ -20,16 +20,16 @@ using Engine.UI.Core.Renderers;
 namespace Engine.UI.Core.Infrastructure
 {
     /// <summary>
-    /// NavigationManager 負責管理遊戲中各個主要UI畫面的切換。
-    /// 它操作一個 Root UIElement 容器，
-    /// 可以 Clear 舊畫面、Add 新畫面。
+    /// NavigationManager manages switching between the game's main UI screens.
+    /// It operates on a root UIElement container: it clears the old screen
+    /// (non-persistent children) and adds the new one.
     /// </summary>
     public class NavigationManager
     {
         private readonly IUiFactory _factory;
         private UIElement _rootElement;
 
-        // 儲存已建立的畫面
+        // Screens that have been created, keyed by screen type
         private readonly Dictionary<Type, UIElementBase> _screens = new();
 
         public NavigationManager(IUiFactory factory)
@@ -43,7 +43,7 @@ namespace Engine.UI.Core.Infrastructure
         }
 
         /// <summary>
-        /// 預先註冊畫面（可選）
+        /// Pre-registers a screen instance (optional); it starts hidden.
         /// </summary>
         public void RegisterScreen<TScreen>(TScreen instance) where TScreen : UIElement
         {
@@ -55,15 +55,15 @@ namespace Engine.UI.Core.Infrastructure
 
             _screens[type] = instance;
 
-            // 如果有 Root，直接加入
+            // If a root is set, add the screen to it right away
             if (_rootElement != null && !_rootElement.Children.Contains(instance))
                 _rootElement.AddChild(instance);
 
-            instance.IsVisible = false; // 初始隱藏
+            instance.IsVisible = false; // Hidden initially
         }
 
         /// <summary>
-        /// 顯示指定畫面，支援延遲建立與重建
+        /// Shows the given screen, creating it lazily on first use and optionally rebuilding it (<paramref name="forceReload"/>).
         /// </summary>
         public TScreen Show<TScreen, THandler, TRenderer>(bool forceReload = false)
             where TScreen : UIElement<TScreen, THandler, TRenderer>
@@ -86,13 +86,13 @@ namespace Engine.UI.Core.Infrastructure
 
             if (forceReload)
             {
-                // 強制重建：卸載舊的
+                // Forced rebuild: unload the old one
                 UnloadScreen<TScreen>();
             }
 
             if (!_screens.TryGetValue(screenType, out UIElementBase screen))
             {
-                // 延遲建立：透過工廠建立 screen + handler + renderer
+                // Lazy creation: build screen + handler + renderer through the factory
                 screen = _factory.CreateDIElement<TScreen, THandler, TRenderer>();
                 _screens[screenType] = screen;
             }
@@ -116,7 +116,7 @@ namespace Engine.UI.Core.Infrastructure
             element as IScreen ?? element?.HandlerBase as IScreen;
 
         /// <summary>
-        /// 卸載指定畫面（從根節點移除並忘記快取）
+        /// Unloads the given screen (removed from the root node and dropped from the cache).
         /// </summary>
         /// <remarks>
         /// Screens are deliberately never disposed: by design each screen is a single
@@ -139,7 +139,7 @@ namespace Engine.UI.Core.Infrastructure
         }
 
         /// <summary>
-        /// 隱藏指定畫面
+        /// Hides the given screen (if it is currently visible).
         /// </summary>
         public void Hide<TScreen>() where TScreen : UIElementBase
         {
@@ -152,7 +152,7 @@ namespace Engine.UI.Core.Infrastructure
         }
 
         /// <summary>
-        /// 清除非 Persistent 子畫面
+        /// Removes the root's non-persistent child screens.
         /// </summary>
         private static void ClearNonPersistentChildren(UIElement parent)
         {
@@ -162,7 +162,7 @@ namespace Engine.UI.Core.Infrastructure
         }
 
         /// <summary>
-        /// 選擇性取得已建立畫面
+        /// Returns the already-created screen of the given type, or null if none exists yet.
         /// </summary>
         public TScreen GetScreen<TScreen>() where TScreen : UIElementBase
         {

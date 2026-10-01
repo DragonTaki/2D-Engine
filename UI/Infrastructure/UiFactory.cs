@@ -78,19 +78,19 @@ namespace Engine.UI.Core.Infrastructure
         public UIButton CreateButton(Action? onClick = null)
 #nullable disable
         {
-            // 建立 Handler / Renderer
+            // Create Handler / Renderer
             var handler = new UIButtonHandler();
             var renderer = new UIButtonRenderer();
 
-            // 建立 UIButton
+            // Create UIButton
             var button = new UIButton();
 
-            // 初始化綁定
+            // Initialize and bind
             handler.Init(this, button);
             renderer.Init(button);
             button.Init(this, handler, renderer);
 
-            // 綁定點擊事件
+            // Bind the click action
             button.Handler.Action = onClick;
 
             return button;
@@ -109,7 +109,7 @@ namespace Engine.UI.Core.Infrastructure
             renderer.Init(button);
             button.Init(this, handler, renderer);
 
-            handler.Action = onClick; // 只綁定 Action，其他屬性由外部設定
+            handler.Action = onClick; // Only the Action is bound here; other properties are set by the caller
             return button;
         }
 
@@ -143,7 +143,7 @@ namespace Engine.UI.Core.Infrastructure
             if (_factories.TryGetValue(type, out var customFactory))
                 return (TElement)customFactory(this);
 
-            // 如果尚未註冊 factory，自動註冊
+            // If no factory is registered yet, register one automatically
             if (!_factoriesWithContext.ContainsKey(type))
             {
                 RegisterFactory<TElement, THandler, TRenderer>();
@@ -163,7 +163,7 @@ namespace Engine.UI.Core.Infrastructure
             var handler = _sp.GetRequiredService<THandler>();
             var renderer = _sp.GetRequiredService<TRenderer>();
 
-            // 直接初始化，不用 interface
+            // Initialize directly, without going through an interface
             handler.Init(this, element);
             renderer.Init(element);
             element.Init(this, handler, renderer);
@@ -192,18 +192,18 @@ namespace Engine.UI.Core.Infrastructure
         {
             _factoriesWithContext[typeof(TElement)] = ctx =>
             {
-                // 從 DI 容器取得實例
+                // Get the instances from the DI container
                 var element = ctx.ServiceProvider.GetRequiredService<TElement>();
                 var handler = ctx.ServiceProvider.GetRequiredService<THandler>();
                 var renderer = ctx.ServiceProvider.GetRequiredService<TRenderer>();
 
-                // 初始化 Handler
+                // Initialize Handler
                 handler.Init(ctx.UiFactory, element);
 
-                // 初始化 Renderer
+                // Initialize Renderer
                 renderer.Init(element);
 
-                // 初始化 Element，綁定 Handler + Renderer
+                // Initialize Element, binding Handler + Renderer
                 element.Init(ctx.UiFactory, handler, renderer);
 
                 return element;
