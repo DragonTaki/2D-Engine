@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/24
-// Update Date: 2026/09/30
-// Version: v1.1
+// Update Date: 2026/10/01
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using System;
@@ -125,10 +125,29 @@ namespace Engine.UI.Core.Elements
             Handler.UpdateScrollContentHeight();
         }
 
+        /// <summary>
+        /// The buttons the menu renderer draws: inside the scroll viewport (which also sets
+        /// <see cref="UIElementBase.IsEnabled"/>, see <see cref="UIElementUtils.UpdateVisibleState"/>)
+        /// and rendered at all - not <c>Display = None</c> or invisible, neither the button
+        /// nor any element between it and this menu (e.g. a hidden group container). The
+        /// render pipeline skips such elements (<see cref="UIElementBase.DisableRender"/>),
+        /// but the menu draws its buttons itself, so a hidden button used to be drawn anyway.
+        /// </summary>
         public List<UIButton> GetVisibleButtons()
         {
             UIElementUtils.UpdateVisibleState(Buttons, ScrollContainer.GetAbsClippingRect());
-            return Buttons.Where(b => b.IsEnabled).ToList();
+            return Buttons.Where(b => b.IsEnabled && IsRenderedInMenu(b)).ToList();
+        }
+
+        /// <summary>
+        /// Whether <paramref name="element"/> and every ancestor below this menu is rendered.
+        /// </summary>
+        private bool IsRenderedInMenu(UIElementBase element)
+        {
+            for (var current = element; current != null && current != this; current = current.Parent)
+                if (current.DisableRender)
+                    return false;
+            return true;
         }
 
         public virtual void SetupButtons(IEnumerable<(string label, Action onClick)> buttonDefs)
