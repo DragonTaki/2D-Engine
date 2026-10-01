@@ -16,11 +16,10 @@ using Engine.UI.Core.Handlers;
 namespace Engine.UI.Core.Renderers
 {
     /// <summary>
-    /// Renderer for <see cref="UIButton{THandler}"/>. Handles the drawing
-    /// of container elements, optionally delegating to child elements or applying
-    /// container-specific visual effects.
+    /// Renderer for <see cref="UIButton"/>. It adds no drawing of its own (the inherited
+    /// <c>OnRender</c> is a no-op): buttons inside a menu are drawn by the menu renderer
+    /// through their <c>IButtonDrawStyle</c>.
     /// </summary>
-    /// <typeparam name="THandler">The type of container handler this renderer is associated with.</typeparam>
     public class UIButtonRenderer : UIRenderer<UIButton, UIButtonHandler, UIButtonRenderer>
     {
         public UIButtonRenderer() { }

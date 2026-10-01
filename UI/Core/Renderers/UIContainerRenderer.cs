@@ -14,11 +14,13 @@ using Engine.UI.Core.Handlers;
 namespace Engine.UI.Core.Renderers
 {
     /// <summary>
-    /// Renderer for <see cref="UIContainer{THandler}"/>. Handles the drawing
-    /// of container elements, optionally delegating to child elements or applying
-    /// container-specific visual effects.
+    /// Renderer for <see cref="UIContainer{TElement, THandler, TRenderer}"/>. Draws the
+    /// container's own background/border <c>Style</c> when one is assigned; children are
+    /// drawn by the central render pipeline, not by this renderer.
     /// </summary>
+    /// <typeparam name="TElement">The container element type this renderer draws.</typeparam>
     /// <typeparam name="THandler">The type of container handler this renderer is associated with.</typeparam>
+    /// <typeparam name="TRenderer">The concrete renderer type (self-referencing).</typeparam>
     public class UIContainerRenderer<TElement, THandler, TRenderer>
     : UIRenderer<TElement, THandler, TRenderer>
     where TElement : UIContainer<TElement, THandler, TRenderer>
@@ -28,7 +30,7 @@ namespace Engine.UI.Core.Renderers
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of <see cref="UIContainerRenderer{THandler}"/>.
+        /// Initializes a new instance of <see cref="UIContainerRenderer{TElement, THandler, TRenderer}"/>.
         /// </summary>
         public UIContainerRenderer() : base() { }
 
@@ -37,10 +39,10 @@ namespace Engine.UI.Core.Renderers
         #region Rendering
 
         /// <summary>
-        /// Performs the rendering of the container and its child elements.
+        /// Renders the container's own style (background/border), if any; children are not drawn here.
         /// </summary>
         /// <param name="g">The <see cref="IGraphics"/> surface to draw on.</param>
-        /// <param name="element">The UI element being rendered (should match <see cref="Container"/>).</param>
+        /// <param name="element">The container element being rendered.</param>
         public override void OnRender(IGraphics g, TElement element)
         {
             // Draws the container's own background/border only when a Style

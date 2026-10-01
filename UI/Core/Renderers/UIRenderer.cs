@@ -64,7 +64,9 @@ namespace Engine.UI.Core.Renderers
 
         /// <summary>
         /// Entry point to render a UI element.
-        /// Sets <see cref="Element"/> temporarily, calls the main rendering method, and clears reference.
+        /// Casts the element to <typeparamref name="TElement"/> and runs <see cref="BeforeRender"/>,
+        /// <see cref="OnRender"/> and <see cref="AfterRender"/> in that order. <see cref="Element"/>
+        /// is not touched here; it is bound once in <see cref="Init"/>.
         /// </summary>
         /// <param name="g">Graphics context to draw on.</param>
         /// <param name="element">The UI element to render.</param>
@@ -114,11 +116,11 @@ namespace Engine.UI.Core.Renderers
         protected virtual void AfterRender(IGraphics g, TElement element) { }
 
         /// <summary>
-        /// 通知這個元素需要重繪
+        /// Notifies that this element needs to be redrawn.
         /// </summary>
         public virtual void Invalidate()
         {
-            // 如果有 UI 系統管理容器，可以通知上層重繪
+            // If a UI system manages the container, this can notify the upper layer to redraw
             Element?.RequestRedraw();
         }
 

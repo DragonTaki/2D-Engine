@@ -76,11 +76,11 @@ namespace Engine.UI.Core.Renderers
                 {
                     debugPen.DashStyle = PenDashStyle.Solid;
 
-                    // 使用 UIElement 提供的絕對邊界
+                    // Use the absolute bounds provided by UIElement
                     var textBox = (UITextBox<TElement, THandler, TRenderer>)element;
                     var bounds = textBox.GetCurrentAbsoluteBounds();
 
-                    // 可以加入 margin
+                    // TODO: Make this outline margin configurable instead of a fixed 3 units.
                     float margin = 3.0f;
                     var rect = new RectangleF(
                         bounds.X + margin,

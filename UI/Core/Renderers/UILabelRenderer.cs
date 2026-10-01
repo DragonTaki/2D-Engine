@@ -17,11 +17,9 @@ using Engine.UI.Core.Handlers;
 namespace Engine.UI.Core.Renderers
 {
     /// <summary>
-    /// Renderer for <see cref="UILabel{THandler}"/>. Handles the drawing
-    /// of container elements, optionally delegating to child elements or applying
-    /// container-specific visual effects.
+    /// Renderer for <see cref="UILabel"/>. Draws the label's text (or its inline text
+    /// fragments) within the label's absolute bounds, honoring TextAlign, WordWrap and ClipRect.
     /// </summary>
-    /// <typeparam name="THandler">The type of container handler this renderer is associated with.</typeparam>
     public class UILabelRenderer : UIRenderer<UILabel, UILabelHandler, UILabelRenderer>
     {
         private UILabel Label => (UILabel)Element;
@@ -122,10 +120,10 @@ namespace Engine.UI.Core.Renderers
         #region Rendering
 
         /// <summary>
-        /// Performs the rendering of the container and its child elements.
+        /// Renders the label: inline fragments if any are set, otherwise the plain text.
         /// </summary>
         /// <param name="g">The <see cref="IGraphics"/> surface to draw on.</param>
-        /// <param name="element">The UI element being rendered (should match <see cref="Container"/>).</param>
+        /// <param name="element">The label element being rendered.</param>
         public override void OnRender(IGraphics g, UILabel element)
         {
             var _label = (UILabel)element;
@@ -146,10 +144,10 @@ namespace Engine.UI.Core.Renderers
                     return;
                 }
 
-                // 原本單純文字模式
+                // Original plain-text mode (no fragments)
                 if (!string.IsNullOrEmpty(Label.Text))
                 {
-                    using (var brush = GraphicsBackend.Factory.CreateSolidBrush(Color.FromArgb(128, Color.Red))) // 半透明紅色
+                    using (var brush = GraphicsBackend.Factory.CreateSolidBrush(Color.FromArgb(128, Color.Red))) // Semi-transparent red (debug background behind the text)
                     {
                         g.FillRectangle(brush, rect);
                     }

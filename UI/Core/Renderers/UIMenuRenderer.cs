@@ -64,7 +64,7 @@ namespace Engine.UI.Core.Renderers
                     var menu = (UIMenu<TElement, THandler, TRenderer>)element;
                     var bounds = menu.GetPanelAbsoluteBounds();
 
-                    // 可以加入 margin
+                    // TODO: Make this outline margin configurable instead of a fixed 3 units.
                     float margin = 3.0f;
                     var rect = new RectangleF(
                         bounds.X + margin,
@@ -83,7 +83,7 @@ namespace Engine.UI.Core.Renderers
             public Buttons() { }
             public override void OnRender(IGraphics g, TElement element)
             {
-                // 取得可見按鈕
+                // Get the visible buttons
                 var menu = (UIMenu<TElement, THandler, TRenderer>)element;
                 var buttons = menu.GetVisibleButtons();
                 var clip = menu.GetAbsClipRect();
