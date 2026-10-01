@@ -10,11 +10,13 @@
 using System;
 using System.IO;
 
+using Engine.Configs;
+
 namespace Engine.Logging
 {
     public static class LogFileManager
     {
-        private static readonly string LogPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "log.txt");
+        private static readonly string LogPath = EnginePaths.LogFilePath;
         private static readonly object _lock = new();
 
         public static void SaveLog(string message)

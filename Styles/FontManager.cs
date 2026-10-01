@@ -10,6 +10,7 @@
 using System;
 using System.IO;
 
+using Engine.Configs;
 using Engine.Logging;
 using Engine.Platform;
 
@@ -26,7 +27,7 @@ namespace Engine.Styles
 
         private static void AddFont(string key, string fileName)
         {
-            string fontPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Font", fileName);
+            string fontPath = Path.Combine(EnginePaths.FontFolder, fileName);
 
             // A missing or unreadable font shouldn't abort startup (or skip the remaining
             // fonts): StyleHelper.GetFont already falls back when a key isn't loaded.
