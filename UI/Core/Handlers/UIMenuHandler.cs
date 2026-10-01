@@ -18,7 +18,7 @@ namespace Engine.UI.Core.Handlers
         where TRenderer : UIMenuRenderer<TElement, THandler, TRenderer>
     {
         public UIMenuHandler() { }
-        
+
         /// <summary>
         /// Brings the menu's scroll content height up to date right away and re-applies the
         /// scroll alignment. The scroll container computes its content size automatically
@@ -39,6 +39,5 @@ namespace Engine.UI.Core.Handlers
                 scroll.UpdateLayout();
             scroll.RefreshContentSize(forceAlignment: true);
         }
-
     }
 }

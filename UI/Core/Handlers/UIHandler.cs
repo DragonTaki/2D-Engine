@@ -8,7 +8,6 @@
 /* ----- ----- ----- ----- */
 
 using Engine.Platform;
-
 using Engine.UI.Core.Bases;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Infrastructure;
@@ -17,9 +16,12 @@ using Engine.UI.Core.Renderers;
 
 namespace Engine.UI.Core.Handlers
 {
+    /// <summary>
+    /// Base UI handler: every mouse event is left unhandled and the frame callbacks do
+    /// nothing until a subclass overrides them.
+    /// </summary>
     public abstract class UIHandler : UIHandlerBase
     {
-
         protected IUiFactory _factory;
         protected NavigationManager _navigationManager;
 
@@ -75,6 +77,9 @@ namespace Engine.UI.Core.Handlers
         internal override void OnEndFrame() { }
     }
 
+    /// <summary>
+    /// Strongly-typed handler bound to one element type.
+    /// </summary>
     public class UIHandler<TElement, THandler, TRenderer> : UIHandler
         where TElement : UIElement<TElement, THandler, TRenderer>
         where THandler : UIHandler<TElement, THandler, TRenderer>
@@ -85,6 +90,7 @@ namespace Engine.UI.Core.Handlers
             get => (TElement)base.Element;
             protected internal set => base.Element = value;
         }
+
         public override void Init(IUiFactory factory, UIElementBase element)
         {
             if (IsInitialized) return;

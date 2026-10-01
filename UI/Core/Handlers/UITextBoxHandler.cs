@@ -24,7 +24,7 @@ namespace Engine.UI.Core.Handlers
     {
         private UITextBox<TElement, THandler, TRenderer> TextBox => (UITextBox<TElement, THandler, TRenderer>)Element;
         public event Action<string> OnMessageAdded;
-        
+
         /// <summary>
         /// Adds a message using the text box's default text color and plain style.
         /// </summary>

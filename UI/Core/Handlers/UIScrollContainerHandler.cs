@@ -8,9 +8,9 @@
 /* ----- ----- ----- ----- */
 
 using System;
-using Engine.Platform;
 
 using Engine.Mathematics;
+using Engine.Platform;
 using Engine.Timing;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Renderers;
@@ -20,6 +20,7 @@ namespace Engine.UI.Core.Handlers
     public class UIScrollContainerHandler : UIContainerHandler<UIScrollContainer, UIScrollContainerHandler, UIScrollContainerRenderer>
     {
         private UIScrollContainer ScrollContainer => Element as UIScrollContainer;
+
         public UIScrollContainerHandler() { }
 
         #region Inertia
@@ -218,6 +219,5 @@ namespace Engine.UI.Core.Handlers
         {
             ScrollContainer.InputHandler.EndFrame();
         }
-
     }
 }

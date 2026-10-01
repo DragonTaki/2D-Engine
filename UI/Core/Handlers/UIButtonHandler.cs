@@ -8,23 +8,30 @@
 /* ----- ----- ----- ----- */
 
 using System;
-using Engine.Platform;
 
+using Engine.Platform;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Renderers;
 
 namespace Engine.UI.Core.Handlers
 {
+    /// <summary>
+    /// Handler for <see cref="UIButton"/>: runs <see cref="Action"/> on click while the button is enabled.
+    /// </summary>
     public class UIButtonHandler : UIHandler<UIButton, UIButtonHandler, UIButtonRenderer>
     {
-
-        // Action invoked when the button is clicked
 #nullable enable
+        /// <summary>
+        /// Action invoked when the button is clicked.
+        /// </summary>
         public Action? Action { get; set; }
 #nullable disable
 
-        // Highlight state
+        /// <summary>
+        /// Highlight state (not read by any renderer yet).
+        /// </summary>
         public bool IsHighlighted { get; set; } = false;
+
         public UIButtonHandler() { }
 
         #region Mouse Handling
@@ -39,10 +46,17 @@ namespace Engine.UI.Core.Handlers
         #endregion
     }
 
+    /// <summary>
+    /// Handler for <see cref="UIButton{TEnum}"/>: on click runs the untyped action, then the
+    /// typed one with the button's <see cref="UIButton{TEnum}.Type"/>.
+    /// </summary>
     public class UIButtonHandler<TEnum> : UIButtonHandler
         where TEnum : Enum
     {
 #nullable enable
+        /// <summary>
+        /// Typed action invoked on click with the button's Type (hides the untyped <c>Action</c>).
+        /// </summary>
         public new Action<TEnum>? Action { get; set; }
 #nullable disable
 

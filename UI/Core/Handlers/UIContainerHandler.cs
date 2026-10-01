@@ -13,10 +13,10 @@ using Engine.UI.Core.Renderers;
 namespace Engine.UI.Core.Handlers
 {
     public abstract class UIContainerHandler<TElement, THandler, TRenderer>
-    : UIHandler<TElement, THandler, TRenderer>
-    where TElement : UIContainer<TElement, THandler, TRenderer>
-    where THandler : UIContainerHandler<TElement, THandler, TRenderer>
-    where TRenderer : UIContainerRenderer<TElement, THandler, TRenderer>
+        : UIHandler<TElement, THandler, TRenderer>
+        where TElement : UIContainer<TElement, THandler, TRenderer>
+        where THandler : UIContainerHandler<TElement, THandler, TRenderer>
+        where TRenderer : UIContainerRenderer<TElement, THandler, TRenderer>
     {
         public UIContainerHandler() { }
     }
