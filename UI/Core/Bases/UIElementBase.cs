@@ -162,6 +162,13 @@ namespace Engine.UI.Core.Bases
         /// value also becomes the <see cref="DeclaredSize"/>. Mutating the vector in place
         /// does not invalidate anything.
         /// </para>
+        /// <para>
+        /// The assigned vector is copied (like <see cref="UIPosition"/> copies its vectors):
+        /// <see cref="Vector2F"/> is a mutable class and sizes are often assigned from shared
+        /// static defaults (e.g. <c>Size = ButtonDefaults.Size</c>), so storing the instance
+        /// would let an in-place write to one element's size change the default and every
+        /// other element sharing it.
+        /// </para>
         /// </summary>
         public virtual Vector2F Size
         {
@@ -169,9 +176,9 @@ namespace Engine.UI.Core.Bases
             set
             {
                 bool changed = !SameVector(_size, value);
-                _size = value;
+                _size = value is null ? null : new Vector2F(value.X, value.Y);
                 if (!_applyingLayoutResult)
-                    _declaredSize = value;
+                    _declaredSize = _size;
                 if (changed)
                     OnGeometryAssigned();
             }
