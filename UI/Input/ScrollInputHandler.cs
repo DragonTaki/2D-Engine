@@ -280,9 +280,19 @@ namespace Engine.UI.Input
 
             target.Behavior.OnPress?.Invoke();
 
-            target.Physics.Position.Current += new Vector2F(0, -e.Delta * 0.25f);
+            // One event scrolls at most one notch. macOS accelerates wheel input (a fast
+            // spin reports several notches per event), which made the wheel scroll far
+            // faster than dragging; WinForms reports one notch (120) per event anyway.
+            float notches = Math.Clamp(e.Delta / (float)WheelNotchDelta, -1f, 1f);
+            target.Physics.Position.Current += new Vector2F(0, -notches * WheelStep);
             return true;
         }
+
+        /// <summary>Wheel delta of one notch (the WinForms convention, which the backends follow).</summary>
+        private const int WheelNotchDelta = 120;
+
+        /// <summary>Scroll distance per wheel notch, in UI design units.</summary>
+        public float WheelStep { get; set; } = 30f;
 
         /// <summary>
         /// Handles MouseClick. This handler does not process clicks directly.
