@@ -36,9 +36,6 @@ namespace Engine.UI.Core.Elements
     /// </summary>
     public class UIScrollContainer : UIContainer<UIScrollContainer, UIScrollContainerHandler, UIScrollContainerRenderer>, IPhysical2D
     {
-        public UIScrollContainerHandler ScrollHandler => (UIScrollContainerHandler)Handler;
-        private bool _pendingApplyAlignment = false;
-
         #region Fields
 
         /// <summary>
@@ -52,9 +49,25 @@ namespace Engine.UI.Core.Elements
         private readonly IScrollInputHandler _inputHandler;
         public IScrollInputHandler InputHandler => _inputHandler;
 
+        /// <summary>
+        /// Backing field of <see cref="ContentHeight"/>.
+        /// </summary>
+        private float _contentHeight;
+
+        /// <summary>
+        /// Set when the content height changed before the handler was bound; the alignment
+        /// is then applied in <see cref="OnInit"/>.
+        /// </summary>
+        private bool _pendingApplyAlignment = false;
+
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// The bound handler, typed (null until the element is initialized).
+        /// </summary>
+        public UIScrollContainerHandler ScrollHandler => (UIScrollContainerHandler)Handler;
 
         /// <summary>
         /// Gets the underlying Physics2D instance.
@@ -111,7 +124,6 @@ namespace Engine.UI.Core.Elements
         /// switched back on. Either way a new value re-applies the scroll alignment.
         /// </para>
         /// </summary>
-        private float _contentHeight;
         public float ContentHeight
         {
             get => _contentHeight;
@@ -237,6 +249,11 @@ namespace Engine.UI.Core.Elements
         /// ScrollY between this and 0 is the normal, non-overscrolled range.
         /// </summary>
         public float MinNormalScrollY => OverContent ? -(ContentHeight - Size.Y) : 0f;
+
+        /// <summary>
+        /// Checks whether the content exceeds viewport height.
+        /// </summary>
+        public bool OverContent => ContentHeight > AbsViewportBounds.Height;
 
         /// <summary>
         /// Keeps ScrollY within the allowed overscroll range: pulling up stops when the
@@ -422,16 +439,6 @@ namespace Engine.UI.Core.Elements
         {
             return -ScrollY;
         }
-
-        #endregion
-
-        #region Private Methods
-
-
-        /// <summary>
-        /// Checks whether the content exceeds viewport height.
-        /// </summary>
-        public bool OverContent => ContentHeight > AbsViewportBounds.Height;
 
         #endregion
     }
