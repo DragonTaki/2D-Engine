@@ -35,10 +35,10 @@ namespace Engine.UI.Core.Renderers
         /// </summary>
         public IStringFormat GetStringFormat(ContentAlign align, bool wordWrap)
         {
-            if (Label._cachedFormat != null && Label._lastAlign == align && Label._lastWrap == wordWrap)
-                return Label._cachedFormat;
+            if (Label.CachedFormat != null && Label.LastAlign == align && Label.LastWrap == wordWrap)
+                return Label.CachedFormat;
 
-            Label._cachedFormat?.Dispose();
+            Label.CachedFormat?.Dispose();
             var format = GraphicsBackend.Factory.CreateStringFormat();
             format.WordWrap = wordWrap;
             format.EllipsisTrimming = true;
@@ -54,21 +54,21 @@ namespace Engine.UI.Core.Renderers
                 ContentAlign.TopCenter or ContentAlign.MiddleCenter or ContentAlign.BottomCenter => TextAlign.Center,
                 _ => TextAlign.Far,
             };
-            Label._cachedFormat = format;
-            Label._lastAlign = align;
-            Label._lastWrap = wordWrap;
-            return Label._cachedFormat;
+            Label.CachedFormat = format;
+            Label.LastAlign = align;
+            Label.LastWrap = wordWrap;
+            return Label.CachedFormat;
         }
 
         public IBrush GetBrush()
         {
-            if (Label._cachedBrush == null || Label._lastForeColor != Label.ForeColor)
+            if (Label.CachedBrush == null || Label.LastForeColor != Label.ForeColor)
             {
-                Label._cachedBrush?.Dispose();
-                Label._cachedBrush = GraphicsBackend.Factory.CreateSolidBrush(Label.ForeColor);
-                Label._lastForeColor = Label.ForeColor;
+                Label.CachedBrush?.Dispose();
+                Label.CachedBrush = GraphicsBackend.Factory.CreateSolidBrush(Label.ForeColor);
+                Label.LastForeColor = Label.ForeColor;
             }
-            return Label._cachedBrush;
+            return Label.CachedBrush;
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace Engine.UI.Core.Renderers
         /// </summary>
         private void DrawFragmentsInline(IGraphics g, RectangleF rect)
         {
-            var fragments = Label._fragments;
+            var fragments = Label.Fragments;
             var widths = new float[fragments.Count];
             float totalWidth = 0f, lineHeight = 0f;
 
@@ -138,7 +138,7 @@ namespace Engine.UI.Core.Renderers
             {
                 RectangleF rect = _label.GetCurrentAbsoluteBounds();
 
-                if (Label._fragments != null && Label._fragments.Count > 0)
+                if (Label.Fragments != null && Label.Fragments.Count > 0)
                 {
                     DrawFragmentsInline(g, rect);
                     return;

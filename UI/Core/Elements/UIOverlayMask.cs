@@ -23,12 +23,12 @@ namespace Engine.UI.Core.Elements
     /// </summary>
     public class UIOverlayMask : UIElement
     {
-        public readonly IUIDialog _dialog;
+        public readonly IUIDialog Dialog;
         public Color MaskColor { get; set; } = Color.FromArgb(120, 0, 0, 0);
 
         public UIOverlayMask(IUIDialog dialog)
         {
-            _dialog = dialog;
+            Dialog = dialog;
             IsVisible = false;
             IsEnabled = false;
 
@@ -79,9 +79,9 @@ namespace Engine.UI.Core.Elements
 
             // Hide everything and trigger cancel
             Hide();
-            _dialog.IsVisible = false;
-            _dialog.IsEnabled = false;
-            _dialog.Cancel();
+            Dialog.IsVisible = false;
+            Dialog.IsEnabled = false;
+            Dialog.Cancel();
             return true;
         }
 
@@ -115,7 +115,7 @@ namespace Engine.UI.Core.Elements
 
         protected override void OnRender(IGraphics g, UIOverlayMask element)
         {
-            if (_element._dialog.ShowMaskEffect)
+            if (_element.Dialog.ShowMaskEffect)
             {
                 using var brush = GraphicsBackend.Factory.CreateSolidBrush(_element.MaskColor);
                 // The mask's own laid-out bounds, which cover the whole UI area.

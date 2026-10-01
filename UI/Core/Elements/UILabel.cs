@@ -46,7 +46,7 @@ namespace Engine.UI.Core.Elements
         private string _text = string.Empty;
 
 #nullable enable
-        public List<TextFragment>? _fragments;
+        public List<TextFragment>? Fragments;
 #nullable disable
 
         /// <summary>
@@ -147,14 +147,14 @@ namespace Engine.UI.Core.Elements
 
         private bool _wordWrap = true;
 
-        public IBrush _cachedBrush;
-        public Color _lastForeColor;
+        public IBrush CachedBrush;
+        public Color LastForeColor;
 
-        public IStringFormat _cachedFormat;
+        public IStringFormat CachedFormat;
 
-        public ContentAlign _lastAlign;
+        public ContentAlign LastAlign;
 
-        public bool _lastWrap;
+        public bool LastWrap;
 
         public bool IsSelectable { get; set; } = false;
 
@@ -192,9 +192,9 @@ namespace Engine.UI.Core.Elements
             using var g = GraphicsBackend.Factory.CreateMeasurementContext();
 
             float width = 0f, height = 0f;
-            if (_fragments != null && _fragments.Count > 0)
+            if (Fragments != null && Fragments.Count > 0)
             {
-                foreach (var fragment in _fragments)
+                foreach (var fragment in Fragments)
                 {
                     var size = g.MeasureString(fragment.Text ?? string.Empty, GetFragmentFont(fragment.Bold, fragment.Italic));
                     width += size.Width;
@@ -226,10 +226,10 @@ namespace Engine.UI.Core.Elements
             base.DisposeUI();
 
             // Render caches filled by UILabelRenderer.
-            _cachedBrush?.Dispose();
-            _cachedBrush = null;
-            _cachedFormat?.Dispose();
-            _cachedFormat = null;
+            CachedBrush?.Dispose();
+            CachedBrush = null;
+            CachedFormat?.Dispose();
+            CachedFormat = null;
 
             DisposeFragmentFonts();
 

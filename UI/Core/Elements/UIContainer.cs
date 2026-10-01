@@ -29,7 +29,7 @@ namespace Engine.UI.Core.Elements
     {
         #region Fields / Properties
 
-        public readonly List<Action> _pendingActions = new();
+        public readonly List<Action> PendingActions = new();
 
         /// <summary>
         /// Optional background/border style for this container, drawn by
@@ -88,7 +88,7 @@ namespace Engine.UI.Core.Elements
 
         public void Post(Action action)
         {
-            _pendingActions.Add(action);
+            PendingActions.Add(action);
         }
     }
 }

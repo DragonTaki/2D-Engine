@@ -25,7 +25,7 @@ namespace Engine.UI.Core.Handlers
         /// <param name="fragments">The runs to draw as one line.</param>
         public void SetTextFragments(List<TextFragment> fragments)
         {
-            Label._fragments = fragments;
+            Label.Fragments = fragments;
             Label.InvalidateLayout();
         }
 
