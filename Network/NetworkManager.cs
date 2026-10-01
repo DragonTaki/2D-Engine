@@ -89,7 +89,7 @@ namespace Engine.Network
                 return false;
             }
 
-            StartListening(cts.Token);
+            StartListening(client, cts.Token);
 
             // Initialize AuthManager (a local: Disconnect may clear the field meanwhile)
             var authManager = new AuthManager(this);
@@ -124,6 +124,11 @@ namespace Engine.Network
         {
             lock (_lock)
             {
+                // Already disconnected (several paths can call this for one connection:
+                // the listener, the heartbeat, a failed send): don't raise the event again.
+                if (_client == null)
+                    return;
+
                 _cts?.Cancel();
                 _heartbeatTimer?.Dispose();
                 _authManager?.Dispose();
@@ -134,11 +139,12 @@ namespace Engine.Network
                 _authManager = null;
                 _stream = null;
                 _client = null;
-
-                OnDisconnected?.Invoke();
-
-                Console.WriteLine("[NetworkManager] Network disconnected.");
             }
+
+            // Outside the lock, so a handler can call back into this class (e.g. Reconnect).
+            OnDisconnected?.Invoke();
+
+            Console.WriteLine("[NetworkManager] Network disconnected.");
         }
 
         public void Reconnect()
@@ -197,20 +203,24 @@ namespace Engine.Network
             _lastHeartbeat = DateTime.UtcNow;
         }
 
-        private async void StartListening(CancellationToken token)
+        // Reads this connection's client only (not the fields, which a reconnect replaces).
+        // A cancelled token means Disconnect already tore this connection down, so a read that
+        // ends or fails afterwards must not call Disconnect again - by then it could close the
+        // next connection that Reconnect is opening.
+        private async void StartListening(TcpClient client, CancellationToken token)
         {
-            var reader = new StreamReader(_stream);
-
             try
             {
-                while (!token.IsCancellationRequested && _client.Connected)
+                var reader = new StreamReader(client.GetStream());
+                while (!token.IsCancellationRequested && client.Connected)
                 {
 #nullable enable
                     string? line = await reader.ReadLineAsync();
 #nullable disable
                     if (line == null)
                     {
-                        Disconnect();
+                        if (!token.IsCancellationRequested)
+                            Disconnect();
                         break;
                     }
 
@@ -260,6 +270,8 @@ namespace Engine.Network
             }
             catch (Exception ex)
             {
+                if (token.IsCancellationRequested)
+                    return;
                 Console.WriteLine("[NetworkManager] Receive error: " + ex.Message);
                 Disconnect();
             }
