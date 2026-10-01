@@ -35,7 +35,16 @@ namespace Engine.UI.Core.Handlers
             if (IsInitialized) return;
             IsInitialized = true;
 
-            // Same hook sequence as the generic Init(factory, element) overload.
+            RunInitHooks();
+        }
+
+        /// <summary>
+        /// Runs the parameterless init hooks without touching <see cref="IsInitialized"/>,
+        /// so Init overloads that already set the flag can still invoke them (as
+        /// <c>UIElement.RunInitHooks</c> does for elements).
+        /// </summary>
+        protected void RunInitHooks()
+        {
             BeforeInit();
             OnInit();
             AfterInit();
@@ -100,7 +109,12 @@ namespace Engine.UI.Core.Handlers
             _factory = factory;
             _navigationManager = _factory.Resolve<NavigationManager>();
 
+            // Same order as UIElement's generic Init: the parameterless hooks run between
+            // the factory Before and On hooks. Without this, an override of OnInit() etc.
+            // never ran - this is the overload the UI factory calls, and it had already set
+            // IsInitialized, so the parameterless Init() would return immediately.
             BeforeInit(factory);
+            RunInitHooks();
             OnInit(factory);
             AfterInit(factory);
         }
