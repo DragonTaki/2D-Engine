@@ -21,7 +21,7 @@ namespace Engine.UI.Widgets
         /// Menu display text
         /// </summary>
         public string Label { get; }
-        
+
         /// <summary>
         /// Menu type (enum value)
         /// </summary>
