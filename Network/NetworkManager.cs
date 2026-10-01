@@ -148,6 +148,9 @@ namespace Engine.Network
         private void StartHeartbeat()
         {
             _heartbeatTimer?.Dispose();
+            // Start the timeout window now: the last heartbeat may be from an earlier
+            // connection, which would time a reconnect out on the first tick.
+            _lastHeartbeat = DateTime.UtcNow;
             _heartbeatTimer = new Timer(_ =>
             {
                 if (!IsConnected) return;
