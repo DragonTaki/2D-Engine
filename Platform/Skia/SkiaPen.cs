@@ -27,8 +27,12 @@ namespace Engine.Platform.Skia
             set
             {
                 Native.PathEffect?.Dispose();
+                // Dash lengths are taken from the stroke width at this moment (IPen has no
+                // width setter, so it can't change afterward). A 0-width hairline still draws
+                // 1 px wide; all-zero intervals would make CreateDash return null (solid).
+                float unit = Native.StrokeWidth > 0f ? Native.StrokeWidth : 1f;
                 Native.PathEffect = value == PenDashStyle.Dash
-                    ? SKPathEffect.CreateDash(new[] { Native.StrokeWidth * 3, Native.StrokeWidth * 3 }, 0)
+                    ? SKPathEffect.CreateDash(new[] { unit * 3, unit * 3 }, 0)
                     : null;
             }
         }
