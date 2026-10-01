@@ -14,25 +14,25 @@ namespace Engine.Network
         NotDefined,
 
         // Auth
-        AuthRequest,      // 驗證請求
-        AuthResponse,     // 驗證回應
+        AuthRequest,      // Authentication request
+        AuthResponse,     // Authentication response
 
         // Room
-        JoinRoom,         // 加入房間
-        LeaveRoom,        // 離開房間
+        JoinRoom,         // Join a room
+        LeaveRoom,        // Leave a room
 
         // Chess game
-        StartGame,        // 標記遊戲開始
-        EndGame,          // 標記遊戲終止
-        GameAction,       // 棋局行為
-        TimerSync,        // 時間同步
+        StartGame,        // Marks the start of a game
+        EndGame,          // Marks the end of a game
+        GameAction,       // A game action (e.g. a move)
+        TimerSync,        // Timer synchronization
 
         // Chat
-        Chat,             // 聊天訊息
+        Chat,             // Chat message
 
         // Other
-        Server,           // 伺服器
-        Heartbeat,        // 心跳
-        Error,            // 錯誤訊息
+        Server,           // Server message
+        Heartbeat,        // Heartbeat
+        Error,            // Error message
     }
 }

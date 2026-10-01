@@ -38,7 +38,7 @@ namespace Engine.Network
                     string json = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                     var packet = Packet.Deserialize(json);
 
-                    // TODO: 根據 packet.Type 更新棋局或倒計時
+                    // TODO: update the game board or countdown timer according to packet.Type
                     //HandlePacket(packet);
 
                     BeginRead();

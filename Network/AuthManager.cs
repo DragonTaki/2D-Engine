@@ -20,7 +20,7 @@ namespace Engine.Network
         private readonly NetworkManager _networkManager;
         private readonly TaskCompletionSource<bool> _authCompletionSource = new();
 
-        // 用於兩步驗證
+        // Steps of the two-step authentication (version check, then credentials)
         private enum AuthStep
         {
             None,
@@ -31,14 +31,14 @@ namespace Engine.Network
 
         private AuthStep _currentStep = AuthStep.None;
 
-        // 測試用帳號密碼
+        // Test account credentials
         private readonly string _username = "1@test.com";
         private readonly string _password = "1";
 
         public AuthManager(NetworkManager networkManager)
         {
             _networkManager = networkManager;
-            _networkManager.OnPacketReceived += HandlePacket; // 訂閱封包回覆
+            _networkManager.OnPacketReceived += HandlePacket; // Subscribe to incoming packets (the server's replies)
         }
 
         public void SendAuth()
@@ -72,13 +72,13 @@ namespace Engine.Network
 
             if (_currentStep == AuthStep.VersionSent)
             {
-                // 等待伺服器回覆要求帳號密碼
+                // Wait for the server to ask for username/password
                 if (packet.Type == PacketType.AuthRequest && 
                     packet.Data.Trim() == "Please provide username/password")
                 {
                     Console.WriteLine("[AuthManager] Server requests credentials.");
 
-                    // Step2: 送帳號密碼
+                    // Step 2: send username/password
                     var credentialsObj = new
                     {
                         type = "credentials",

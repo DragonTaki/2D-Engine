@@ -65,11 +65,11 @@ namespace Engine.Network
 
             StartListening(_cts.Token);
 
-            // ✅ 初始化 AuthManager
+            // Initialize AuthManager
             _authManager = new AuthManager(this);
             _authManager.SendAuth();
 
-            // ✅ 等待 Auth 結果
+            // Wait for the auth result
             bool authSuccess = await _authManager.WaitForAuthResponse();
 
             if (!authSuccess)

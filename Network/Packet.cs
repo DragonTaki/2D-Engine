@@ -17,7 +17,7 @@ namespace Engine.Network
         public PacketType Type { get; set; }
         public string SenderId { get; set; } = "";
         public string RoomId { get; set; } = "";
-        public string Token { get; set; } = "";    // 驗證用
+        public string Token { get; set; } = "";    // Used for authentication
         public string Data { get; set; }
 
         private static readonly JsonSerializerOptions _options = new()
