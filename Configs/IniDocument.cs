@@ -70,7 +70,8 @@ namespace Engine.Configs
                 return false;
             }
 
-            if (text.Length > 0 && text[0] == '﻿')
+            // A leading byte-order mark (U+FEFF) is not part of the first line.
+            if (text.Length > 0 && text[0] == '\uFEFF')
                 text = text.Substring(1);
 
             var doc = new IniDocument();
