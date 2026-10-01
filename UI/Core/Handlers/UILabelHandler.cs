@@ -30,7 +30,7 @@ namespace Engine.UI.Core.Handlers
 
             SelectionStart = GetCharIndexAtPoint(e.Location);
             SelectionEnd = SelectionStart;
-            return true; // 表示事件已處理，不再往上傳遞
+            return true; // Means the event is handled and is not propagated further
         }*/
     }
 }

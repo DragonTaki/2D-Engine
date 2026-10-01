@@ -181,7 +181,7 @@ namespace Engine.UI.Core.Handlers
                     Element.Physics.Position.HasTarget = false;
                 }
             }
-            // Content is bigger than viewpoint
+            // Content is bigger than the viewport
             else
             {
                 //Console.WriteLine($"ScrollY: {ScrollY}, gap: {-(ContentHeight - Size.Y)}");

@@ -18,12 +18,12 @@ namespace Engine.UI.Core.Handlers
     public class UIButtonHandler : UIHandler<UIButton, UIButtonHandler, UIButtonRenderer>
     {
 
-        // 按鈕點擊 Action
+        // Action invoked when the button is clicked
 #nullable enable
         public Action? Action { get; set; }
 #nullable disable
 
-        // 高亮狀態
+        // Highlight state
         public bool IsHighlighted { get; set; } = false;
         public UIButtonHandler() { }
 
@@ -31,7 +31,7 @@ namespace Engine.UI.Core.Handlers
 
         internal override bool HandleMouseClick(IMouseEvent e)
         {
-            if (!Element.IsEnabled) return false; // 不可用時不觸發
+            if (!Element.IsEnabled) return false; // Not triggered while disabled
             Action?.Invoke();
             return true;
         }

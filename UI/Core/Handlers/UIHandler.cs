@@ -47,7 +47,7 @@ namespace Engine.UI.Core.Handlers
 
         internal override bool HandleMouseDown(IMouseEvent e)
         {
-            return false;  // The default is not to process, and the subclass can return true to indicate successful processing
+            return false;  // By default the event is not handled; a subclass returns true to indicate it handled it
         }
 
         internal override bool HandleMouseMove(IMouseEvent e)

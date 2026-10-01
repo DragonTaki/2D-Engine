@@ -26,7 +26,7 @@ namespace Engine.UI.Core.Handlers
         public event Action<string> OnMessageAdded;
         
         /// <summary>
-        /// 新增一則訊息，使用預設文字顏色與樣式
+        /// Adds a message using the text box's default text color and plain style.
         /// </summary>
         public void AddMessage(string msg)
         {
@@ -34,19 +34,19 @@ namespace Engine.UI.Core.Handlers
         }
 
         /// <summary>
-        /// 新增一則訊息，可自訂文字顏色與樣式
+        /// Adds a message with a custom text color and style.
         /// </summary>
         public void AddMessage(string msg, Color color, bool bold = false, bool italic = false)
         {
-            // 將訊息包成 TextFragment 並加入 UITextBox
+            // Append the message as a line of text to the UITextBox (not wrapped in a TextFragment)
             TextBox.AppendLine(msg, color, bold, italic);
 
-            // 保留原本事件通知
+            // Keep the original event notification
             OnMessageAdded?.Invoke(msg);
         }
 
         /// <summary>
-        /// 新增一則多色訊息
+        /// Adds a multi-colored message (a sequence of text fragments shown as one line).
         /// </summary>
         public void AddMessage(IEnumerable<TextFragment> fragments)
         {
@@ -57,7 +57,7 @@ namespace Engine.UI.Core.Handlers
             // One message = one line of inline runs (it used to become one line per fragment).
             TextBox.AppendFragmentLine(list);
 
-            // 可以傳送事件，也可改為傳 fragments
+            // TODO: The event currently carries the plain concatenated text; it could pass the fragments instead.
             OnMessageAdded?.Invoke(string.Concat(list.Select(f => f.Text)));
         }
     }
