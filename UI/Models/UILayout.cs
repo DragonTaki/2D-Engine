@@ -73,7 +73,7 @@ namespace Engine.UI.Models
         /// remain fixed relative to the parent container.
         /// <para>
         /// For example, <see cref="Anchor.TopLeft"/> keeps the element attached to
-        /// the parent’s top-left corner even if the parent resizes.
+        /// the parent's top-left corner even if the parent resizes.
         /// </para>
         /// <para>
         /// Legacy mode only. Anchoring both opposite edges (<see cref="Anchor.StretchX"/> /
@@ -85,9 +85,9 @@ namespace Engine.UI.Models
         public Anchor Anchor { get => _anchor; set => Set(ref _anchor, value); }
 
         /// <summary>
-        /// Gets or sets the margin offset from the parent’s edges, measured in pixels.
+        /// Gets or sets the margin offset from the parent's edges, measured in pixels.
         /// <para>
-        /// Legacy mode: spacing between the element’s anchored edge and its parent boundaries.
+        /// Legacy mode: spacing between the element's anchored edge and its parent boundaries.
         /// Layout system: space around the element's border box (CSS <c>margin</c>); it is
         /// excluded from the element's size and kept free between it and its neighbours.
         /// </para>
@@ -130,7 +130,7 @@ namespace Engine.UI.Models
 
         /// <summary>
         /// Gets or sets a value indicating whether this layout should ignore
-        /// the parent’s layout rules (e.g., for scrollable content or overlay layers).
+        /// the parent's layout rules (e.g., for scrollable content or overlay layers).
         /// <para>
         /// When <see langword="true"/>, the parent container will not reposition or resize
         /// this element automatically - neither the legacy anchor rules nor the layout
