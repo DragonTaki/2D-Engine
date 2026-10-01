@@ -10,7 +10,7 @@
 namespace Engine.UI.Core.Interfaces
 {
     /// <summary>
-    /// Interface for objects that require periodic update calls, 
+    /// Interface for objects that require periodic update calls,
     /// typically invoked once per frame in the UI or game loop.
     /// </summary>
     /// <remarks>

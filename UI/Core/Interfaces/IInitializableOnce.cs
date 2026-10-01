@@ -9,13 +9,22 @@
 
 namespace Engine.UI.Core.Interfaces
 {
+    /// <summary>
+    /// Interface for objects that require one-time, argument-less initialization.
+    /// </summary>
     public interface IInitializableOnce
     {
+        /// <summary>
+        /// Indicates whether the object has already been initialized.
+        /// </summary>
         bool IsInitialized { get; }
 
+        /// <summary>
+        /// Initializes the object. Should be called only once; subsequent calls may be ignored.
+        /// </summary>
         void Init();
     }
-    
+
     /// <summary>
     /// Interface for objects that require one-time initialization.
     /// </summary>
