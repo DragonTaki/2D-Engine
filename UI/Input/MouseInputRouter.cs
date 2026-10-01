@@ -24,7 +24,8 @@ namespace Engine.UI.Input
         #region Fields and Properties
 
         /// <summary>
-        /// The root UI element that receives mouse events.
+        /// The root UI element that receives mouse events. May be null (e.g. before the UI
+        /// tree is built): events then reach only the input handlers, like in <c>UIManager</c>.
         /// </summary>
         public UIElement Root { get; set; }
 
@@ -135,7 +136,7 @@ namespace Engine.UI.Input
             }
 
             // Hit test the UI root to find pressed element
-            _pressedElement = (UIElement)Root.HitTestDeep(e.Location);
+            _pressedElement = (UIElement)Root?.HitTestDeep(e.Location);
             //Console.WriteLine($"[MouseDown] _pressedElement = {_pressedElement?.GetType().Name}");
 
             // Forward MouseDown to the pressed element if not handled by other handlers
@@ -182,7 +183,7 @@ namespace Engine.UI.Input
             }
 
             // Then process the UI mouse event
-            if (Root.OnMouseMove(e))
+            if (Root?.OnMouseMove(e) == true)
             {
                 return true;
             }
@@ -235,7 +236,7 @@ namespace Engine.UI.Input
         public bool OnMouseWheel(IMouseEvent e)
         {
             // Process UI mouse event first
-            if (Root.OnMouseWheel(e))
+            if (Root?.OnMouseWheel(e) == true)
                 return true;
 
             // Then the other mouse event _handlers
@@ -275,7 +276,7 @@ namespace Engine.UI.Input
         public void EndFrame()
         {
             // End the frame for the UI tree first
-            Root.EndFrame();
+            Root?.EndFrame();
 
             // Reset additional handlers
             foreach (var h in _handlers) h?.EndFrame();
