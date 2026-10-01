@@ -13,8 +13,8 @@ namespace Engine.Platform
 {
     /// <summary>
     /// A fill style (solid color or gradient) used by <see cref="IGraphics"/>
-    /// fill operations. Backend-specific; created via <see cref="IGraphics"/>
-    /// factory methods, never constructed directly by callers.
+    /// fill operations. Backend-specific; created via <see cref="IGraphicsFactory"/>
+    /// methods, never constructed directly by callers.
     /// </summary>
     public interface IBrush : IDisposable
     {

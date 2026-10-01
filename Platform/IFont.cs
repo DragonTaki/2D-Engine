@@ -35,7 +35,7 @@ namespace Engine.Platform
     /// <summary>
     /// A concrete font (family + size + style) used by <see cref="IGraphics"/>
     /// text operations. Always measured in pixels. Created via
-    /// <see cref="IGraphics.CreateFont(IFontFamily, float, FontStyleFlags)"/>.
+    /// <see cref="IGraphicsFactory.CreateFont(IFontFamily, float, FontStyleFlags)"/>.
     /// </summary>
     public interface IFont : IDisposable
     {

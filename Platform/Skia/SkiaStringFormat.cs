@@ -16,9 +16,8 @@ namespace Engine.Platform.Skia
     /// equivalent object; <see cref="SkiaGraphics"/> reads these fields
     /// directly when laying out a <c>DrawString(..., RectangleF, IStringFormat)</c>
     /// call. <see cref="WordWrap"/> is implemented (see
-    /// <c>SkiaGraphics.WrapText</c>). <see cref="EllipsisTrimming"/> is
-    /// still not — an overflowing final line is just left as-is, not cut
-    /// off with "…" — a known gap, see docs/PLATFORM-ABSTRACTION.md.
+    /// <c>SkiaGraphics.WrapText</c>), and so is <see cref="EllipsisTrimming"/>
+    /// (see <c>SkiaGraphics.TrimWithEllipsis</c>).
     /// </summary>
     internal sealed class SkiaStringFormat : IStringFormat
     {

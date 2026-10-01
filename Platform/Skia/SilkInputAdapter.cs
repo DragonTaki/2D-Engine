@@ -41,7 +41,7 @@ namespace Engine.Platform.Skia
         /// Getting that into a coordinate a renderer or handler can actually
         /// use takes two conversions: logical points → physical framebuffer
         /// pixels (HiDPI/Retina displays scale those by the display's scale
-        /// factor), then framebuffer pixels → the fixed-aspect content
+        /// factor), then framebuffer pixels → the design-space content
         /// coordinate space every layout constant assumes (see
         /// <c>GlobalViewport</c>, which OnRender's <c>PushTransform</c>
         /// applies on the drawing side). Skipping either step means clicks

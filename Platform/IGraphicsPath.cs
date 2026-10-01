@@ -13,10 +13,10 @@ using System.Drawing;
 namespace Engine.Platform
 {
     /// <summary>
-    /// A vector path built from lines and arcs, used by
+    /// A vector path built from lines, arcs and Bezier curves, used by
     /// <see cref="IGraphics.FillPath(IBrush, IGraphicsPath)"/> and
     /// <see cref="IGraphics.DrawPath(IPen, IGraphicsPath)"/>. Created via
-    /// <see cref="IGraphics.CreatePath"/>.
+    /// <see cref="IGraphicsFactory.CreatePath"/>.
     /// </summary>
     public interface IGraphicsPath : IDisposable
     {

@@ -17,7 +17,7 @@ namespace Engine.Platform.WinForms
     /// <summary>
     /// GDI+/WinForms-backed <see cref="IMouseEvent"/>. <c>MouseEventArgs</c>
     /// reports position in the form's client-area pixels; that's rescaled
-    /// into the fixed-aspect content coordinate space every layout constant
+    /// into the design-space content coordinate space every layout constant
     /// assumes (see <c>GlobalViewport</c>, which <c>MainForm.OnPaint</c>'s
     /// <c>PushTransform</c> applies on the drawing side) before exposing it.
     /// </summary>

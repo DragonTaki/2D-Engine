@@ -97,8 +97,8 @@ namespace Engine.Platform.Skia
 
             float totalHeight = lineHeight * Math.Max(lines.Count, 1);
 
-            // Top of the text block, offset down by ascent per line so the
-            // glyphs' top edge lands at the aligned position.
+            // Top of the text block at the aligned position; each line's baseline is
+            // then placed one ascent below its line top (see baselineY below).
             float startTopY = fmt.LineAlignment switch
             {
                 TextAlign.Center => bounds.Y + (bounds.Height - totalHeight) / 2f,

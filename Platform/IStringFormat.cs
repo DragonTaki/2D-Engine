@@ -43,7 +43,7 @@ namespace Engine.Platform
     /// <summary>
     /// Text layout options passed to
     /// <see cref="IGraphics.DrawString(string, IFont, IBrush, System.Drawing.RectangleF, IStringFormat)"/>.
-    /// Created via <see cref="IGraphics.CreateStringFormat"/>.
+    /// Created via <see cref="IGraphicsFactory.CreateStringFormat"/>.
     /// </summary>
     public interface IStringFormat : IDisposable
     {

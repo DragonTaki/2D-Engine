@@ -69,7 +69,7 @@ namespace Engine.Platform.WinForms
         public void Start() => StartTimers();
 
         /// <summary>
-        /// Stops the animation timer.
+        /// Stops the animation timer and the stopwatch.
         /// </summary>
         public void Stop() => StopTimers();
 
@@ -84,7 +84,7 @@ namespace Engine.Platform.WinForms
         }
 
         /// <summary>
-        /// Stops the animation timer.
+        /// Stops the animation timer and the stopwatch.
         /// </summary>
         public void StopTimers()
         {

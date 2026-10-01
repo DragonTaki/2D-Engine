@@ -15,9 +15,9 @@ namespace Engine.Platform
     /// <summary>
     /// An active drawing surface for one frame/paint pass. Every renderer in
     /// this codebase draws through this interface instead of a concrete
-    /// backend's native graphics type, so the backend (currently GDI+ via
-    /// WinForms — see <c>Engine/Platform/WinForms/</c>) can be swapped
-    /// without touching any renderer.
+    /// backend's native graphics type, so the backend (GDI+ via WinForms — see
+    /// <c>Engine/Platform/WinForms/</c> — or Skia — see <c>Engine/Platform/Skia/</c>)
+    /// can be swapped without touching any renderer.
     /// </summary>
     public interface IGraphics : IDisposable
     {
@@ -53,7 +53,7 @@ namespace Engine.Platform
         /// Pushes a combined translate + uniform-scale transform onto the
         /// drawing state (saving whatever state — including clip — was
         /// active before), so everything drawn afterward is offset and
-        /// scaled accordingly. Used once per frame to map the fixed-aspect
+        /// scaled accordingly. Used once per frame to map the design-space
         /// content coordinate space onto the actual window size — see
         /// <c>Engine.Globals.GlobalViewport</c>. Must be paired with exactly
         /// one matching <see cref="PopTransform"/>.

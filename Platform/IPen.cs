@@ -34,7 +34,7 @@ namespace Engine.Platform
 
     /// <summary>
     /// A stroke style used by <see cref="IGraphics"/> outline operations.
-    /// Created via <see cref="IGraphics.CreatePen(Color, float)"/>.
+    /// Created via <see cref="IGraphicsFactory.CreatePen(Color, float)"/>.
     /// </summary>
     public interface IPen : IDisposable
     {

@@ -13,7 +13,7 @@ namespace Engine.Platform
 {
     /// <summary>
     /// A 2D affine transform used to reshape an <see cref="IGraphicsPath"/>.
-    /// Created via <see cref="IGraphics.CreateMatrix"/>.
+    /// Created via <see cref="IGraphicsFactory.CreateMatrix"/>.
     /// </summary>
     /// <remarks>
     /// Calls compose in GDI+'s default prepend order: each new transform is applied to a

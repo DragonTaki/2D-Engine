@@ -15,7 +15,7 @@ namespace Engine.Platform
     /// <summary>
     /// An arbitrarily-shaped fillable area, used by
     /// <see cref="IGraphics.FillRegion(IBrush, IRegion)"/>. Created via
-    /// <see cref="IGraphics.CreateRegion(IGraphicsPath)"/>.
+    /// <see cref="IGraphicsFactory.CreateRegion(IGraphicsPath)"/>.
     /// </summary>
     public interface IRegion : IDisposable
     {
