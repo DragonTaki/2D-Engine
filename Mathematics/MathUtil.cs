@@ -77,6 +77,7 @@ namespace Engine.Mathematics
             // Map the sigmoid value to the range [minOutput, maxOutput]
             return minOutput + sigmoidValue * (maxOutput - minOutput);
         }
+
         public static float LogMap(float inputValue, float minInput, float maxInput, float minOutput, float maxOutput)
         {
             // Degenerate input range: every input maps to the start of the output range
@@ -117,6 +118,7 @@ namespace Engine.Mathematics
         {
             return from + (to - from) * t;
         }
+
         public static Vector2F Lerp(Vector2F from, Vector2F to, float t)
         {
             float x = from.X + (to.X - from.X) * t;
