@@ -31,6 +31,9 @@ namespace Engine.Network
 
         private readonly object _lock = new();
 
+        // Serializes Send: the heartbeat timer thread and callers write concurrently.
+        private readonly object _sendLock = new();
+
         public bool IsConnected => _client?.Connected ?? false;
 
         public event Action<Packet> OnPacketReceived;
@@ -264,13 +267,17 @@ namespace Engine.Network
 
         public void Send(Packet packet)
         {
-            if (_client?.Connected == true && _stream != null)
+            // One read of the field: Disconnect may null it between the check and the write.
+            var stream = _stream;
+            if (_client?.Connected == true && stream != null)
             {
                 try
                 {
                     string json = Packet.Serialize(packet) + "\n";
                     byte[] data = System.Text.Encoding.UTF8.GetBytes(json);
-                    _stream.Write(data, 0, data.Length);
+                    // One packet at a time, so two packets' bytes never interleave on the stream.
+                    lock (_sendLock)
+                        stream.Write(data, 0, data.Length);
                 }
                 catch
                 {
