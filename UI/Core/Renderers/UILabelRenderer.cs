@@ -126,17 +126,15 @@ namespace Engine.UI.Core.Renderers
         /// <param name="element">The label element being rendered.</param>
         public override void OnRender(IGraphics g, UILabel element)
         {
-            var _label = (UILabel)element;
-
-            bool clipped = _label.ClipRect.HasValue;
+            bool clipped = element.ClipRect.HasValue;
             if (clipped)
-                g.SetClip(_label.ClipRect.Value);
+                g.SetClip(element.ClipRect.Value);
 
             // try/finally: the fragments branch returns early, and an unpaired SetClip
             // leaks the clip on GDI+ and unbalances Skia's canvas save stack.
             try
             {
-                RectangleF rect = _label.GetCurrentAbsoluteBounds();
+                RectangleF rect = element.GetCurrentAbsoluteBounds();
 
                 if (Label.Fragments != null && Label.Fragments.Count > 0)
                 {

@@ -16,6 +16,11 @@ using Engine.UI.Core.Handlers;
 
 namespace Engine.UI.Core.Renderers
 {
+    /// <summary>
+    /// Renderer for <see cref="UITextBox{TElement, THandler, TRenderer}"/>: the container
+    /// <c>Style</c>, the background color, a debug outline, and the viewport clip for the
+    /// line labels (which are drawn as children).
+    /// </summary>
     public class UITextBoxRenderer<TElement, THandler, TRenderer> : UIContainerRenderer<TElement, THandler, TRenderer>
         where TElement : UITextBox<TElement, THandler, TRenderer>
         where THandler : UITextBoxHandler<TElement, THandler, TRenderer>

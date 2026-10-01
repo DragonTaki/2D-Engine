@@ -22,10 +22,10 @@ namespace Engine.UI.Core.Renderers
     /// <typeparam name="THandler">The type of container handler this renderer is associated with.</typeparam>
     /// <typeparam name="TRenderer">The concrete renderer type (self-referencing).</typeparam>
     public class UIContainerRenderer<TElement, THandler, TRenderer>
-    : UIRenderer<TElement, THandler, TRenderer>
-    where TElement : UIContainer<TElement, THandler, TRenderer>
-    where THandler : UIContainerHandler<TElement, THandler, TRenderer>
-    where TRenderer : UIContainerRenderer<TElement, THandler, TRenderer>
+        : UIRenderer<TElement, THandler, TRenderer>
+        where TElement : UIContainer<TElement, THandler, TRenderer>
+        where THandler : UIContainerHandler<TElement, THandler, TRenderer>
+        where TRenderer : UIContainerRenderer<TElement, THandler, TRenderer>
     {
         #region Constructor
 

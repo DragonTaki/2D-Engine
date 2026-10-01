@@ -8,7 +8,6 @@
 /* ----- ----- ----- ----- */
 
 using System;
-using System.Drawing;
 
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;

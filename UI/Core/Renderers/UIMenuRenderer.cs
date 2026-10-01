@@ -13,10 +13,14 @@ using Engine.Platform;
 using Engine.Styles;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
-using Engine.UI.Core.Interfaces;
 
 namespace Engine.UI.Core.Renderers
 {
+    /// <summary>
+    /// Renderer for <see cref="UIMenu{TElement, THandler, TRenderer}"/>: the container
+    /// <c>Style</c> over the menu panel, a dashed debug outline, then the visible buttons
+    /// (clipped to the scroll viewport).
+    /// </summary>
     public class UIMenuRenderer<TElement, THandler, TRenderer> : UIContainerRenderer<TElement, THandler, TRenderer>
         where TElement : UIMenu<TElement, THandler, TRenderer>
         where THandler : UIMenuHandler<TElement, THandler, TRenderer>
