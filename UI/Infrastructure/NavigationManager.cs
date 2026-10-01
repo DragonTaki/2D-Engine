@@ -75,11 +75,13 @@ namespace Engine.UI.Infrastructure
 
             var screenType = typeof(TScreen);
             _screens.TryGetValue(screenType, out var previousInstance);
-            bool alreadyShown = previousInstance != null && _rootElement.Children.Contains(previousInstance) && !forceReload;
+            bool alreadyShown = previousInstance != null && IsShown(previousInstance) && !forceReload;
 
             // Screens being replaced get OnExit (IScreen lifecycle, e.g. the main menu closes
-            // its open submenu); re-showing the current screen isn't a transition.
-            var leaving = _rootElement.Children.Where(c => !c.IsPersistent && (c != previousInstance || forceReload)).ToList();
+            // its open submenu); re-showing the current screen isn't a transition. Only screens
+            // actually on display are leaving: a hidden one (pre-registered, or hidden with
+            // Hide) already had its OnExit, or never entered.
+            var leaving = _rootElement.Children.Where(c => !c.IsPersistent && c.IsVisible && (c != previousInstance || forceReload)).ToList();
             ClearNonPersistentChildren(_rootElement);
             foreach (var left in leaving)
                 AsScreen(left)?.OnExit();
@@ -131,7 +133,7 @@ namespace Engine.UI.Infrastructure
             if (_screens.TryGetValue(screenType, out var screen))
             {
                 _screens.Remove(screenType);
-                bool wasShown = _rootElement != null && _rootElement.Children.Contains(screen);
+                bool wasShown = IsShown(screen);
                 _rootElement?.RemoveChild(screen);
                 if (wasShown)
                     AsScreen(screen)?.OnExit();
@@ -146,10 +148,22 @@ namespace Engine.UI.Infrastructure
             var screenType = typeof(TScreen);
             if (_screens.TryGetValue(screenType, out var screen) && screen.IsVisible)
             {
+                // A screen another Show replaced is off the root but still IsVisible, and
+                // already got its OnExit then.
+                bool wasShown = IsShown(screen);
                 screen.IsVisible = false;
-                AsScreen(screen)?.OnExit();
+                if (wasShown)
+                    AsScreen(screen)?.OnExit();
             }
         }
+
+        /// <summary>
+        /// Whether <paramref name="screen"/> is on display: attached to the root and visible.
+        /// A pre-registered screen is attached but hidden until its first Show, so being a
+        /// child of the root alone doesn't mean it has entered.
+        /// </summary>
+        private bool IsShown(UIElementBase screen) =>
+            _rootElement != null && screen.IsVisible && _rootElement.Children.Contains(screen);
 
         /// <summary>
         /// Removes the root's non-persistent child screens.
