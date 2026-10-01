@@ -181,7 +181,7 @@ namespace Engine.UI.Input
                 }
             }
 
-            // Than process UI mouse event
+            // Then process the UI mouse event
             if (Root.OnMouseMove(e))
             {
                 return true;
@@ -198,7 +198,7 @@ namespace Engine.UI.Input
         /// <returns>Always returns true as the event is consumed.</returns>
         public bool OnMouseUp(IMouseEvent e)
         {
-            // Release scroll whatever
+            // Release the input handlers regardless of what was pressed
             foreach (var h in _handlers)
                 h.OnMouseUp(e);
 
@@ -235,7 +235,7 @@ namespace Engine.UI.Input
             if (Root.OnMouseWheel(e))
                 return true;
 
-            // Than other mouse event _handlers
+            // Then the other mouse event _handlers
             foreach (var h in _handlers)
                 if (h.OnMouseWheel(e)) return true;
 
@@ -271,7 +271,7 @@ namespace Engine.UI.Input
         /// </summary>
         public void EndFrame()
         {
-            // Process UI mouse event first
+            // End the frame for the UI tree first
             Root.EndFrame();
 
             // Reset additional handlers

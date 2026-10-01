@@ -48,12 +48,14 @@ namespace Engine.UI.Input
         private readonly DragHandler _dragHandler;
 
         /// <summary>
-        /// Drag helper managing threshold, delta, and movement state.
+        /// Whether the user is currently performing a drag gesture (delegates to the drag helper).
         /// </summary>
         public bool IsDragging => _dragHandler.IsDragging;
 
         /// <summary>
-        /// Optional Z-order for overlapping scroll targets.
+        /// Handler-wide Z-index required by <see cref="IScrollInputHandler"/>. Not read by this
+        /// class: the priority among overlapping targets is the per-target zIndex given to
+        /// <see cref="RegisterScrollTarget"/>.
         /// </summary>
         public int ZIndex { get; set; } = 0;
 
@@ -76,7 +78,8 @@ namespace Engine.UI.Input
             _dragHandler = new DragHandler();
             _dragHandler.OnDrag += HandleDrag;
 
-            // Ensure velocity is reset on active target (if any)
+            // Ensure velocity is reset on active target (if any). Note: _activeTarget is always
+            // null while constructing, so this currently never does anything.
             if (_activeTarget?.Physics != null)
                 _activeTarget.Physics.Velocity.Reset();
         }
@@ -191,7 +194,7 @@ namespace Engine.UI.Input
                 .OrderByDescending(t => t.ZIndex)
                 .ThenByDescending(t => t.Order))
             {
-                // If not IsVisible or not IsEnabled
+                // Skip targets that aren't interactable (hidden, disabled or not displayed) or aren't attached to a parent
                 if (!target.Element.IsInteractable || target.Element.Parent == null)
                     continue;
 
@@ -226,7 +229,7 @@ namespace Engine.UI.Input
         /// Handles MouseUp: ends drag and computes inertial velocity.
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
-        /// <returns>True if a drag was active and released; otherwise false.</returns>
+        /// <returns>Always true, as <see cref="DragHandler.OnMouseUp"/> always reports the release as handled.</returns>
         public bool OnMouseUp(IMouseEvent e)
         {
             var target = _activeTarget;
@@ -315,7 +318,7 @@ namespace Engine.UI.Input
         /// <summary>
         /// Internal callback when drag occurs, updates scroll target position.
         /// </summary>
-        /// <param name="delta">The drag delta vector since last frame.</param>
+        /// <param name="delta">The drag delta vector since the previous mouse move event.</param>
         private void HandleDrag(Vector2F delta)
         {
             if (_activeTarget.Physics == null) return;
@@ -348,7 +351,7 @@ namespace Engine.UI.Input
         {
             if (_activeTarget?.Physics == null) return;
 
-            // Only reset delta if not dragging
+            // Only reset the velocity if not dragging
             if (!IsDragging)
             {
                 _activeTarget.Physics.Velocity.Current = Vector2F.Zero;

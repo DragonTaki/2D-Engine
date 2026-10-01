@@ -81,8 +81,10 @@ namespace Engine.UI.Input
         public float DragThreshold { get; set; } = 5.0f;
 
         /// <summary>
-        /// Maximum duration (in milliseconds) allowed for a click action.
-        /// If the user releases the mouse within this time and without exceeding the distance threshold, it counts as a click.
+        /// Maximum duration (in milliseconds) for a press that has already moved past
+        /// <see cref="DragThreshold"/> to still count as a click (together with a vertical
+        /// distance within the threshold, see <see cref="OnMouseUp"/>). A press that never moved
+        /// past the threshold is a click regardless of how long it was held.
         /// </summary>
         public float DragTimeThreshold { get; set; } = 160.0f;
 
