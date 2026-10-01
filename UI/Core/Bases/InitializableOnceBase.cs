@@ -11,19 +11,29 @@ using Engine.UI.Core.Interfaces;
 
 namespace Engine.UI.Core.Bases
 {
+    /// <summary>
+    /// Abstract base class implementing <see cref="IInitializableOnce"/>.
+    /// Ensures that initialization logic only runs once per instance.
+    /// </summary>
     public abstract class InitializableOnceBase : IInitializableOnce
     {
         #region Properties
 
+        /// <summary>
+        /// Indicates whether the instance has already been initialized.
+        /// </summary>
         public bool IsInitialized { get; private set; }
 
         #endregion
 
         #region Methods
 
+        /// <summary>
+        /// Performs initialization. If the instance is already initialized, this method does nothing.
+        /// </summary>
         public void Init()
         {
-            if (IsInitialized) 
+            if (IsInitialized)
                 return;  // Skip if already initialized
 
             // Set before OnInit so a re-entrant Init call is a no-op, but roll back if
@@ -42,11 +52,15 @@ namespace Engine.UI.Core.Bases
             }
         }
 
+        /// <summary>
+        /// Initialization hook for derived classes. Runs once per successful initialization
+        /// (again only if a previous run threw).
+        /// </summary>
         protected virtual void OnInit() { }
 
         #endregion
     }
-    
+
     /// <summary>
     /// Abstract base class implementing <see cref="IInitializableOnce{TArg}"/> interface.
     /// Ensures that initialization logic only runs once per instance.
@@ -72,7 +86,7 @@ namespace Engine.UI.Core.Bases
         /// <param name="arg">The argument required for initialization.</param>
         public void Init(TArg arg)
         {
-            if (IsInitialized) 
+            if (IsInitialized)
                 return;  // Skip if already initialized
 
             // Set before OnInit so a re-entrant Init call is a no-op, but roll back if
@@ -92,8 +106,8 @@ namespace Engine.UI.Core.Bases
         }
 
         /// <summary>
-        /// Abstract method to be implemented by derived classes to provide actual initialization logic.
-        /// This method is guaranteed to be called only once.
+        /// Initialization hook for derived classes. Runs once per successful initialization
+        /// (again only if a previous run threw).
         /// </summary>
         /// <param name="arg">The argument required for initialization.</param>
         protected virtual void OnInit(TArg arg) { }

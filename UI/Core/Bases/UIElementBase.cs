@@ -9,7 +9,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Drawing;
 
 using Engine.Geometry;
@@ -561,6 +560,9 @@ namespace Engine.UI.Core.Bases
         /// </summary>
         public abstract void Update();
 
+        /// <summary>
+        /// Asks for the element to be repainted (the root forwards it to the window).
+        /// </summary>
         public abstract void RequestRedraw();
 
         /// <summary>
