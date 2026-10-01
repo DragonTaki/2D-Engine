@@ -31,7 +31,7 @@ namespace Engine.Mathematics
         }
 
         /// <summary>
-        /// Clamps a float value to a closed to zero but non zero value.
+        /// Clamps a float to be at least <paramref name="min"/> (a tiny positive value by default), so the result is never zero with the default.
         /// </summary>
         public static float ClampMinFloat(float value, float min = 0.0001f)
         {
@@ -53,7 +53,7 @@ namespace Engine.Mathematics
             // Normalize inputValue to the range [0, 1]
             float normalizedInput = (inputValue - minInput) / (maxInput - minInput);
 
-            // Map normalized values ​​to the range [minOutput, maxOutput]
+            // Map normalized values to the range [minOutput, maxOutput]
             return minOutput + normalizedInput * (maxOutput - minOutput);
         }
 
@@ -65,7 +65,7 @@ namespace Engine.Mathematics
             // Normalize inputValue to the range [0, 1]
             float normalizedInput = (inputValue - minInput) / (maxInput - minInput);
 
-            // Sigmoid function, mapping values ​​from [0, 1] to the [0, 1] interval
+            // Sigmoid function over the normalized input (the raw output spans only part of [0, 1]; rescaled below)
             float sigmoidValue = 1 / (1 + (float)Math.Exp(-10 * (normalizedInput - 0.5f))); // 10 is the smoothness factor of the adjustment
 
             // The raw logistic curve only reaches ~0.0067 / ~0.9933 at the ends; rescale so

@@ -240,7 +240,7 @@ namespace Engine.Mathematics
             return $"({X}, {Y})";
         }
 
-        // Subtraction (Unary negation)
+        // Unary negation
         /// <summary>
         /// Returns a new vector with the X and Y components negated.
         /// </summary>
@@ -406,7 +406,7 @@ namespace Engine.Mathematics
         /// <summary>
         /// Returns a normalized (unit length) version of this vector.
         /// </summary>
-        /// <returns>The normalized vector, or (0, 0) if length is too small.</returns>
+        /// <returns>The normalized vector, or (0, 0) if the length is 0.001 or less.</returns>
         public Vector2F Normalize()
         {
             float length = Length();
