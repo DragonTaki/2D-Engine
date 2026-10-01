@@ -7,6 +7,8 @@
 // Version: v1.1
 /* ----- ----- ----- ----- */
 
+using System;
+
 using Engine.Platform;
 
 namespace Engine.GraphicsUtils.GraphicsPaths
@@ -63,12 +65,12 @@ namespace Engine.GraphicsUtils.GraphicsPaths
 
             IGraphicsPath path = GraphicsBackend.Factory.CreatePath();
 
-            width = System.MathF.Max(0f, width);
-            height = System.MathF.Max(0f, height);
+            width = MathF.Max(0f, width);
+            height = MathF.Max(0f, height);
 
-            float cut = cornerRadius ?? System.Math.Min(width, height) * 0.1f;
-            cut = System.MathF.Min(cut, System.MathF.Min(width, height) / 2f); // Keep the cut within the rectangle's size
-            cut = System.MathF.Max(0f, cut); // A negative cut would make the path self-intersect
+            float cut = cornerRadius ?? Math.Min(width, height) * 0.1f;
+            cut = MathF.Min(cut, MathF.Min(width, height) / 2f); // Keep the cut within the rectangle's size
+            cut = MathF.Max(0f, cut); // A negative cut would make the path self-intersect
 
             // Build a closed path clockwise, starting from the top-left corner
             path.StartFigure();
