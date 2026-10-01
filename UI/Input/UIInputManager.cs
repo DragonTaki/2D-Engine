@@ -15,7 +15,7 @@ using Engine.UI.Core.Elements;
 namespace Engine.UI.Input
 {
     /// <summary>
-    /// Centralized manager for UI input handling. 
+    /// Centralized manager for UI input handling.
     /// Aggregates multiple IInputHandler instances and routes mouse events to them in order.
     /// Typically uses a MouseInputRouter for unified drag, scroll, and click processing.
     /// </summary>

@@ -9,10 +9,9 @@
 
 using System;
 using System.Diagnostics;
-using System.Drawing;
-using Engine.Platform;
 
 using Engine.Mathematics;
+using Engine.Platform;
 
 namespace Engine.UI.Input
 {
@@ -124,7 +123,7 @@ namespace Engine.UI.Input
             _dragLastPoint = new Vector2F(e.X, e.Y);
             _dragStartTime = Stopwatch.GetTimestamp();
             _dragLastTime = _dragStartTime;
-            
+
             _totalDragDistance = 0.0f;
 
             return true;
@@ -135,7 +134,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse event arguments containing the new cursor position.</param>
         /// <returns>
-        /// <c>true</c> if drag movement is active and processed;  
+        /// <c>true</c> if drag movement is active and processed;
         /// <c>false</c> if movement is below threshold and not yet considered as a drag.
         /// </returns>
         public bool OnMouseMove(IMouseEvent e)
@@ -190,7 +189,7 @@ namespace Engine.UI.Input
                 return true;  // Nothing to end
 
             IsDragging = false;
-            
+
             _dragLastPoint = new Vector2F(e.X, e.Y);
             _dragLastTime = Stopwatch.GetTimestamp();
 

@@ -12,12 +12,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using Engine.Platform;
 
 using Engine.Mathematics;
 using Engine.Physics;
+using Engine.Platform;
 using Engine.UI.Core.Bases;
-using Engine.UI.Core.Elements;
 
 namespace Engine.UI.Input
 {
@@ -43,6 +42,16 @@ namespace Engine.UI.Input
 #nullable disable
 
         /// <summary>
+        /// Registration counter: the tie-breaker among targets of equal z-index (later = on top).
+        /// </summary>
+        private int _nextTargetOrder;
+
+        // Recent drag steps, for the release velocity. Only the last ReleaseVelocityWindowSeconds
+        // counts: if the pointer stopped before being released, there's no fling.
+        private readonly List<(long Timestamp, Vector2F Delta)> _dragSamples = new();
+        private const double ReleaseVelocityWindowSeconds = 0.08;
+
+        /// <summary>
         /// Drag helper managing threshold, delta, and movement state.
         /// </summary>
         private readonly DragHandler _dragHandler;
@@ -60,13 +69,6 @@ namespace Engine.UI.Input
         public int ZIndex { get; set; } = 0;
 
         #endregion
-
-        private int _nextTargetOrder;
-
-        // Recent drag steps, for the release velocity. Only the last ReleaseVelocityWindow
-        // counts: if the pointer stopped before being released, there's no fling.
-        private readonly List<(long Timestamp, Vector2F Delta)> _dragSamples = new();
-        private const double ReleaseVelocityWindowSeconds = 0.08;
 
         #region Constructor
 
@@ -406,7 +408,6 @@ namespace Engine.UI.Input
         /// <summary>
         /// Behavior settings for a scroll target.
         /// </summary>
-
         public class ScrollBehavior
         {
             /// <summary>If true, allows horizontal drag movement.</summary>

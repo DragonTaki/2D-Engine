@@ -8,8 +8,8 @@
 /* ----- ----- ----- ----- */
 
 using System.Collections.Generic;
-using Engine.Platform;
 
+using Engine.Platform;
 using Engine.UI.Core.Elements;
 
 namespace Engine.UI.Input
@@ -121,7 +121,7 @@ namespace Engine.UI.Input
             _dragStarted = false;
             _hasDragged = false;
             //Console.WriteLine($"[MouseDown] MouseDown start");
-            
+
             bool handled = false;
 
             // Forward MouseDown to other registered input handlers first

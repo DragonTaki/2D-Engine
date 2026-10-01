@@ -13,14 +13,13 @@ using System.Drawing;
 using Engine.Mathematics;
 using Engine.Physics;
 using Engine.UI.Core.Bases;
-using Engine.UI.Core.Elements;
 using static Engine.UI.Input.ScrollInputHandler;
 
 namespace Engine.UI.Input
 {
     /// <summary>
     /// Defines the contract for all scroll input handler modules used in the UI system.
-    /// Implementations are responsible for processing drag-based scroll gestures, 
+    /// Implementations are responsible for processing drag-based scroll gestures,
     /// managing multiple scrollable targets, and coordinating interactions between UI layers.
     /// </summary>
     /// <remarks>
@@ -93,17 +92,17 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="location">The current mouse cursor position (in screen coordinates).</param>
         /// <returns>
-        /// <c>true</c> if the drag is occurring within the active scrollable region;  
+        /// <c>true</c> if the drag is occurring within the active scrollable region;
         /// otherwise, <c>false</c>.
         /// </returns>
         bool IsDraggingWithinActiveTarget(Vector2F location);
 
         /// <summary>
-        /// Checks if the accumulated movement has exceeded the configured drag threshold, 
+        /// Checks if the accumulated movement has exceeded the configured drag threshold,
         /// allowing scroll motion to begin.
         /// </summary>
         /// <returns>
-        /// <c>true</c> if the drag distance exceeds the motion threshold;  
+        /// <c>true</c> if the drag distance exceeds the motion threshold;
         /// otherwise, <c>false</c>.
         /// </returns>
         bool HasMovedEnoughToDrag();

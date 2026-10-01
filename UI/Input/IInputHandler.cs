@@ -30,13 +30,13 @@ namespace Engine.UI.Input
     public interface IInputHandler
     {
         #region Mouse Event Handlers
-        
+
         /// <summary>
         /// Called when the mouse button is pressed down.
         /// </summary>
         /// <param name="e">Mouse event data including button, click count, and coordinates.</param>
         /// <returns>
-        /// <c>true</c> if the handler has processed the mouse down event;  
+        /// <c>true</c> if the handler has processed the mouse down event;
         /// otherwise, <c>false</c> if the event should continue to other handlers.
         /// </returns>
         bool OnMouseDown(IMouseEvent e);
@@ -46,7 +46,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse event data containing new cursor position.</param>
         /// <returns>
-        /// <c>true</c> if movement is handled (e.g., during dragging);  
+        /// <c>true</c> if movement is handled (e.g., during dragging);
         /// <c>false</c> if ignored or below movement threshold.
         /// </returns>
         bool OnMouseMove(IMouseEvent e);
@@ -57,7 +57,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse event data including release position and button information.</param>
         /// <returns>
-        /// <c>true</c> if release was processed;  
+        /// <c>true</c> if release was processed;
         /// <c>false</c> if not applicable for this handler.
         /// </returns>
         bool OnMouseUp(IMouseEvent e);
@@ -68,7 +68,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse wheel event data, including delta value and modifier keys.</param>
         /// <returns>
-        /// <c>true</c> if the handler processed the wheel event (e.g., scrolling content);  
+        /// <c>true</c> if the handler processed the wheel event (e.g., scrolling content);
         /// otherwise, <c>false</c>.
         /// </returns>
         bool OnMouseWheel(IMouseEvent e);
@@ -78,7 +78,7 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="e">Mouse event data, including click position and button.</param>
         /// <returns>
-        /// <c>true</c> if the handler handled the click event;  
+        /// <c>true</c> if the handler handled the click event;
         /// <c>false</c> if unhandled and should propagate further.
         /// </returns>
         bool OnMouseClick(IMouseEvent e);
