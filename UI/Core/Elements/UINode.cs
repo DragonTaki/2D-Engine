@@ -15,8 +15,11 @@ namespace Engine.UI.Core.Elements
 {
     /// <summary>
     /// A generic node element that does not render itself. Its <see cref="HitTest"/> always
-    /// succeeds, but it is never <see cref="IsInteractable"/>, so deep hit testing
-    /// (<c>HitTestDeep</c>) never returns the node itself - only its interactable descendants.
+    /// succeeds, but it is never <see cref="IsInteractable"/>: a parent's deep hit test
+    /// (<c>HitTestDeep</c>) skips it and returns only its interactable descendants, and it
+    /// ignores mouse events itself. A top-level <c>HitTestDeep</c> called on the node (e.g.
+    /// <c>Root.HitTestDeep</c> in the input router) does return the node when no descendant
+    /// is hit - the "nothing else here" result, whose mouse handlers then do nothing.
     /// Serves as a structural container for other UI elements in the UI hierarchy.
     /// </summary>
     public abstract class UINode : UIElement
@@ -49,8 +52,9 @@ namespace Engine.UI.Core.Elements
         #region Methods
 
         /// <summary>
-        /// Always returns true: the node's own bounds test passes for any point. Note that
-        /// <c>HitTestDeep</c> still skips the node itself because <see cref="IsInteractable"/> is false.
+        /// Always returns true: the node's own bounds test passes for any point. A parent's
+        /// <c>HitTestDeep</c> still skips the node because <see cref="IsInteractable"/> is false
+        /// (only a top-level call on the node itself can return it, see the class remarks).
         /// </summary>
         /// <param name="point">The point in absolute coordinates to test against this element.</param>
         /// <returns>Always returns <c>true</c>.</returns>
