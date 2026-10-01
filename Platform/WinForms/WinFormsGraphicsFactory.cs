@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
+using System.IO;
 
 namespace Engine.Platform.WinForms
 {
@@ -39,8 +40,8 @@ namespace Engine.Platform.WinForms
             var brush = new LinearGradientBrush(bounds, Color.Empty, Color.Empty, mode);
             brush.InterpolationColors = new ColorBlend
             {
-                Positions = System.Array.ConvertAll(stops, s => s.position),
-                Colors = System.Array.ConvertAll(stops, s => s.color),
+                Positions = Array.ConvertAll(stops, s => s.position),
+                Colors = Array.ConvertAll(stops, s => s.color),
             };
             return new WinFormsBrush(brush);
         }
@@ -49,15 +50,15 @@ namespace Engine.Platform.WinForms
 
         public void LoadFontFamily(string key, string filePath)
         {
-            if (!System.IO.File.Exists(filePath))
-                throw new System.IO.FileNotFoundException($"Font file not found: {filePath}");
+            if (!File.Exists(filePath))
+                throw new FileNotFoundException($"Font file not found: {filePath}");
 
             var collection = new PrivateFontCollection();
             collection.AddFontFile(filePath);
             if (collection.Families.Length == 0)
             {
                 collection.Dispose();
-                throw new System.IO.InvalidDataException($"No font family could be loaded from: {filePath}");
+                throw new InvalidDataException($"No font family could be loaded from: {filePath}");
             }
 
             _loadedFontFiles.Add(collection);
