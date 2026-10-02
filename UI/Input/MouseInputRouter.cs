@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/15
-// Update Date: 2025/05/15
-// Version: v1.0
+// Update Date: 2026/10/02
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System.Collections.Generic;
@@ -66,6 +66,15 @@ namespace Engine.UI.Input
         /// </summary>
         private UIElement _pressedElement = null;
 
+        /// <summary>
+        /// The pressed element's handler while it has captured the pointer (a press-drag-release
+        /// it takes for itself, see <see cref="IPointerCaptureTarget"/>), or null.
+        /// </summary>
+        private IPointerCaptureTarget _capture = null;
+
+        /// <summary>Whether an element has captured the pointer (from its press until the release).</summary>
+        public bool HasCapture => _capture != null;
+
         #endregion
 
         #region Constructor
@@ -106,6 +115,7 @@ namespace Engine.UI.Input
         /// </summary>
         public void CancelInput()
         {
+            ReleaseCapture();
             _scrollHandler?.CancelDrag();
             _pressedElement = null;
             _dragStarted = false;
@@ -124,6 +134,18 @@ namespace Engine.UI.Input
             //Console.WriteLine($"[MouseDown] MouseDown start");
 
             bool handled = false;
+            ReleaseCapture();
+
+            // A press on an element that captures the pointer (e.g. a slider) goes to that element
+            // only: the other handlers - the drag-scroll - never see it, so the page doesn't scroll.
+            var hit = (UIElement)Root?.HitTestDeep(e.Location);
+            if (hit?.HandlerBase is IPointerCaptureTarget capture && capture.CapturesPress(e.Location))
+            {
+                _capture = capture;
+                _pressedElement = hit;
+                _pressedElement.OnMouseDown(e);
+                return true;
+            }
 
             // Forward MouseDown to other registered input handlers first
             foreach (var h in _handlers)
@@ -135,8 +157,8 @@ namespace Engine.UI.Input
                 }
             }
 
-            // Hit test the UI root to find pressed element
-            _pressedElement = (UIElement)Root?.HitTestDeep(e.Location);
+            // The element under the press (hit-tested above, before any handler ran)
+            _pressedElement = hit;
             //Console.WriteLine($"[MouseDown] _pressedElement = {_pressedElement?.GetType().Name}");
 
             // Forward MouseDown to the pressed element if not handled by other handlers
@@ -157,6 +179,14 @@ namespace Engine.UI.Input
         /// <returns>True if the event was handled by scroll or UI; otherwise false.</returns>
         public bool OnMouseMove(IMouseEvent e)
         {
+            // While captured, every move goes straight to the capturing element (wherever the
+            // mouse is), and nothing else sees it.
+            if (_capture != null)
+            {
+                _pressedElement?.OnMouseMove(e);
+                return true;
+            }
+
             //Console.WriteLine($"[MouseMove] _dragStarted = {_dragStarted}, _hasDragged = {_hasDragged}");
             // Event _handlers first, then we know if is dragging or not
             foreach (var h in _handlers)
@@ -221,6 +251,9 @@ namespace Engine.UI.Input
                 _pressedElement = null;  // reset
             }
 
+            // The release was delivered: the capture (if any) is over.
+            ReleaseCapture();
+
             // Reset drag state (both flags: IsDragging stayed true after the release until
             // the next MouseDown when only _dragStarted was cleared here)
             _dragStarted = false;
@@ -235,6 +268,10 @@ namespace Engine.UI.Input
         /// <returns>True if the event was handled by any handler; otherwise false.</returns>
         public bool OnMouseWheel(IMouseEvent e)
         {
+            // No wheel scrolling in the middle of a captured drag (e.g. under a slider's knob).
+            if (_capture != null)
+                return true;
+
             // Process UI mouse event first
             if (Root?.OnMouseWheel(e) == true)
                 return true;
@@ -264,6 +301,14 @@ namespace Engine.UI.Input
             // All handling by mouse up, it will decided user is drag or click
 
             return false;
+        }
+
+        /// <summary>Ends the pointer capture (if any) and tells the capturing handler.</summary>
+        private void ReleaseCapture()
+        {
+            var capture = _capture;
+            _capture = null;
+            capture?.OnCaptureLost();
         }
 
         #endregion
