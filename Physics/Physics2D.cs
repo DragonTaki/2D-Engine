@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/11
-// Update Date: 2026/09/23
-// Version: v1.5
+// Update Date: 2026/10/02
+// Version: v1.6
 /* ----- ----- ----- ----- */
 
 using System;
@@ -96,7 +96,10 @@ namespace Engine.Physics
             // effect accelerations) was tuned as "per tick" when this integrated
             // once per call. Integrating in seconds silently rescaled all of them
             // (velocities 60x slower, spring pull ~3600x weaker - no scroll rebound).
-            float deltaTime = GlobalTime.Timer.DeltaTimeInSeconds * TimerSettings.GameAnimationFPS;
+            // The reference tick rate is a fixed 60 Hz (TimerSettings.PhysicsReferenceTickRate),
+            // not the frame rate the player chose (TimerSettings.GameAnimationFPS): the frame rate
+            // only changes how many steps there are, never what one tick means.
+            float deltaTime = GlobalTime.Timer.DeltaTimeInSeconds * TimerSettings.PhysicsReferenceTickRate;
 
             // Integrate all sources of acceleration
             Acceleration.Target = Vector2F.Zero;
@@ -174,11 +177,15 @@ namespace Engine.Physics
                 }
             }
 
-            // Interpolate current acceleration towards target acceleration
+            // Interpolate current acceleration towards target acceleration. AccelerationLerpFactor
+            // is the share closed per reference tick; over deltaTime ticks the remaining gap
+            // shrinks by (1 - factor)^deltaTime, so the approach takes the same real time at any
+            // frame rate (at 60 fps deltaTime is 1 and this is exactly the old per-call lerp).
+            float lerpAmount = 1f - MathF.Pow(1f - AccelerationLerpFactor, Math.Max(0f, deltaTime));
             Acceleration.Current = Vector2F.Lerp(
                 Acceleration.Current,
                 Acceleration.Target,
-                AccelerationLerpFactor
+                lerpAmount
             );
 
             // Update velocity (semi-implicit Euler: scale by deltaTime, not by "one tick")

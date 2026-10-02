@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/07
-// Update Date: 2025/05/10
-// Version: v2.0
+// Update Date: 2026/10/02
+// Version: v2.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -18,6 +18,10 @@ namespace Engine.Platform.WinForms
     /// <summary>
     /// Timer manager that uses a Stopwatch and a Windows Forms Timer
     /// to provide a fixed interval animation timer with delta time calculation.
+    /// The interval follows <see cref="TimerSettings.GameAnimationFPS"/> (also when it changes
+    /// at runtime). A WinForms timer is driven by window messages and the system timer
+    /// resolution (about 15.6 ms by default on Windows), so it rarely ticks faster than about
+    /// 64 times per second whatever the setting; delta time is measured, so motion stays right.
     /// </summary>
     public class WinFormsTimerProvider : ITimerProvider, IDisposable
     {
@@ -49,6 +53,7 @@ namespace Engine.Platform.WinForms
             _lastAnimationTimestamp = 0;
 
             _animationTimer = new Timer { Interval = TimerSettings.GameAnimationInterval };
+            TimerSettings.GameAnimationFpsChanged += OnGameAnimationFpsChanged;
             _animationTimer.Tick += (s, e) =>
             {
                 if (!_animationStopwatch.IsRunning) return;
@@ -62,6 +67,12 @@ namespace Engine.Platform.WinForms
                 OnAnimationFrame?.Invoke();
             };
         }
+
+        /// <summary>The player changed the frame rate: tick at the new interval (on the UI thread, where settings change).</summary>
+        // Same CA1416 exemption as the WinForms input code (this file only runs in the WinForms launcher).
+#pragma warning disable CA1416
+        private void OnGameAnimationFpsChanged(int fps) => _animationTimer.Interval = TimerSettings.GameAnimationInterval;
+#pragma warning restore CA1416
 
         /// <summary>
         /// Starts the animation stopwatch and timer.
@@ -94,10 +105,12 @@ namespace Engine.Platform.WinForms
         }
 
         /// <summary>
-        /// Stops and releases the underlying WinForms timer (a native window-message timer).
+        /// Stops and releases the underlying WinForms timer (a native window-message timer) and
+        /// stops following frame rate changes.
         /// </summary>
         public void Dispose()
         {
+            TimerSettings.GameAnimationFpsChanged -= OnGameAnimationFpsChanged;
             StopTimers();
             _animationTimer.Dispose();
         }
