@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/16
-// Update Date: 2025/05/16
-// Version: v1.0
+// Update Date: 2026/10/02
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System.Collections.Generic;
@@ -28,6 +28,13 @@ namespace Engine.UI.Input
         /// to UI root elements and scroll handlers.
         /// </summary>
         public MouseInputRouter MouseRouter { get; }
+
+        /// <summary>
+        /// Who receives the keyboard: a mouse press focuses the pressed element's handler when it
+        /// is an <see cref="IKeyboardInputTarget"/> (and unfocuses otherwise); text input and
+        /// editing keys (<see cref="OnTextInput"/>, <see cref="OnKeyDown"/>) go to it.
+        /// </summary>
+        public KeyboardFocus Keyboard { get; } = new KeyboardFocus();
 
         /// <summary>
         /// Additional registered general input handlers to receive forwarded events.
@@ -92,6 +99,10 @@ namespace Engine.UI.Input
         /// <returns>True if the router or any general handler handled the event.</returns>
         public bool OnMouseDown(IMouseEvent e)
         {
+            // Keyboard focus follows the press: the pressed element's handler when it takes
+            // keyboard input, otherwise nobody (pressing elsewhere ends an edit).
+            Keyboard.SetFocus(MouseRouter.Root?.HitTestDeep(e.Location)?.HandlerBase as IKeyboardInputTarget);
+
             bool handled = MouseRouter.OnMouseDown(e);
 
             // Every registered general handler observes every event (a handler that missed
@@ -169,6 +180,18 @@ namespace Engine.UI.Input
 
             return handled;
         }
+
+        #endregion
+
+        #region Keyboard Routing
+
+        /// <summary>A typed character (from the windowing backend): goes to the keyboard focus.</summary>
+        /// <returns>Whether the focused target used it.</returns>
+        public bool OnTextInput(char c) => Keyboard.OnTextInput(c);
+
+        /// <summary>An editing key pressed (from the windowing backend): goes to the keyboard focus.</summary>
+        /// <returns>Whether the focused target used it.</returns>
+        public bool OnKeyDown(UIKey key) => Keyboard.OnKey(key);
 
         #endregion
 
