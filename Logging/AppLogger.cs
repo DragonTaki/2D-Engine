@@ -3,13 +3,15 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/06
-// Update Date: 2025/05/06
+// Update Date: 2026/10/04
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+
+using Engine.Diagnostics;
 
 namespace Engine.Logging
 {
@@ -86,8 +88,8 @@ namespace Engine.Logging
 #nullable disable
         // Pushed in by the app's composition root (Launcher/Program.cs) at
         // startup from Game.Configs.Settings — Engine must not read Game's
-        // config directly.
-        public static bool EnableDebug { get; set; } = false;
+        // config directly. (Whether DEBUG lines are written is the
+        // DebugOptions.VerboseLog switch, pushed in the same way.)
         public static string CurrentUser { get; set; } = string.Empty;
 
         public static void SetExternalLogger(Action<string> callback)
@@ -97,7 +99,7 @@ namespace Engine.Logging
 
         public static void Log(string message, LogLevel level = LogLevel.INFO)
         {
-            if (level == LogLevel.DEBUG && !EnableDebug)
+            if (level == LogLevel.DEBUG && !DebugOptions.VerboseLog)
                 return;
 
             var record = new LogRecord(message, level);
