@@ -105,13 +105,13 @@ namespace Engine.Diagnostics
             }
         }
 
-        /// <summary>The frame rate readout: "FPS 60", or "FPS —" before the first measurement.</summary>
+        /// <summary>The frame rate readout: "更新率 60", or "更新率 —" before the first measurement.</summary>
         public static string FpsText(double? framesPerSecond) =>
-            framesPerSecond.HasValue ? $"FPS {framesPerSecond.Value:0}" : "FPS —";
+            framesPerSecond.HasValue ? $"更新率 {framesPerSecond.Value:0}" : "更新率 —";
 
-        /// <summary>The latency readout: "Ping 42 ms", or "Ping —" while no latency is known.</summary>
+        /// <summary>The latency readout: "延遲 42 毫秒", or "延遲 —" while no latency is known.</summary>
         public static string LatencyText(int? latencyMs) =>
-            latencyMs.HasValue ? $"Ping {latencyMs.Value} ms" : "Ping —";
+            latencyMs.HasValue ? $"延遲 {latencyMs.Value} 毫秒" : "延遲 —";
 
         /// <summary>Creates the font and brushes on first use (the graphics backend is chosen at startup).</summary>
         private static void EnsureResources()
