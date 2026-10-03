@@ -3,7 +3,7 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/11/01
-// Update Date: 2025/11/01
+// Update Date: 2026/10/04
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
@@ -12,6 +12,8 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Engine.Diagnostics;
 
 namespace Engine.Network
 {
@@ -116,7 +118,8 @@ namespace Engine.Network
             }
 
             StartHeartbeat();
-            Console.WriteLine("[NetworkManager] Network connected.");
+            if (DebugOptions.ConsoleTrace)
+                Console.WriteLine("[NetworkManager] Network connected.");
             return true;
         }
 
@@ -144,13 +147,15 @@ namespace Engine.Network
             // Outside the lock, so a handler can call back into this class (e.g. Reconnect).
             OnDisconnected?.Invoke();
 
-            Console.WriteLine("[NetworkManager] Network disconnected.");
+            if (DebugOptions.ConsoleTrace)
+                Console.WriteLine("[NetworkManager] Network disconnected.");
         }
 
         public void Reconnect()
         {
             Disconnect();
-            Console.WriteLine("[NetworkManager] Network reconnecting...");
+            if (DebugOptions.ConsoleTrace)
+                Console.WriteLine("[NetworkManager] Network reconnecting...");
             _ = ConnectAsync();
         }
 
@@ -227,7 +232,8 @@ namespace Engine.Network
                     // If packet empty
                     if (string.IsNullOrWhiteSpace(line))
                     {
-                        Console.WriteLine("[NetworkManager] Empty line ignored.");
+                        if (DebugOptions.ConsoleTrace)
+                            Console.WriteLine("[NetworkManager] Empty line ignored.");
                         continue;
                     }
 
@@ -255,7 +261,8 @@ namespace Engine.Network
                     // The JSON literal "null" deserializes to no packet at all.
                     if (packet == null)
                     {
-                        Console.WriteLine($"[NetworkManager] Empty packet ignored: {line}");
+                        if (DebugOptions.ConsoleTrace)
+                            Console.WriteLine($"[NetworkManager] Empty packet ignored: {line}");
                         continue;
                     }
 

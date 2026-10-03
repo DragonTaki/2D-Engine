@@ -3,13 +3,15 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/11/01
-// Update Date: 2025/11/01
+// Update Date: 2026/10/04
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
+
+using Engine.Diagnostics;
 
 namespace Engine.Network
 {
@@ -86,7 +88,8 @@ namespace Engine.Network
                 if (packet.Type == PacketType.AuthRequest &&
                     packet.Data?.Trim() == "Please provide username/password")
                 {
-                    Console.WriteLine("[AuthManager] Server requests credentials.");
+                    if (DebugOptions.ConsoleTrace)
+                        Console.WriteLine("[AuthManager] Server requests credentials.");
 
                     // Step 2: send username/password
                     var credentialsObj = new
@@ -118,7 +121,8 @@ namespace Engine.Network
                     _currentStep = AuthStep.Completed;
                     _networkManager.OnPacketReceived -= HandlePacket;
 
-                    Console.WriteLine($"[AuthManager] Auth completed → success={success}");
+                    if (DebugOptions.ConsoleTrace)
+                        Console.WriteLine($"[AuthManager] Auth completed → success={success}");
                 }
             }
         }
