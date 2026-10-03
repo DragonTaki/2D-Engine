@@ -299,7 +299,7 @@ namespace Engine.UI.Input
         /// <summary>
         /// Scroll distance per wheel notch, in UI design units. 30 is the engine's own
         /// default; a host may set it at registration (the launchers set it from the
-        /// player settings, docs/SETTINGS.md).
+        /// player settings).
         /// </summary>
         public float WheelStep { get; set; } = 30f;
 

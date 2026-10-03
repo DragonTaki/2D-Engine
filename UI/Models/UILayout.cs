@@ -30,7 +30,7 @@ namespace Engine.UI.Models
     /// <see cref="Overflow"/>) - by any element that has such children.</item>
     /// </list>
     /// <see cref="Margin"/>, <see cref="Display"/> and <see cref="IgnoreParentLayout"/> apply to both.
-    /// Every per-axis setting is independent for X and Y. See docs/LAYOUT.md for the full model.
+    /// Every per-axis setting is independent for X and Y.
     /// </para>
     /// <para>
     /// Every setter raises <see cref="Changed"/> when the value actually changes; the owning

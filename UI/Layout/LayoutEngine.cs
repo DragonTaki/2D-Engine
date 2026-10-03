@@ -24,7 +24,7 @@ namespace Engine.UI.Layout
     /// resulting absolute rectangles to device pixels and writes them back.
     /// <para>
     /// Driven by <c>UIElement.UpdateLayout</c> (top-down: a container is arranged before its
-    /// children arrange theirs). See docs/LAYOUT.md.
+    /// children arrange theirs).
     /// </para>
     /// </summary>
     public static class LayoutEngine

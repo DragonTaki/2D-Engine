@@ -10,7 +10,7 @@
 namespace Engine.UI.Constants.Core
 {
     /// <summary>
-    /// How an element's box is determined (see docs/LAYOUT.md).
+    /// How an element's box is determined.
     /// </summary>
     public enum PositionMode
     {
