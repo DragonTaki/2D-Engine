@@ -20,7 +20,7 @@ namespace Engine.UI.Core.Handlers
     /// <summary>
     /// Handler for <see cref="UISlider"/>: a press jumps the knob to the pressed point and starts
     /// a drag, moves drag it, the release ends it; every change of the (snapped) value is
-    /// reported through <see cref="ValueChanged"/>. It captures the pointer
+    /// reported through <see cref="ValueChanged"/>, and the end of a press that changed it through <see cref="ValueCommitted"/>. It captures the pointer
     /// (<see cref="IPointerCaptureTarget"/>) while enabled, so the drag gets every move and the
     /// page underneath never drag-scrolls. A disabled slider takes no input.
     /// </summary>
@@ -29,7 +29,13 @@ namespace Engine.UI.Core.Handlers
 #nullable enable
         /// <summary>Invoked with the new value whenever the mouse (or <see cref="SetValue"/>) changed it, also during a drag.</summary>
         public Action<float>? ValueChanged { get; set; }
+
+        /// <summary>Invoked once with the final value when a press-drag-release ends and the value changed during it (not on every drag step).</summary>
+        public Action<float>? ValueCommitted { get; set; }
 #nullable disable
+
+        /// <summary>Whether the value changed since the current press began (reported by <see cref="ValueCommitted"/> when it ends).</summary>
+        private bool _changedSincePress;
 
         public UISliderHandler() { }
 
@@ -48,6 +54,7 @@ namespace Engine.UI.Core.Handlers
             if (Element.Value == old)
                 return false;
 
+            _changedSincePress = true;
             ValueChanged?.Invoke(Element.Value);
             return true;
         }
@@ -58,7 +65,11 @@ namespace Engine.UI.Core.Handlers
         public bool CapturesPress(Vector2F location) => Element.IsEnabled;
 
         /// <summary>The capture ended (release delivered, or input cancelled): the drag is over.</summary>
-        public void OnCaptureLost() => Element.IsDragging = false;
+        public void OnCaptureLost()
+        {
+            Element.IsDragging = false;
+            Commit();
+        }
 
         #endregion
 
@@ -71,6 +82,7 @@ namespace Engine.UI.Core.Handlers
                 return false;
 
             Element.IsDragging = true;
+            _changedSincePress = false;
             SetValue(Element.ValueAt(e.X));
             return true;
         }
@@ -92,7 +104,18 @@ namespace Engine.UI.Core.Handlers
                 return false;
 
             Element.IsDragging = false;
+            Commit();
             return true;
+        }
+
+        /// <summary>Reports the end of a press (once) through <see cref="ValueCommitted"/> when the value changed during it.</summary>
+        private void Commit()
+        {
+            if (!_changedSincePress)
+                return;
+
+            _changedSincePress = false;
+            ValueCommitted?.Invoke(Element.Value);
         }
 
         /// <summary>The press already moved the knob; the click is only taken so it does not fall through.</summary>
