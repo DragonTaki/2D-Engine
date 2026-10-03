@@ -3,13 +3,14 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/27
-// Update Date: 2026/09/24
+// Update Date: 2026/10/04
 // Version: v2.0
 /* ----- ----- ----- ----- */
 
 using System;
 using System.Drawing;
 
+using Engine.Diagnostics;
 using Engine.Platform;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
@@ -145,9 +146,14 @@ namespace Engine.UI.Core.Renderers
                 // Original plain-text mode (no fragments)
                 if (!string.IsNullOrEmpty(Label.Text))
                 {
-                    using (var brush = GraphicsBackend.Factory.CreateSolidBrush(Color.FromArgb(128, Color.Red))) // Semi-transparent red (debug background behind the text)
+                    // Visual debugging only (DebugOptions.LabelBackgrounds): a semi-transparent
+                    // red background showing the label's bounds.
+                    if (DebugOptions.LabelBackgrounds)
                     {
-                        g.FillRectangle(brush, rect);
+                        using (var brush = GraphicsBackend.Factory.CreateSolidBrush(Color.FromArgb(128, Color.Red))) // Semi-transparent red (debug background behind the text)
+                        {
+                            g.FillRectangle(brush, rect);
+                        }
                     }
                     g.DrawString(Label.Text, Label.Font, GetBrush(), rect, GetStringFormat(Label.TextAlign, Label.WordWrap));
                 }
