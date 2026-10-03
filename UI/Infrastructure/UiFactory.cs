@@ -3,13 +3,14 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/17
-// Update Date: 2025/10/23
+// Update Date: 2026/10/04
 // Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
 using System.Collections.Generic;
 
+using Engine.Diagnostics;
 using Engine.UI.Core.Bases;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Handlers;
@@ -119,7 +120,8 @@ namespace Engine.UI.Infrastructure
             where TRenderer : UIRenderer<TElement, THandler, TRenderer>, new()
         {
             var element = new TElement();
-            Console.WriteLine($"Factory not DI: {element.GetType().FullName}");
+            if (DebugOptions.ConsoleTrace)
+                Console.WriteLine($"Factory not DI: {element.GetType().FullName}");
             var handler = new THandler();
             var renderer = new TRenderer();
 

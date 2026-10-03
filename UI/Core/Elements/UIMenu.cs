@@ -3,7 +3,7 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/24
-// Update Date: 2026/10/01
+// Update Date: 2026/10/04
 // Version: v1.2
 /* ----- ----- ----- ----- */
 
@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
+using Engine.Diagnostics;
 using Engine.Geometry;
 using Engine.Mathematics;
 using Engine.UI.Constants.Components;
@@ -64,7 +65,8 @@ namespace Engine.UI.Core.Elements
         /// </summary>
         public override void Init(IUiFactory factory, THandler handler, TRenderer renderer)
         {
-            Console.WriteLine($"[UIMenu]Init 3 generic Current type: {this?.GetType().FullName ?? "null"}, IsInitialized: {IsInitialized}");
+            if (DebugOptions.ConsoleTrace)
+                Console.WriteLine($"[UIMenu]Init 3 generic Current type: {this?.GetType().FullName ?? "null"}, IsInitialized: {IsInitialized}");
 
             if (IsInitialized)
                 return;
@@ -78,12 +80,14 @@ namespace Engine.UI.Core.Elements
             // Bind Handler
             Handler = handler;
             Handler.Element = (TElement)(object)this;
-            Console.WriteLine($"[UIMenu]Handler type: {Handler?.GetType().FullName ?? "null"}");
+            if (DebugOptions.ConsoleTrace)
+                Console.WriteLine($"[UIMenu]Handler type: {Handler?.GetType().FullName ?? "null"}");
 
             // Bind Renderer
             Renderer = renderer;
             Renderer.Element = (TElement)(object)this;
-            Console.WriteLine($"[UIMenu]Renderer type: {Renderer?.GetType().FullName ?? "null"}");
+            if (DebugOptions.ConsoleTrace)
+                Console.WriteLine($"[UIMenu]Renderer type: {Renderer?.GetType().FullName ?? "null"}");
 
             RunInitHooks();
 

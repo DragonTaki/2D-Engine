@@ -3,7 +3,7 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/15
-// Update Date: 2026/09/30
+// Update Date: 2026/10/04
 // Version: v1.3
 /* ----- ----- ----- ----- */
 
@@ -13,6 +13,7 @@ using System.Drawing;
 using System.Linq;
 using System.Threading;
 
+using Engine.Diagnostics;
 using Engine.Geometry;
 using Engine.Mathematics;
 using Engine.Physics;
@@ -731,7 +732,8 @@ namespace Engine.UI.Core.Elements
         /// <param name="renderer">Renderer instance to bind.</param>
         public virtual void Init(IUiFactory factory, THandler handler, TRenderer renderer)
         {
-            Console.WriteLine($"[UIElement]Init 3 generic Current type: {this?.GetType().FullName ?? "null"}, IsInitialized: {IsInitialized}");
+            if (DebugOptions.ConsoleTrace)
+                Console.WriteLine($"[UIElement]Init 3 generic Current type: {this?.GetType().FullName ?? "null"}, IsInitialized: {IsInitialized}");
             if (IsInitialized) return;
             IsInitialized = true;
             _factory = factory;
@@ -741,12 +743,14 @@ namespace Engine.UI.Core.Elements
             // Bind Handler
             Handler = handler;
             Handler.Element = (TElement)(object)this;
-            Console.WriteLine($"[UIElement]Handler type: {Handler?.GetType().FullName ?? "null"}");
+            if (DebugOptions.ConsoleTrace)
+                Console.WriteLine($"[UIElement]Handler type: {Handler?.GetType().FullName ?? "null"}");
 
             // Bind Renderer
             Renderer = renderer;
             Renderer.Element = (TElement)(object)this;
-            Console.WriteLine($"[UIElement]Renderer type: {Renderer?.GetType().FullName ?? "null"}");
+            if (DebugOptions.ConsoleTrace)
+                Console.WriteLine($"[UIElement]Renderer type: {Renderer?.GetType().FullName ?? "null"}");
 
             RunInitHooks();
 
