@@ -23,8 +23,9 @@ namespace Engine.UI.Utils
         #region Methods
 
         /// <summary>
-        /// Updates the <see cref="UIElement.IsEnabled"/> property based on visibility within a specified clipping area.
-        /// Elements outside the clipping rectangle are marked as disabled.
+        /// Updates <see cref="UIElementBase.IsClipped"/> from visibility within a clipping area:
+        /// elements entirely outside the clipping rectangle are clipped. <see cref="UIElementBase.IsEnabled"/>
+        /// is not touched (it used to be, which re-enabled buttons the game had disabled).
         /// </summary>
         /// <typeparam name="T">Type of UIElement (or derived type)</typeparam>
         /// <param name="elements">Enumerable collection of UI elements to update</param>
@@ -42,8 +43,8 @@ namespace Engine.UI.Utils
                 float y = bounds.Position.Y;
                 float h = bounds.Size.Y;
 
-                // Enable element if any portion is visible inside clipping rectangle
-                element.IsEnabled = y + h > clippingRect.Top && y < clippingRect.Bottom;
+                // Clipped unless some portion is inside the clipping rectangle (IsEnabled stays the owner's).
+                element.IsClipped = !(y + h > clippingRect.Top && y < clippingRect.Bottom);
             }
         }
 

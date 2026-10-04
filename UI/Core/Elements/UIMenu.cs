@@ -131,8 +131,8 @@ namespace Engine.UI.Core.Elements
         }
 
         /// <summary>
-        /// The buttons the menu renderer draws: inside the scroll viewport (which also sets
-        /// <see cref="UIElementBase.IsEnabled"/>, see <see cref="UIElementUtils.UpdateVisibleState"/>)
+        /// The buttons the menu renderer draws: inside the scroll viewport (not
+        /// <see cref="UIElementBase.IsClipped"/>, see <see cref="UIElementUtils.UpdateVisibleState"/>)
         /// and rendered at all - not <c>Display = None</c> or invisible, neither the button
         /// nor any element between it and this menu (e.g. a hidden group container). The
         /// render pipeline skips such elements (<see cref="UIElementBase.DisableRender"/>),
@@ -141,7 +141,7 @@ namespace Engine.UI.Core.Elements
         public List<UIButton> GetVisibleButtons()
         {
             UIElementUtils.UpdateVisibleState(Buttons, ScrollContainer.GetAbsClippingRect());
-            return Buttons.Where(b => b.IsEnabled && IsRenderedInMenu(b)).ToList();
+            return Buttons.Where(b => !b.IsClipped && IsRenderedInMenu(b)).ToList();
         }
 
         /// <summary>

@@ -308,14 +308,22 @@ namespace Engine.UI.Core.Bases
         public bool IsVisible { get; set; } = true;
 
         /// <summary>
-        /// Determines whether the element can respond to user input.
+        /// Whether the element may be used or interacted with (e.g. a button the game disabled).
+        /// Only the owner sets it; scroll culling uses <see cref="IsClipped"/> instead.
         /// </summary>
         public bool IsEnabled { get; set; } = true;
 
         /// <summary>
-        /// Indicates if this element can receive interaction based on visibility and enabled state.
+        /// True while the element lies entirely outside its scroll viewport (set by
+        /// <see cref="Engine.UI.Utils.UIElementUtils.UpdateVisibleState"/>): it is not drawn by its
+        /// menu and receives no input, without touching <see cref="IsEnabled"/>.
         /// </summary>
-        public virtual bool IsInteractable => IsVisible && IsEnabled && IsDisplayed;
+        public bool IsClipped { get; set; } = false;
+
+        /// <summary>
+        /// Indicates if this element can receive interaction: visible, displayed, enabled and not clipped.
+        /// </summary>
+        public virtual bool IsInteractable => IsVisible && IsEnabled && IsDisplayed && !IsClipped;
 
         /// <summary>
         /// Allows hit testing even if invisible. Usually false.
