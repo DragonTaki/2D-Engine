@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The engine's display side: the platform abstraction (no backend), geometry, styles,
+       drawing helpers, window globals and the hand-built UI system. -->
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>Engine</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Geometry\**\*.cs;Globals\**\*.cs;GraphicsUtils\**\*.cs;Platform\**\*.cs;Styles\**\*.cs;UI\**\*.cs" />
+    <Compile Remove="Platform\WinForms\**\*.cs;Platform\Skia\**\*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Engine.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0" />
+  </ItemGroup>
+</Project>

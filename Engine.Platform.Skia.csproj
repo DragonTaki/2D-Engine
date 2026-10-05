@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- SkiaSharp / Silk.NET backend of the platform abstraction (cross-platform). -->
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>Engine.Platform.Skia</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Platform\Skia\**\*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Engine.UI.csproj" />
+    <PackageReference Include="SkiaSharp" Version="4.152.1" />
+    <PackageReference Include="Silk.NET.Windowing" Version="2.23.0" />
+    <PackageReference Include="Silk.NET.Input" Version="2.23.0" />
+    <PackageReference Include="Silk.NET.OpenGL" Version="2.23.0" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- GDI+ / WinForms backend of the platform abstraction (Windows only). -->
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>Engine.Platform.WinForms</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Platform\WinForms\**\*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Engine.UI.csproj" />
+  </ItemGroup>
+</Project>

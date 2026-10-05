@@ -1,0 +1,9 @@
+<Project>
+  <!-- Several projects share this folder (Engine, Engine.UI and the two platform backends):
+       give each its own obj/bin, and no default item globs (each project lists its folders). -->
+  <PropertyGroup>
+    <BaseIntermediateOutputPath>obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <BaseOutputPath>bin\$(MSBuildProjectName)\</BaseOutputPath>
+    <EnableDefaultItems>false</EnableDefaultItems>
+  </PropertyGroup>
+</Project>
