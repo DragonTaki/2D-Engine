@@ -3,7 +3,7 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/06
-// Update Date: 2026/10/04
+// Update Date: 2026/10/05
 // Version: v1.0
 /* ----- ----- ----- ----- */
 
@@ -87,9 +87,10 @@ namespace Engine.Logging
         private static Action<string>? _externalLogger = null;
 #nullable disable
         // Pushed in by the app's composition root (Launcher/Program.cs) at
-        // startup from Game.Configs.Settings — Engine must not read Game's
-        // config directly. (Whether DEBUG lines are written is the
-        // DebugOptions.VerboseLog switch, pushed in the same way.)
+        // startup, and by the settings screen on change, from the player
+        // settings — Engine must not read Game's config directly. (Whether
+        // DEBUG lines are written is the DebugOptions.VerboseLog switch,
+        // pushed in the same way.)
         public static string CurrentUser { get; set; } = string.Empty;
 
         public static void SetExternalLogger(Action<string> callback)
