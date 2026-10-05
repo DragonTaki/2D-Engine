@@ -3,18 +3,19 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/04
-// Update Date: 2026/10/04
-// Version: v1.0
+// Update Date: 2026/10/05
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
 
+using Engine.Diagnostics;
 using Engine.Globals;
 using Engine.Platform;
 
-namespace Engine.Diagnostics
+namespace Engine.UI.Diagnostics
 {
     /// <summary>
     /// The on-screen debug readouts (效能與連線): the measured frame rate

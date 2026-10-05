@@ -3,15 +3,15 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/24
-// Update Date: 2025/10/24
-// Version: v1.0
+// Update Date: 2026/10/05
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System.Drawing;
 
 using Engine.Platform;
 
-namespace Engine.Configs
+namespace Engine.UI.Constants.Components
 {
     public static class EngineSettings
     {
