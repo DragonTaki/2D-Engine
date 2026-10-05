@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/04
-// Update Date: 2026/10/04
-// Version: v1.0
+// Update Date: 2026/10/05
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 namespace Engine.Diagnostics
@@ -44,7 +44,7 @@ namespace Engine.Diagnostics
         /// <summary>Whether a label's text gets a semi-transparent red background (shows the label's bounds).</summary>
         public static bool LabelBackgrounds { get; set; } = false;
 
-        /// <summary>Whether menus (dashed) and text boxes (solid) get a grey outline (shows their layout bounds).</summary>
+        /// <summary>Whether text boxes get a grey solid outline (shows their layout bounds; a menu's dashed outline is design and always drawn).</summary>
         public static bool LayoutOutlines { get; set; } = false;
 
         /// <summary>Whether the star background outlines the area of each effect it starts (in the effect's debug colour).</summary>
