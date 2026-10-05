@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/27
-// Update Date: 2026/10/04
-// Version: v2.0
+// Update Date: 2026/10/05
+// Version: v2.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -146,9 +146,10 @@ namespace Engine.UI.Core.Renderers
                 // Original plain-text mode (no fragments)
                 if (!string.IsNullOrEmpty(Label.Text))
                 {
-                    // Visual debugging only (DebugOptions.LabelBackgrounds): a semi-transparent
-                    // red background showing the label's bounds.
-                    if (DebugOptions.LabelBackgrounds)
+                    // Visual debugging only (the label's DebugBackgroundSwitch, by default
+                    // DebugOptions.LabelBackgrounds): a semi-transparent red background showing
+                    // the label's bounds.
+                    if (Label.DebugBackgroundSwitch?.Invoke() ?? DebugOptions.LabelBackgrounds)
                     {
                         using (var brush = GraphicsBackend.Factory.CreateSolidBrush(Color.FromArgb(128, Color.Red))) // Semi-transparent red (debug background behind the text)
                         {

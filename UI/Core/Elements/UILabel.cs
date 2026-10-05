@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/19
-// Update Date: 2026/09/30
-// Version: v1.3
+// Update Date: 2026/10/05
+// Version: v1.4
 /* ----- ----- ----- ----- */
 
 using System;
@@ -124,6 +124,13 @@ namespace Engine.UI.Core.Elements
         /// Color of the text.
         /// </summary>
         public Color ForeColor { get; set; } = Color.Black;
+
+        /// <summary>
+        /// The switch that draws the semi-transparent red debug background behind the text
+        /// (plain-text mode); null for <see cref="Engine.Diagnostics.DebugOptions.LabelBackgrounds"/>.
+        /// A text box can give its lines another switch (<c>UITextBox.LineDebugBackgroundSwitch</c>).
+        /// </summary>
+        public Func<bool> DebugBackgroundSwitch { get; set; }
 
         /// <summary>
         /// Text alignment within the label bounds.

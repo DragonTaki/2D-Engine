@@ -27,7 +27,7 @@ namespace Engine.Diagnostics
     {
         #region 紀錄 (logging)
 
-        /// <summary>Whether DEBUG-level log lines are written (<c>AppLogger</c>; the log's verbosity).</summary>
+        /// <summary>Whether DEBUG-level log lines are written (<c>AppLogger</c>; the log's verbosity). The game's log box also draws its lines' red background with it.</summary>
         public static bool VerboseLog { get; set; } = false;
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Engine.Diagnostics
 
         #region 視覺除錯 (visual debugging)
 
-        /// <summary>Whether a label's text gets a semi-transparent red background (shows the label's bounds).</summary>
+        /// <summary>Whether a label's text gets a semi-transparent red background (shows the label's bounds); a label with its own <c>DebugBackgroundSwitch</c> (the log box's lines) follows that instead.</summary>
         public static bool LabelBackgrounds { get; set; } = false;
 
         /// <summary>Whether text boxes get a grey solid outline (shows their layout bounds; a menu's dashed outline is design and always drawn).</summary>

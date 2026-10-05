@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/24
-// Update Date: 2026/10/04
-// Version: v1.1
+// Update Date: 2026/10/05
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using System;
@@ -32,6 +32,13 @@ namespace Engine.UI.Core.Elements
         #region Fields / Properties
 
         public UIScrollContainer ScrollContainer { get; private set; }
+
+        /// <summary>
+        /// The switch that draws the red debug background behind each line appended with
+        /// <see cref="AppendLine"/> (<see cref="UILabel.DebugBackgroundSwitch"/>); null for the
+        /// labels' default, <see cref="DebugOptions.LabelBackgrounds"/>. Applies to lines appended after it is set.
+        /// </summary>
+        public Func<bool> LineDebugBackgroundSwitch { get; set; }
 
         /// <remarks>Same ownership rule as <see cref="UILabel.Font"/>.</remarks>
         public IFont Font
@@ -163,6 +170,7 @@ namespace Engine.UI.Core.Elements
                 label.Layout = new Geometry.LayoutF(0, y, Size.X, size.Height);
                 label.WordWrap = false; // One Label per line
                 label.TextAlign = ContentAlign.MiddleLeft;
+                label.DebugBackgroundSwitch = LineDebugBackgroundSwitch;
 
                 label.LocalPosition.Current.Y = y;
 
