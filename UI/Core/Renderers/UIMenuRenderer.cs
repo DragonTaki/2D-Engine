@@ -3,13 +3,12 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/24
-// Update Date: 2026/10/04
-// Version: v2.1
+// Update Date: 2026/10/05
+// Version: v2.2
 /* ----- ----- ----- ----- */
 
 using System.Drawing;
 
-using Engine.Diagnostics;
 using Engine.Platform;
 using Engine.Styles;
 using Engine.UI.Core.Elements;
@@ -19,8 +18,8 @@ namespace Engine.UI.Core.Renderers
 {
     /// <summary>
     /// Renderer for <see cref="UIMenu{TElement, THandler, TRenderer}"/>: the container
-    /// <c>Style</c> over the menu panel, a dashed debug outline (only with
-    /// <see cref="DebugOptions.LayoutOutlines"/>), then the visible buttons
+    /// <c>Style</c> over the menu panel, a grey dashed outline (part of the menu's design, always
+    /// drawn; author 2026-10-05), then the visible buttons
     /// (clipped to the scroll viewport).
     /// </summary>
     public class UIMenuRenderer<TElement, THandler, TRenderer> : UIContainerRenderer<TElement, THandler, TRenderer>
@@ -59,15 +58,12 @@ namespace Engine.UI.Core.Renderers
             _composite.Render(g, element);
         }
 
-        /// <summary>A grey dashed debug outline of the layout bounds; only with <see cref="DebugOptions.LayoutOutlines"/> on.</summary>
+        /// <summary>The menu panel's grey dashed outline (design, not a debug feature: no switch).</summary>
         private class Outline : UIRenderer<TElement, THandler, TRenderer>
         {
             public Outline() { }
             public override void OnRender(IGraphics g, TElement element)
             {
-                if (!DebugOptions.LayoutOutlines)
-                    return;
-
                 using (IPen debugPen = GraphicsBackend.Factory.CreatePen(Color.FromArgb(100, 128, 128, 128), 4))
                 {
                     debugPen.DashStyle = PenDashStyle.Dash;
