@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/27
-// Update Date: 2025/10/27
-// Version: v1.0
+// Update Date: 2026/10/05
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using Engine.Platform;
@@ -21,15 +21,15 @@ namespace Engine.UI.Core.Bases
         /// <summary>Reference back to the element (non-generic).</summary>
         public UIElementBase Element { get; internal set; }
 
-        internal abstract bool HandleMouseDown(IMouseEvent e);
+        protected internal abstract bool HandleMouseDown(IMouseEvent e);
 
-        internal abstract bool HandleMouseMove(IMouseEvent e);
+        protected internal abstract bool HandleMouseMove(IMouseEvent e);
 
-        internal abstract bool HandleMouseUp(IMouseEvent e);
+        protected internal abstract bool HandleMouseUp(IMouseEvent e);
 
-        internal abstract bool HandleMouseWheel(IMouseEvent e);
+        protected internal abstract bool HandleMouseWheel(IMouseEvent e);
 
-        internal abstract bool HandleMouseClick(IMouseEvent e);
+        protected internal abstract bool HandleMouseClick(IMouseEvent e);
 
         /// <summary>
         /// Binds the handler to its element; called by the UI factory before the element's own Init.
@@ -38,8 +38,8 @@ namespace Engine.UI.Core.Bases
         /// <param name="element">The element this handler serves.</param>
         public virtual void Init(IUiFactory factory, UIElementBase element) { }
 
-        internal abstract void OnUpdate();
+        protected internal abstract void OnUpdate();
 
-        internal abstract void OnEndFrame();
+        protected internal abstract void OnEndFrame();
     }
 }

@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/02
-// Update Date: 2026/10/02
-// Version: v1.0
+// Update Date: 2026/10/05
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -38,7 +38,7 @@ namespace Engine.UI.Core.Handlers
         #region Mouse Handling
 
         /// <summary>A press outside the list closes it; inside, the release decides (<see cref="HandleMouseClick"/>).</summary>
-        internal override bool HandleMouseDown(IMouseEvent e)
+        protected internal override bool HandleMouseDown(IMouseEvent e)
         {
             if (!IsOpen)
                 return false;
@@ -49,7 +49,7 @@ namespace Engine.UI.Core.Handlers
         }
 
         /// <summary>Highlights the option under the mouse (none outside the list).</summary>
-        internal override bool HandleMouseMove(IMouseEvent e)
+        protected internal override bool HandleMouseMove(IMouseEvent e)
         {
             if (!IsOpen)
                 return false;
@@ -59,7 +59,7 @@ namespace Engine.UI.Core.Handlers
         }
 
         /// <summary>Scrolls the list one option per wheel notch; the page underneath never scrolls while the list is open.</summary>
-        internal override bool HandleMouseWheel(IMouseEvent e)
+        protected internal override bool HandleMouseWheel(IMouseEvent e)
         {
             if (!IsOpen)
                 return false;
@@ -72,7 +72,7 @@ namespace Engine.UI.Core.Handlers
         }
 
         /// <summary>A click on an option chooses it and closes the list; elsewhere in the list nothing happens.</summary>
-        internal override bool HandleMouseClick(IMouseEvent e)
+        protected internal override bool HandleMouseClick(IMouseEvent e)
         {
             if (!IsOpen)
                 return false;
@@ -87,7 +87,7 @@ namespace Engine.UI.Core.Handlers
         /// Keeps the scroll within range (the list may have been cut shorter by a resize) and
         /// closes the list when its owner is no longer shown (hidden, disabled, removed or disposed).
         /// </summary>
-        internal override void OnUpdate()
+        protected internal override void OnUpdate()
         {
             if (!IsOpen)
                 return;

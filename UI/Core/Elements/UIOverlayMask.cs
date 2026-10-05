@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/20
-// Update Date: 2026/09/30
-// Version: v1.1
+// Update Date: 2026/10/05
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using System.Drawing;
@@ -95,11 +95,11 @@ namespace Engine.UI.Core.Elements
             _element = element;
         }
 
-        internal override bool HandleMouseDown(IMouseEvent e) => true;
-        internal override bool HandleMouseMove(IMouseEvent e) => true;
-        internal override bool HandleMouseUp(IMouseEvent e) => true;
-        internal override bool HandleMouseWheel(IMouseEvent e) => true;
-        internal override bool HandleMouseClick(IMouseEvent e) => true;
+        protected internal override bool HandleMouseDown(IMouseEvent e) => true;
+        protected internal override bool HandleMouseMove(IMouseEvent e) => true;
+        protected internal override bool HandleMouseUp(IMouseEvent e) => true;
+        protected internal override bool HandleMouseWheel(IMouseEvent e) => true;
+        protected internal override bool HandleMouseClick(IMouseEvent e) => true;
     }
 
     public class UIOverlayMaskRenderer : UIRenderer<UIOverlayMask>

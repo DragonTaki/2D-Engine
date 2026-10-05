@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/27
-// Update Date: 2025/10/27
-// Version: v1.0
+// Update Date: 2026/10/05
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -36,7 +36,7 @@ namespace Engine.UI.Core.Handlers
 
         #region Mouse Handling
 
-        internal override bool HandleMouseClick(IMouseEvent e)
+        protected internal override bool HandleMouseClick(IMouseEvent e)
         {
             if (!Element.IsEnabled) return false; // Not triggered while disabled
             Action?.Invoke();
@@ -68,7 +68,7 @@ namespace Engine.UI.Core.Handlers
         // The typed Action hides the base one, and nothing ever invoked it: an onClick
         // passed to UiFactory.CreateButton<TEnum> was stored here and silently dropped.
         // Run the base (untyped) Action as before, then the typed one with the button's Type.
-        internal override bool HandleMouseClick(IMouseEvent e)
+        protected internal override bool HandleMouseClick(IMouseEvent e)
         {
             if (!base.HandleMouseClick(e))
                 return false;

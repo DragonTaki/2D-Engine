@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/27
-// Update Date: 2025/10/27
-// Version: v1.0
+// Update Date: 2026/10/05
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -116,7 +116,7 @@ namespace Engine.UI.Core.Handlers
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>True if event was handled, otherwise false.</returns>
-        internal override bool HandleMouseDown(IMouseEvent e)
+        protected internal override bool HandleMouseDown(IMouseEvent e)
         {
             return ScrollContainer.InputHandler.OnMouseDown(e);
         }
@@ -126,7 +126,7 @@ namespace Engine.UI.Core.Handlers
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>True if event was handled, otherwise false.</returns>
-        internal override bool HandleMouseMove(IMouseEvent e)
+        protected internal override bool HandleMouseMove(IMouseEvent e)
         {
             return ScrollContainer.InputHandler.OnMouseMove(e);
         }
@@ -136,7 +136,7 @@ namespace Engine.UI.Core.Handlers
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>True if event was handled, otherwise false.</returns>
-        internal override bool HandleMouseUp(IMouseEvent e)
+        protected internal override bool HandleMouseUp(IMouseEvent e)
         {
             return ScrollContainer.InputHandler.OnMouseUp(e);
         }
@@ -146,7 +146,7 @@ namespace Engine.UI.Core.Handlers
         /// </summary>
         /// <param name="e">Mouse event arguments.</param>
         /// <returns>True if event was handled, otherwise false.</returns>
-        internal override bool HandleMouseWheel(IMouseEvent e)
+        protected internal override bool HandleMouseWheel(IMouseEvent e)
         {
             return ScrollContainer.InputHandler.OnMouseWheel(e);
         }
@@ -154,7 +154,7 @@ namespace Engine.UI.Core.Handlers
         /// <summary>
         /// Updates scroll container every frame. Handles overscroll, inertia, and rebound behavior.
         /// </summary>
-        internal override void OnUpdate()
+        protected internal override void OnUpdate()
         {
             bool gliding = StepInertia();
             ScrollContainer.ClampToOverscrollRange();
@@ -215,7 +215,7 @@ namespace Engine.UI.Core.Handlers
         /// <summary>
         /// Resets input delta after processing input each frame.
         /// </summary>
-        internal override void OnEndFrame()
+        protected internal override void OnEndFrame()
         {
             ScrollContainer.InputHandler.EndFrame();
         }

@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/09/24
-// Update Date: 2026/10/01
-// Version: v1.0
+// Update Date: 2026/10/05
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -16,7 +16,7 @@ using SkiaSharp;
 namespace Engine.Platform.Skia
 {
     /// <summary>SkiaSharp-backed <see cref="IGraphics"/>, wrapping one frame's <see cref="SKCanvas"/>.</summary>
-    internal sealed class SkiaGraphics : IGraphics
+    public sealed class SkiaGraphics : IGraphics
     {
         public SKCanvas Native { get; }
 

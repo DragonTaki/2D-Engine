@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/09/23
-// Update Date: 2026/09/23
-// Version: v1.0
+// Update Date: 2026/10/05
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ using System.Drawing.Text;
 namespace Engine.Platform.WinForms
 {
     /// <summary>GDI+-backed <see cref="IGraphics"/>, wrapping one paint pass's <see cref="Graphics"/>.</summary>
-    internal sealed class WinFormsGraphics : IGraphics
+    public sealed class WinFormsGraphics : IGraphics
     {
         public Graphics Native { get; }
 

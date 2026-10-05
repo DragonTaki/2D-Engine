@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/02
-// Update Date: 2026/10/02
-// Version: v1.0
+// Update Date: 2026/10/05
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -76,7 +76,7 @@ namespace Engine.UI.Core.Handlers
         #region Mouse Handling
 
         /// <summary>Jumps the knob to the pressed point and starts dragging.</summary>
-        internal override bool HandleMouseDown(IMouseEvent e)
+        protected internal override bool HandleMouseDown(IMouseEvent e)
         {
             if (!Element.IsEnabled)
                 return false;
@@ -88,7 +88,7 @@ namespace Engine.UI.Core.Handlers
         }
 
         /// <summary>While dragging, moves the knob to the mouse's x (past the ends: min / max).</summary>
-        internal override bool HandleMouseMove(IMouseEvent e)
+        protected internal override bool HandleMouseMove(IMouseEvent e)
         {
             if (!Element.IsDragging)
                 return false;
@@ -98,7 +98,7 @@ namespace Engine.UI.Core.Handlers
         }
 
         /// <summary>Ends the drag.</summary>
-        internal override bool HandleMouseUp(IMouseEvent e)
+        protected internal override bool HandleMouseUp(IMouseEvent e)
         {
             if (!Element.IsDragging)
                 return false;
@@ -119,7 +119,7 @@ namespace Engine.UI.Core.Handlers
         }
 
         /// <summary>The press already moved the knob; the click is only taken so it does not fall through.</summary>
-        internal override bool HandleMouseClick(IMouseEvent e) => Element.IsEnabled;
+        protected internal override bool HandleMouseClick(IMouseEvent e) => Element.IsEnabled;
 
         #endregion
     }

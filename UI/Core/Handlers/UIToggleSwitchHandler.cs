@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/02
-// Update Date: 2026/10/02
-// Version: v1.0
+// Update Date: 2026/10/05
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -45,7 +45,7 @@ namespace Engine.UI.Core.Handlers
 
         #region Mouse Handling
 
-        internal override bool HandleMouseClick(IMouseEvent e) => Toggle();
+        protected internal override bool HandleMouseClick(IMouseEvent e) => Toggle();
 
         #endregion
     }

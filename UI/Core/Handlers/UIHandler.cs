@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/27
-// Update Date: 2025/10/27
-// Version: v1.0
+// Update Date: 2026/10/05
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using Engine.Platform;
@@ -56,34 +56,34 @@ namespace Engine.UI.Core.Handlers
 
         protected virtual void AfterInit() { }
 
-        internal override bool HandleMouseDown(IMouseEvent e)
+        protected internal override bool HandleMouseDown(IMouseEvent e)
         {
             return false;  // By default the event is not handled; a subclass returns true to indicate it handled it
         }
 
-        internal override bool HandleMouseMove(IMouseEvent e)
+        protected internal override bool HandleMouseMove(IMouseEvent e)
         {
             return false;
         }
 
-        internal override bool HandleMouseUp(IMouseEvent e)
+        protected internal override bool HandleMouseUp(IMouseEvent e)
         {
             return false;
         }
 
-        internal override bool HandleMouseWheel(IMouseEvent e)
+        protected internal override bool HandleMouseWheel(IMouseEvent e)
         {
             return false;
         }
 
-        internal override bool HandleMouseClick(IMouseEvent e)
+        protected internal override bool HandleMouseClick(IMouseEvent e)
         {
             return false;
         }
 
-        internal override void OnUpdate() { }
+        protected internal override void OnUpdate() { }
 
-        internal override void OnEndFrame() { }
+        protected internal override void OnEndFrame() { }
     }
 
     /// <summary>
