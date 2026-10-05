@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/04
 // Update Date: 2026/10/05
-// Version: v1.1
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 namespace Engine.Diagnostics
@@ -13,10 +13,11 @@ namespace Engine.Diagnostics
     /// The switchboard of every debug feature (除錯功能): one plain switch per feature, read
     /// right where the feature runs, so a switch that is off means the feature is not executed
     /// or drawn at all. Engine owns it because most debug output lives in Engine (renderers,
-    /// logger, element init traces) and Engine must not read Game's settings; the app's
-    /// composition root (the launchers) and the settings screen push the player's
-    /// <c>[debug]</c> settings in. A new debug feature gets its own switch here (and a row on
-    /// the settings screen's DEBUG tab) instead of running unconditionally.
+    /// logger, element init traces); the player's <c>[debug]</c> settings area
+    /// (<see cref="DebugSettings"/>) pushes its values in when the settings file is read and on
+    /// every change. A new debug feature gets its own switch here (and a key in
+    /// <see cref="DebugSettings"/> and a row on the settings screen's DEBUG tab) instead of
+    /// running unconditionally.
     /// <para>
     /// The initial values are what runs before any settings are pushed (nothing extra):
     /// every switch off. Genuine error output (missing font, network or logger failures) is

@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/15
-// Update Date: 2025/05/15
-// Version: v1.0
+// Update Date: 2026/10/05
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 
+using Engine.Configs;
 using Engine.Mathematics;
 using Engine.Physics;
 using Engine.Platform;
@@ -297,11 +298,14 @@ namespace Engine.UI.Input
         private const int WheelNotchDelta = 120;
 
         /// <summary>
-        /// Scroll distance per wheel notch, in UI design units. 30 is the engine's own
-        /// default; a host may set it at registration (the launchers set it from the
-        /// player settings).
+        /// Scroll distance per wheel notch, in UI design units: the engine-wide
+        /// <see cref="InputOptions.WheelScrollStep"/> (30 by default; the player's settings set it).
         /// </summary>
-        public float WheelStep { get; set; } = 30f;
+        public float WheelStep
+        {
+            get => InputOptions.WheelScrollStep;
+            set => InputOptions.WheelScrollStep = value;
+        }
 
         /// <summary>
         /// Handles MouseClick. This handler does not process clicks directly.
