@@ -6,6 +6,6 @@
     <RootNamespace>Engine</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Configs\**\*.cs;Diagnostics\**\*.cs;Logging\**\*.cs;Mathematics\**\*.cs;Network\**\*.cs;Physics\**\*.cs;Randomization\**\*.cs;Timing\**\*.cs" />
+    <Compile Include="Configs\**\*.cs;Diagnostics\**\*.cs;Localization\**\*.cs;Logging\**\*.cs;Mathematics\**\*.cs;Network\**\*.cs;Physics\**\*.cs;Randomization\**\*.cs;Timing\**\*.cs" />
   </ItemGroup>
 </Project>

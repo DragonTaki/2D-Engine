@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/01
-// Update Date: 2026/10/01
-// Version: v1.0
+// Update Date: 2026/10/06
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -26,6 +26,9 @@ namespace Engine.Configs
         /// <summary>Subfolder of <see cref="AssetsFolder"/> holding the bundled font files.</summary>
         public const string FontFolderName = "Font";
 
+        /// <summary>Subfolder of <see cref="AssetsFolder"/> holding the language files (<c>Localization.Lang</c>).</summary>
+        public const string LangFolderName = "Lang";
+
         /// <summary>File name of the plain-text log written by <c>LogFileManager</c>.</summary>
         public const string LogFileName = "log.txt";
 
@@ -37,6 +40,9 @@ namespace Engine.Configs
 
         /// <summary><c>Assets/Font/</c>: the bundled fonts <c>FontManager</c> loads.</summary>
         public static string FontFolder => Path.Combine(AssetsFolder, FontFolderName);
+
+        /// <summary>The bundled language files: <c>Assets/Lang</c> next to the executable.</summary>
+        public static string LangFolder => Path.Combine(AssetsFolder, LangFolderName);
 
         /// <summary>The log file <c>LogFileManager.SaveLog</c> appends to (next to the executable).</summary>
         public static string LogFilePath => Path.Combine(AppBaseDirectory, LogFileName);
