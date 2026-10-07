@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- The engine's core: no drawing, no UI (math, physics, timing, logging, randomization,
-       configs and the settings entry, diagnostics switches, network). -->
+       configs and the settings entry, diagnostics switches). -->
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <RootNamespace>Engine</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Configs\**\*.cs;Diagnostics\**\*.cs;Localization\**\*.cs;Logging\**\*.cs;Mathematics\**\*.cs;Network\**\*.cs;Physics\**\*.cs;Randomization\**\*.cs;Timing\**\*.cs" />
+    <Compile Include="Configs\**\*.cs;Diagnostics\**\*.cs;Localization\**\*.cs;Logging\**\*.cs;Mathematics\**\*.cs;Physics\**\*.cs;Randomization\**\*.cs;Timing\**\*.cs" />
   </ItemGroup>
 </Project>
