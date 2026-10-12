@@ -1,0 +1,24 @@
+<!--
+Engine.UiGallery.csproj
+Do not distribute or modify
+Author: DragonTaki (https://github.com/DragonTaki)
+Create Date: 2026/10/12
+Update Date: 2026/10/12
+Version: v1.0
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <AssemblyName>Engine.UiGallery</AssemblyName>
+    <RootNamespace>Engine.UiGallery</RootNamespace>
+    <RollForward>LatestMajor</RollForward>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Host\**\*.cs;UI\**\*.cs" />
+    <ProjectReference Include="..\Engine.csproj" />
+    <ProjectReference Include="..\Engine.UI.csproj" />
+    <ProjectReference Include="..\Engine.Platform.Skia.csproj" />
+    <Content Include="..\..\Assets\Font\*.otf;..\..\Assets\Font\*.ttf" LinkBase="Assets\Font" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
