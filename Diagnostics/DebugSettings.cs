@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/05
 // Update Date: 2026/10/12
-// Version: v1.1
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using System.Collections.Generic;
@@ -62,7 +62,7 @@ namespace Engine.Diagnostics
             SettingsKey.Bool("debug", "layout_outlines", () => LayoutOutlines, v => LayoutOutlines = v, Default.LayoutOutlines,
                 "視覺除錯：文字框畫灰色實線外框（看出排版範圍；選單的虛線外框是設計，一律畫）。"),
             SettingsKey.Enum("debug", "menu_frame_style", () => MenuFrameStyle, v => MenuFrameStyle = v, Default.MenuFrameStyle,
-                "視覺除錯：主選單外框的樣式（ThinLine、DoubleLine、Rounded、CornerBrackets、SoftGlow、FilledPanel、None）；僅供比較挑選。"),
+                "視覺除錯：主選單外框的樣式（ThinLine、DoubleLine、Rounded、CornerBrackets、SoftGlow、FilledPanel、GlowPanel、None）；僅供比較挑選。"),
             SettingsKey.Bool("debug", "star_effect_frames", () => StarEffectFrames, v => StarEffectFrames = v, Default.StarEffectFrames,
                 "視覺除錯：星空背景每個特效開始時，用特效的除錯顏色框出它的範圍。"),
             SettingsKey.Bool("debug", "show_fps", () => ShowFps, v => ShowFps = v, Default.ShowFps,

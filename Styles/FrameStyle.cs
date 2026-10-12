@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/12
 // Update Date: 2026/10/12
-// Version: v1.0
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System.Drawing;
@@ -43,6 +43,54 @@ namespace Engine.Styles
         /// <param name="color">The frame's colour (its alpha is scaled by the style's own).</param>
         /// <param name="tail">The tail on the left edge, or null for none (the tail is in the same coordinates as <paramref name="bounds"/>).</param>
         public abstract void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail);
+
+        /// <summary>How far in from the right edge a <see cref="FrameGap"/> cuts (more than any style's outermost line and glow).</summary>
+        public const float GapReach = 18f;
+
+        /// <summary>Draws the frame with an opening on its right edge (see <see cref="FrameGeometry.GapClipRects"/>); the rest is as <see cref="Draw(IGraphics, RectangleF, Color, FrameTail?)"/>.</summary>
+        /// <param name="g">Where to draw.</param>
+        /// <param name="bounds">The panel's bounds (absolute).</param>
+        /// <param name="color">The frame's colour.</param>
+        /// <param name="tail">The tail on the left edge, or null for none.</param>
+        /// <param name="gap">The opening on the right edge, or null for none.</param>
+        public void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail, FrameGap? gap)
+        {
+            if (gap is not FrameGap opening)
+            {
+                Draw(g, bounds, color, tail);
+                return;
+            }
+
+            foreach (var rect in FrameGeometry.GapClipRects(bounds, opening, GapReach))
+            {
+                g.SetClip(rect);
+                try
+                {
+                    Draw(g, bounds, color, tail);
+                }
+                finally
+                {
+                    g.ResetClip();
+                }
+            }
+        }
+
+        /// <summary>The tail as this style draws it: its middle moved to where <see cref="FrameGeometry.ClampTailCentre"/> puts it.</summary>
+        /// <param name="bounds">The panel's bounds (absolute).</param>
+        /// <param name="tail">The wanted tail.</param>
+        public FrameTail ClampedTail(RectangleF bounds, FrameTail tail) =>
+            tail with { CentreY = ClampTailCentre(bounds, tail) };
+
+        /// <summary>Where this style puts the middle of <paramref name="tail"/> (default: within the straight part of the left edge, between the rounded corners).</summary>
+        protected virtual float ClampTailCentre(RectangleF bounds, FrameTail tail)
+        {
+            var inner = Deflate(bounds, Inset);
+            float r = FrameGeometry.ClampRadius(CornerRadius, inner.Width, inner.Height);
+            return FrameGeometry.ClampTailCentre(inner.Y, inner.Height, r, tail.HalfHeight, tail.CentreY);
+        }
+
+        /// <summary>The outline's corner radius (0 for a style with none).</summary>
+        protected virtual float CornerRadius => 0f;
 
         /// <summary><paramref name="bounds"/> moved in by <paramref name="amount"/> on every side.</summary>
         protected static RectangleF Deflate(RectangleF bounds, float amount) =>

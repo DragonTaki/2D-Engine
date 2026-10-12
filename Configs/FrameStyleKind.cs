@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/12
 // Update Date: 2026/10/12
-// Version: v1.0
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 namespace Engine.Configs
@@ -22,6 +22,7 @@ namespace Engine.Configs
         CornerBrackets,
         SoftGlow,
         FilledPanel,
+        GlowPanel,
         None,
     }
 }

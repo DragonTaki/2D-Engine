@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/12
 // Update Date: 2026/10/12
-// Version: v1.0
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -35,6 +35,7 @@ namespace Engine.Styles
             new CornerBracketsFrame(),
             new SoftGlowFrame(),
             new FilledPanelFrame(),
+            new GlowPanelFrame(),
             new NoFrame(),
         };
 
@@ -74,6 +75,8 @@ namespace Engine.Styles
 
             public override float Inset => _width / 2f + 1f;
 
+            protected override float CornerRadius => _radius;
+
             public override void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
             {
                 using var path = FrameGeometry.CreateOutline(Deflate(bounds, Inset), _radius, tail);
@@ -89,6 +92,8 @@ namespace Engine.Styles
             public DoubleLineFrame() : base(FrameStyleKind.DoubleLine, "Double line") { }
 
             public override float Inset => OuterWidth / 2f + 1f;
+
+            protected override float CornerRadius => Radius;
 
             public override void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
             {
@@ -108,6 +113,13 @@ namespace Engine.Styles
             public CornerBracketsFrame() : base(FrameStyleKind.CornerBrackets, "Corner brackets") { }
 
             public override float Inset => Width / 2f + 1f;
+
+            protected override float ClampTailCentre(RectangleF bounds, FrameTail tail)
+            {
+                var r = Deflate(bounds, Inset);
+                float arm = Math.Min(MaxArm, Math.Min(r.Width, r.Height) / 3f);
+                return FrameGeometry.ClampTailCentre(r.Top, r.Height, arm, tail.HalfHeight + Stub, tail.CentreY);
+            }
 
             public override void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
             {
@@ -145,6 +157,8 @@ namespace Engine.Styles
 
             public override float Inset => Halo[0].width / 2f + 1f;
 
+            protected override float CornerRadius => Radius;
+
             public override void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
             {
                 using var path = FrameGeometry.CreateOutline(Deflate(bounds, Inset), Radius, tail);
@@ -163,11 +177,35 @@ namespace Engine.Styles
 
             public override float Inset => Width / 2f + 1f;
 
+            protected override float CornerRadius => Radius;
+
             public override void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
             {
                 using var path = FrameGeometry.CreateOutline(Deflate(bounds, Inset), Radius, tail);
                 Fill(g, path, Scaled(color, 0.14f));
                 Stroke(g, path, Scaled(color, 0.9f), Width);
+            }
+        }
+
+        /// <summary>A soft halo around a translucent fill and a solid border: the soft glow and the filled panel together.</summary>
+        private sealed class GlowPanelFrame : FrameStyle
+        {
+            private const float CoreWidth = 2f, Radius = 16f;
+            private static readonly (float width, float alpha)[] Halo = { (12f, 0.07f), (8f, 0.12f), (5f, 0.2f) };
+
+            public GlowPanelFrame() : base(FrameStyleKind.GlowPanel, "Glow + panel") { }
+
+            public override float Inset => Halo[0].width / 2f + 1f;
+
+            protected override float CornerRadius => Radius;
+
+            public override void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
+            {
+                using var path = FrameGeometry.CreateOutline(Deflate(bounds, Inset), Radius, tail);
+                Fill(g, path, Scaled(color, 0.14f));
+                foreach (var (width, alpha) in Halo)
+                    Stroke(g, path, Scaled(color, alpha), width);
+                Stroke(g, path, Scaled(color, 0.95f), CoreWidth);
             }
         }
 
