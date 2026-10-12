@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/02
-// Update Date: 2026/10/02
-// Version: v1.0
+// Update Date: 2026/10/12
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -27,6 +27,12 @@ namespace Engine.UI.Core.Handlers
 
         /// <summary>Invoked with the text when the focus ends (Enter, Escape, a press elsewhere) and the text differs from when it began.</summary>
         public Action<string>? TextCommitted { get; set; }
+
+        /// <summary>
+        /// Invoked with the text when Enter ends the edit (e.g. a login form sends on Enter), after
+        /// <see cref="TextCommitted"/>; invoked even when the text did not change.
+        /// </summary>
+        public Action<string>? Submitted { get; set; }
 #nullable disable
 
         public UITextFieldHandler() { }
@@ -38,5 +44,7 @@ namespace Engine.UI.Core.Handlers
             if (Element.Text != _textAtFocus)
                 TextCommitted?.Invoke(Element.Text);
         }
+
+        protected override void OnSubmitted() => Submitted?.Invoke(Element.Text);
     }
 }

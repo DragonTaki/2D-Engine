@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/09/24
-// Update Date: 2026/10/02
-// Version: v1.1
+// Update Date: 2026/10/12
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using System.Numerics;
@@ -122,6 +122,8 @@ namespace Engine.Platform.Skia
                 Key.Right => UIKey.Right,
                 Key.Home => UIKey.Home,
                 Key.End => UIKey.End,
+                // Plain Tab only: Shift+Tab (backward) has no focus order to go back through.
+                Key.Tab when !keyboard.IsKeyPressed(Key.ShiftLeft) && !keyboard.IsKeyPressed(Key.ShiftRight) => UIKey.Tab,
                 _ => null,
             };
             if (uiKey is UIKey k)

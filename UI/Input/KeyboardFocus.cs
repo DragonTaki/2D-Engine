@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/02
-// Update Date: 2026/10/02
-// Version: v1.0
+// Update Date: 2026/10/12
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using Engine.UI.Constants.Components;
@@ -56,7 +56,9 @@ namespace Engine.UI.Input
 
         /// <summary>
         /// Sends an editing key to the focused target; after a used <see cref="UIKey.Enter"/> or
-        /// <see cref="UIKey.Escape"/> the focus ends.
+        /// <see cref="UIKey.Escape"/> the focus ends, and after a used <see cref="UIKey.Tab"/> it
+        /// moves to the target's <see cref="IKeyboardInputTarget.NextTarget"/> when that one is
+        /// shown (the focus stays otherwise).
         /// </summary>
         /// <returns>Whether a target used it.</returns>
         public bool OnKey(UIKey key)
@@ -67,6 +69,12 @@ namespace Engine.UI.Input
             bool handled = Focused.HandleKey(key);
             if (handled && (key == UIKey.Enter || key == UIKey.Escape))
                 ClearFocus();
+            else if (handled && key == UIKey.Tab)
+            {
+                var next = Focused?.NextTarget;
+                if (next != null && IsShown(next.TargetElement))
+                    SetFocus(next);
+            }
             return handled;
         }
 

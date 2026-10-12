@@ -3,6 +3,7 @@ using System;
 using Engine.Platform;
 using Engine.Styles;
 using Engine.UI.Constants.Components;
+using Engine.UI.Core.Bases;
 using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Renderers;
 
@@ -18,11 +19,12 @@ namespace Engine.UI.Core.Elements
     /// (<see cref="Input.KeyboardFocus"/>, through its handler, an
     /// <see cref="Input.IKeyboardInputTarget"/>): typed characters are inserted at the caret,
     /// Backspace / Delete / Left / Right / Home / End edit and move it, Enter confirms and
-    /// Escape puts back the text the edit started with (both end the focus); a click places
-    /// the caret. The handler reports every change (TextChanged)
-    /// and the confirmed text when the focus ends (TextCommitted).
+    /// Escape puts back the text the edit started with (both end the focus), Tab moves the
+    /// focus to <see cref="NextFocus"/>; a click places the caret. The handler reports every
+    /// change (TextChanged) and the confirmed text when the focus ends (TextCommitted).
     /// Drawn by the renderer with <see cref="Style"/>; text wider than the
-    /// field scrolls so the caret stays visible.
+    /// field scrolls so the caret stays visible. With <see cref="MaskChar"/> set (a password
+    /// field) the field shows and measures <see cref="DisplayText"/> instead of the text.
     /// </summary>
     public abstract class UITextInputElement<TElement, THandler, TRenderer> : UIElement<TElement, THandler, TRenderer>
         where TElement : UITextInputElement<TElement, THandler, TRenderer>
@@ -64,6 +66,29 @@ namespace Engine.UI.Core.Elements
                     Text = _text;
             }
         }
+
+        /// <summary>
+        /// The character every character of <see cref="Text"/> is shown as (e.g. <c>'●'</c> for a
+        /// password field); null (the default) shows the text itself. Only the display changes:
+        /// <see cref="Text"/> keeps the real characters.
+        /// </summary>
+        public char? MaskChar { get; set; }
+
+        /// <summary>
+        /// What the field shows: <see cref="Text"/>, or one <see cref="MaskChar"/> per character
+        /// when masked (same length, so caret indices are the same in both). The renderer draws
+        /// and measures this, and the click hit test (<see cref="CaretIndexAt"/>) measures it, so
+        /// the caret lines up with the glyphs actually drawn.
+        /// </summary>
+        public string DisplayText => MaskChar is char mask ? new string(mask, _text.Length) : _text;
+
+        /// <summary>
+        /// The element Tab moves the keyboard focus to (its handler must be an
+        /// <see cref="Input.IKeyboardInputTarget"/>, e.g. another text or number field; normally
+        /// the next field in the same container); null keeps the focus here. Not owned: never
+        /// disposed here, and the focus does not move while it is not shown.
+        /// </summary>
+        public UIElementBase NextFocus { get; set; }
 
         /// <summary>Text shown dimmed while the field is empty and not focused.</summary>
         public string Placeholder { get; set; } = string.Empty;
@@ -133,16 +158,18 @@ namespace Engine.UI.Core.Elements
             var style = Style ?? TextFieldDefaults.Style;
             float local = x - (GetCurrentAbsolutePosition().X + style.TextInset) + TextScroll;
 
+            // The shown text (masked or not), as the renderer measures it.
+            string shown = DisplayText;
             using var g = GraphicsBackend.Factory.CreateMeasurementContext();
             float previous = 0f;
-            for (int i = 1; i <= _text.Length; i++)
+            for (int i = 1; i <= shown.Length; i++)
             {
-                float width = MeasurePrefix(g, _text, i, Font);
+                float width = MeasurePrefix(g, shown, i, Font);
                 if (local < (previous + width) / 2f)
                     return i - 1;
                 previous = width;
             }
-            return _text.Length;
+            return shown.Length;
         }
 
         /// <summary>

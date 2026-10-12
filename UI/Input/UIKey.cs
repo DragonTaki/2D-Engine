@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/02
-// Update Date: 2026/10/02
-// Version: v1.0
+// Update Date: 2026/10/12
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 namespace Engine.UI.Input
@@ -38,5 +38,11 @@ namespace Engine.UI.Input
 
         /// <summary>Caret to the end.</summary>
         End,
+
+        /// <summary>
+        /// Moves the keyboard focus to the focused target's next one
+        /// (<see cref="IKeyboardInputTarget.NextTarget"/>), if it has one. Shift+Tab is not translated.
+        /// </summary>
+        Tab,
     }
 }

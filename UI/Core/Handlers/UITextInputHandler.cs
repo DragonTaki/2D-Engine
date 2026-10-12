@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/02
-// Update Date: 2026/10/05
-// Version: v1.1
+// Update Date: 2026/10/12
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using System;
@@ -30,12 +30,17 @@ namespace Engine.UI.Core.Handlers
         /// <summary>The text when the field got the focus (what Escape puts back, and what a commit is compared with).</summary>
         protected string _textAtFocus = string.Empty;
 
+        /// <summary>Whether Enter ended the current focus (<see cref="OnSubmitted"/> runs once the focus is gone).</summary>
+        private bool _submitPending;
 
         protected UITextInputHandler() { }
 
         #region IKeyboardInputTarget
 
         UIElementBase IKeyboardInputTarget.TargetElement => Element;
+
+        /// <summary>The handler of the element's <c>NextFocus</c>, when that handler takes keyboard input.</summary>
+        IKeyboardInputTarget IKeyboardInputTarget.NextTarget => Element.NextFocus?.HandlerBase as IKeyboardInputTarget;
 
         /// <summary>Inserts <paramref name="c"/> at the caret (a full field takes it without change).</summary>
         public bool HandleTextInput(char c)
@@ -55,7 +60,11 @@ namespace Engine.UI.Core.Handlers
             return true;
         }
 
-        /// <summary>Backspace / Delete remove a character, the arrows / Home / End move the caret, Escape puts back the starting text; Enter only confirms.</summary>
+        /// <summary>
+        /// Backspace / Delete remove a character, the arrows / Home / End move the caret, Escape
+        /// puts back the starting text; Enter confirms (and submits, see <see cref="OnSubmitted"/>);
+        /// Tab is used (nothing typed) so the focus can move to the next field.
+        /// </summary>
         public bool HandleKey(UIKey key)
         {
             if (!Element.IsEnabled)
@@ -86,6 +95,10 @@ namespace Engine.UI.Core.Handlers
                     Element.CaretIndex = text.Length;
                     return true;
                 case UIKey.Enter:
+                    // The focus ends right after this; the submit follows the commit (OnFocusChanged).
+                    _submitPending = true;
+                    return true;
+                case UIKey.Tab:
                     return true;
                 case UIKey.Escape:
                     if (text != _textAtFocus)
@@ -114,12 +127,22 @@ namespace Engine.UI.Core.Handlers
         /// <summary>Called when the focus ends (after <see cref="UITextInputElement{TElement, THandler, TRenderer}.IsFocused"/> turned false).</summary>
         protected virtual void OnFocusEnded() { }
 
-        /// <summary>Focus gained: remember the text, caret to the end. Focus lost: <see cref="OnFocusEnded"/>.</summary>
+        /// <summary>
+        /// Called when Enter ended the focus, after <see cref="OnFocusEnded"/> (so a commit is
+        /// reported before the submit, and the field no longer has the focus). Nothing by default.
+        /// </summary>
+        protected virtual void OnSubmitted() { }
+
+        /// <summary>
+        /// Focus gained: remember the text, caret to the end. Focus lost: <see cref="OnFocusEnded"/>,
+        /// then <see cref="OnSubmitted"/> when Enter ended it.
+        /// </summary>
         public void OnFocusChanged(bool focused)
         {
             Element.IsFocused = focused;
             if (focused)
             {
+                _submitPending = false;
                 _textAtFocus = Element.Text;
                 Element.CaretIndex = Element.Text.Length;
                 OnFocusStarted();
@@ -127,6 +150,11 @@ namespace Engine.UI.Core.Handlers
             }
 
             OnFocusEnded();
+            if (_submitPending)
+            {
+                _submitPending = false;
+                OnSubmitted();
+            }
         }
 
         #endregion

@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/02
-// Update Date: 2026/10/02
-// Version: v1.0
+// Update Date: 2026/10/12
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using Engine.UI.Core.Bases;
@@ -31,5 +31,11 @@ namespace Engine.UI.Input
 
         /// <summary>The focus was given to (<paramref name="focused"/> true) or taken from this target.</summary>
         void OnFocusChanged(bool focused);
+
+        /// <summary>
+        /// Where a used <see cref="UIKey.Tab"/> moves the focus (e.g. a login form's password field
+        /// after its name field); null (the default) keeps the focus here.
+        /// </summary>
+        IKeyboardInputTarget NextTarget => null;
     }
 }

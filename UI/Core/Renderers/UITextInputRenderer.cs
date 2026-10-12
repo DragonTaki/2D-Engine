@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/02
-// Update Date: 2026/10/02
-// Version: v1.0
+// Update Date: 2026/10/12
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -22,7 +22,8 @@ namespace Engine.UI.Core.Renderers
     /// (<see cref="UITextFieldRenderer"/>, <see cref="UINumberFieldRenderer"/>): the box (the focused box while focused), then -
     /// clipped to the text area (the box minus the style's inset) - the text or the placeholder,
     /// vertically centered and scrolled so the caret stays visible, and the blinking caret while
-    /// focused.
+    /// focused. The text drawn and measured is the element's <c>DisplayText</c> (the mask
+    /// characters of a password field), the same the click hit test measures.
     /// </summary>
     public abstract class UITextInputRenderer<TElement, THandler, TRenderer> : UIRenderer<TElement, THandler, TRenderer>
         where TElement : UITextInputElement<TElement, THandler, TRenderer>
@@ -70,7 +71,8 @@ namespace Engine.UI.Core.Renderers
                 return;
 
             float opacity = element.IsEnabled ? 1f : Math.Clamp(style.DisabledOpacity, 0f, 1f);
-            string text = element.Text;
+            // Masked fields draw (and measure) their mask characters, never the real text.
+            string text = element.DisplayText;
             bool placeholder = text.Length == 0 && !element.IsFocused && !string.IsNullOrEmpty(element.Placeholder);
             string shown = placeholder ? element.Placeholder : text;
 

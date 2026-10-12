@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/09/24
-// Update Date: 2026/10/02
-// Version: v1.1
+// Update Date: 2026/10/12
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using System.Windows.Forms;
@@ -68,6 +68,10 @@ namespace Engine.Platform.WinForms
                 Keys.Right => UIKey.Right,
                 Keys.Home => UIKey.Home,
                 Keys.End => UIKey.End,
+                // Plain Tab only: Shift+Tab (backward) has no focus order to go back through.
+                // The form must report Tab as an input key, or WinForms uses it for its own
+                // control navigation and KeyDown never sees it (Launcher.MainForm.IsInputKey).
+                Keys.Tab when !e.Shift => UIKey.Tab,
                 _ => null,
             };
             if (key is UIKey k && _inputManager.OnKeyDown(k))
