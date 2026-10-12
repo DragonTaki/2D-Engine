@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/04
 // Update Date: 2026/10/12
-// Version: v1.3
+// Version: v1.4
 /* ----- ----- ----- ----- */
 
 using Engine.Configs;
@@ -44,7 +44,7 @@ namespace Engine.Diagnostics
 
         #region 視覺除錯 (visual debugging)
 
-        /// <summary>Whether a label's text gets a semi-transparent red background (shows the label's bounds); a label with its own <c>DebugBackgroundSwitch</c> (the log box's lines) follows that instead.</summary>
+        /// <summary>Whether a debug log line's label gets a semi-transparent red background (shows the label's bounds; ordinary labels never do); a label with its own <c>DebugBackgroundSwitch</c> (the log box's lines) follows that instead.</summary>
         public static bool LabelBackgrounds { get; set; } = false;
 
         /// <summary>Whether text boxes get a grey solid outline (shows their layout bounds; a menu's dashed outline is design and always drawn).</summary>

@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/19
-// Update Date: 2026/10/05
-// Version: v1.4
+// Update Date: 2026/10/12
+// Version: v1.5
 /* ----- ----- ----- ----- */
 
 using System;
@@ -131,6 +131,13 @@ namespace Engine.UI.Core.Elements
         /// A text box can give its lines another switch (<c>UITextBox.LineDebugBackgroundSwitch</c>).
         /// </summary>
         public Func<bool> DebugBackgroundSwitch { get; set; }
+
+        /// <summary>
+        /// Whether this label is a debug log line and so may get the red debug background (see
+        /// <see cref="DebugBackgroundSwitch"/>). False for every ordinary label, which never gets it
+        /// (author 2026-10-12); the log box's lines set it.
+        /// </summary>
+        public bool ShowsDebugBackground { get; set; }
 
         /// <summary>
         /// Text alignment within the label bounds.

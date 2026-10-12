@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/24
-// Update Date: 2026/10/05
-// Version: v1.2
+// Update Date: 2026/10/12
+// Version: v1.3
 /* ----- ----- ----- ----- */
 
 using System;
@@ -171,6 +171,7 @@ namespace Engine.UI.Core.Elements
                 label.WordWrap = false; // One Label per line
                 label.TextAlign = ContentAlign.MiddleLeft;
                 label.DebugBackgroundSwitch = LineDebugBackgroundSwitch;
+                label.ShowsDebugBackground = true;
 
                 label.LocalPosition.Current.Y = y;
 

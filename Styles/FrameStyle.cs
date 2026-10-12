@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/12
 // Update Date: 2026/10/12
-// Version: v1.1
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using System.Drawing;
@@ -34,7 +34,15 @@ namespace Engine.Styles
         /// <summary>The style's human-readable name (English; unique among the styles).</summary>
         public string Name { get; }
 
-        /// <summary>How far inside the bounds the frame's outline is drawn, so strokes and glows stay within them.</summary>
+        /// <summary>
+        /// The empty margin between a panel's bounds (or the screen's edge) and every style's outline
+        /// (author 2026-10-12: frames were drawn too close to the edge). The one place to change it; each
+        /// style's <see cref="Inset"/> starts with it, and a tail's point stays that far in from where
+        /// its caller wants it unless the caller adds the margin to the tail's depth.
+        /// </summary>
+        public const float EdgeMargin = 10f;
+
+        /// <summary>How far inside the bounds the frame's outline is drawn (<see cref="EdgeMargin"/> plus what the strokes and glows need), so they stay within them.</summary>
         public abstract float Inset { get; }
 
         /// <summary>Draws the frame.</summary>
@@ -45,7 +53,7 @@ namespace Engine.Styles
         public abstract void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail);
 
         /// <summary>How far in from the right edge a <see cref="FrameGap"/> cuts (more than any style's outermost line and glow).</summary>
-        public const float GapReach = 18f;
+        public const float GapReach = EdgeMargin + 18f;
 
         /// <summary>Draws the frame with an opening on its right edge (see <see cref="FrameGeometry.GapClipRects"/>); the rest is as <see cref="Draw(IGraphics, RectangleF, Color, FrameTail?)"/>.</summary>
         /// <param name="g">Where to draw.</param>

@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/12
 // Update Date: 2026/10/12
-// Version: v1.1
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using System;
@@ -73,7 +73,7 @@ namespace Engine.Styles
                 _alpha = alpha;
             }
 
-            public override float Inset => _width / 2f + 1f;
+            public override float Inset => EdgeMargin + _width / 2f + 1f;
 
             protected override float CornerRadius => _radius;
 
@@ -91,7 +91,7 @@ namespace Engine.Styles
 
             public DoubleLineFrame() : base(FrameStyleKind.DoubleLine, "Double line") { }
 
-            public override float Inset => OuterWidth / 2f + 1f;
+            public override float Inset => EdgeMargin + OuterWidth / 2f + 1f;
 
             protected override float CornerRadius => Radius;
 
@@ -112,7 +112,7 @@ namespace Engine.Styles
 
             public CornerBracketsFrame() : base(FrameStyleKind.CornerBrackets, "Corner brackets") { }
 
-            public override float Inset => Width / 2f + 1f;
+            public override float Inset => EdgeMargin + Width / 2f + 1f;
 
             protected override float ClampTailCentre(RectangleF bounds, FrameTail tail)
             {
@@ -155,7 +155,7 @@ namespace Engine.Styles
 
             public SoftGlowFrame() : base(FrameStyleKind.SoftGlow, "Soft glow") { }
 
-            public override float Inset => Halo[0].width / 2f + 1f;
+            public override float Inset => EdgeMargin + Halo[0].width / 2f + 1f;
 
             protected override float CornerRadius => Radius;
 
@@ -175,7 +175,7 @@ namespace Engine.Styles
 
             public FilledPanelFrame() : base(FrameStyleKind.FilledPanel, "Filled panel") { }
 
-            public override float Inset => Width / 2f + 1f;
+            public override float Inset => EdgeMargin + Width / 2f + 1f;
 
             protected override float CornerRadius => Radius;
 
@@ -195,7 +195,7 @@ namespace Engine.Styles
 
             public GlowPanelFrame() : base(FrameStyleKind.GlowPanel, "Glow + panel") { }
 
-            public override float Inset => Halo[0].width / 2f + 1f;
+            public override float Inset => EdgeMargin + Halo[0].width / 2f + 1f;
 
             protected override float CornerRadius => Radius;
 
@@ -214,19 +214,20 @@ namespace Engine.Styles
         {
             public NoFrame() : base(FrameStyleKind.None, "None") { }
 
-            public override float Inset => 0f;
+            public override float Inset => EdgeMargin;
 
             public override void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
             {
                 if (tail is not FrameTail t)
                     return;
 
-                float cy = FrameGeometry.ClampTailCentre(bounds.Y, bounds.Height, 0f, t.HalfHeight, t.CentreY);
+                var r = Deflate(bounds, Inset);
+                float cy = FrameGeometry.ClampTailCentre(r.Y, r.Height, 0f, t.HalfHeight, t.CentreY);
                 using var path = GraphicsBackend.Factory.CreatePath();
                 path.StartFigure();
-                path.AddLine(bounds.X, cy - t.HalfHeight, bounds.X - t.Depth, cy);
-                path.AddLine(bounds.X - t.Depth, cy, bounds.X, cy + t.HalfHeight);
-                path.AddLine(bounds.X, cy + t.HalfHeight, bounds.X, cy - t.HalfHeight);
+                path.AddLine(r.X, cy - t.HalfHeight, r.X - t.Depth, cy);
+                path.AddLine(r.X - t.Depth, cy, r.X, cy + t.HalfHeight);
+                path.AddLine(r.X, cy + t.HalfHeight, r.X, cy - t.HalfHeight);
                 path.CloseFigure();
                 Fill(g, path, Scaled(color, 0.9f));
             }

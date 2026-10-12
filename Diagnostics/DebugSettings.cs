@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/05
 // Update Date: 2026/10/12
-// Version: v1.2
+// Version: v1.3
 /* ----- ----- ----- ----- */
 
 using System.Collections.Generic;
@@ -29,7 +29,7 @@ namespace Engine.Diagnostics
         /// <summary>Whether developer trace lines (UI init / menu selections / network status) are printed to the console. Default: true</summary>
         public bool ConsoleTrace { get; set; } = true;
 
-        /// <summary>Whether labels get a semi-transparent red background (visual debugging; always drawn before the switch existed). Default: true</summary>
+        /// <summary>Whether the debug log's labels get a semi-transparent red background (visual debugging; ordinary labels never do). Default: true</summary>
         public bool LabelBackgrounds { get; set; } = true;
 
         /// <summary>Whether text boxes get a grey layout outline (visual debugging; always drawn before the switch existed). Default: true</summary>
@@ -58,7 +58,7 @@ namespace Engine.Diagnostics
             SettingsKey.Bool("debug", "console_trace", () => ConsoleTrace, v => ConsoleTrace = v, Default.ConsoleTrace,
                 "紀錄：是否在主控台印出開發用的追蹤訊息（介面元件初始化、選單選擇、連線狀態；錯誤訊息不受影響，一律會印）。"),
             SettingsKey.Bool("debug", "label_backgrounds", () => LabelBackgrounds, v => LabelBackgrounds = v, Default.LabelBackgrounds,
-                "視覺除錯：文字標籤後面畫半透明紅色背景（看出標籤的範圍；紀錄框的訊息跟著「除錯訊息」）。"),
+                "視覺除錯：除錯紀錄（紀錄框）的文字標籤後面畫半透明紅色背景（看出標籤的範圍；一般標籤不畫；紀錄框的訊息另跟著「除錯訊息」）。"),
             SettingsKey.Bool("debug", "layout_outlines", () => LayoutOutlines, v => LayoutOutlines = v, Default.LayoutOutlines,
                 "視覺除錯：文字框畫灰色實線外框（看出排版範圍；選單的虛線外框是設計，一律畫）。"),
             SettingsKey.Enum("debug", "menu_frame_style", () => MenuFrameStyle, v => MenuFrameStyle = v, Default.MenuFrameStyle,
