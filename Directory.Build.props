@@ -1,5 +1,5 @@
 <Project>
-  <!-- Several projects share this folder (Engine, Engine.UI and the two platform backends):
+  <!-- Several projects share this folder (Engine, Engine.UI, the two platform backends and the credential stores):
        give each its own obj/bin, and no default item globs (each project lists its folders). -->
   <PropertyGroup>
     <BaseIntermediateOutputPath>obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>

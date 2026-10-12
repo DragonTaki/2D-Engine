@@ -7,7 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Geometry\**\*.cs;Globals\**\*.cs;GraphicsUtils\**\*.cs;Platform\**\*.cs;Styles\**\*.cs;UI\**\*.cs" />
-    <Compile Remove="Platform\WinForms\**\*.cs;Platform\Skia\**\*.cs" />
+    <Compile Remove="Platform\WinForms\**\*.cs;Platform\Skia\**\*.cs;Platform\Credentials\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Engine.csproj" />
