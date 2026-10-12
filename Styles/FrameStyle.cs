@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/12
 // Update Date: 2026/10/12
-// Version: v1.3
+// Version: v1.4
 /* ----- ----- ----- ----- */
 
 using System.Drawing;
@@ -62,38 +62,48 @@ namespace Engine.Styles
         /// <summary>The crisp lines of the frame (and a tail's point). The only part an opening cuts.</summary>
         public abstract void DrawLines(IGraphics g, RectangleF bounds, Color color, FrameTail? tail);
 
-        /// <summary>How far in from the right edge the crisp lines reach (the part an opening must cut); the glow and fill reach no further out of it than this.</summary>
-        public virtual float LineReach => Inset + 4f;
+        /// <summary>
+        /// The area this frame covers when drawn with <paramref name="tail"/>: the same outline the style
+        /// strokes (its bounds moved in by <see cref="Inset"/>, its corners and its tail), grown by
+        /// <paramref name="grow"/> on every side so no anti-aliased seam is left at its edge. The caller disposes the path.
+        /// </summary>
+        /// <param name="bounds">The panel's bounds (absolute).</param>
+        /// <param name="tail">The tail on the left edge, or null for none.</param>
+        /// <param name="grow">How far to grow the outline.</param>
+        public virtual IGraphicsPath CreateShapePath(RectangleF bounds, FrameTail? tail, float grow)
+        {
+            var inner = Deflate(bounds, Inset - grow);
+            FrameTail? shaped = tail is FrameTail t
+                ? new FrameTail(ClampedTail(bounds, t).CentreY, t.Depth + grow, t.HalfHeight + grow)
+                : null;
+            return FrameGeometry.CreateOutline(inner, CornerRadius + grow, shaped);
+        }
 
         /// <summary>
-        /// Draws the frame with an opening on its right edge (see <see cref="FrameGeometry.GapClipRects"/>):
-        /// only the crisp lines yield there; the fill and the glow are drawn right through it.
+        /// Draws the frame (fill, glow and lines, as one picture) with the area of <paramref name="exclude"/>
+        /// left out: nothing of the frame is drawn there, whatever is already under it shows.
         /// </summary>
         /// <param name="g">Where to draw.</param>
         /// <param name="bounds">The panel's bounds (absolute).</param>
         /// <param name="color">The frame's colour.</param>
         /// <param name="tail">The tail on the left edge, or null for none.</param>
-        /// <param name="gap">The opening on the right edge, or null for none.</param>
-        public void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail, FrameGap? gap)
+        /// <param name="exclude">The area to leave out, or null for none (see <see cref="CreateShapePath"/> for another frame's shape).</param>
+        public void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail, IGraphicsPath exclude)
         {
-            if (gap is not FrameGap opening)
+            if (exclude == null)
             {
                 Draw(g, bounds, color, tail);
                 return;
             }
 
-            DrawBackdrop(g, bounds, color, tail);
-            foreach (var rect in FrameGeometry.GapClipRects(bounds, opening, LineReach))
+            g.ExcludeClip(exclude);
+            try
             {
-                g.SetClip(rect);
-                try
-                {
-                    DrawLines(g, bounds, color, tail);
-                }
-                finally
-                {
-                    g.ResetClip();
-                }
+                Draw(g, bounds, color, tail);
+            }
+            finally
+            {
+                g.ResetClip();
             }
         }
 

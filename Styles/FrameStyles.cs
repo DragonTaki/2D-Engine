@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/12
 // Update Date: 2026/10/12
-// Version: v1.3
+// Version: v1.4
 /* ----- ----- ----- ----- */
 
 using System;
@@ -94,8 +94,6 @@ namespace Engine.Styles
             public override float Inset => EdgeMargin + OuterWidth / 2f + 1f;
 
             protected override float CornerRadius => Radius;
-
-            public override float LineReach => Inset + Gap + 3f;
 
             public override void DrawLines(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
             {
@@ -232,6 +230,24 @@ namespace Engine.Styles
             public NoFrame() : base(FrameStyleKind.None, "None") { }
 
             public override float Inset => EdgeMargin;
+
+            public override IGraphicsPath CreateShapePath(RectangleF bounds, FrameTail? tail, float grow)
+            {
+                // Only the tail's point is drawn
+                var r = Deflate(bounds, Inset);
+                var path = GraphicsBackend.Factory.CreatePath();
+                path.StartFigure();
+                if (tail is FrameTail t)
+                {
+                    float cy = FrameGeometry.ClampTailCentre(r.Y, r.Height, 0f, t.HalfHeight, t.CentreY);
+                    float h = t.HalfHeight + grow;
+                    path.AddLine(r.X + grow, cy - h, r.X - t.Depth - grow, cy);
+                    path.AddLine(r.X - t.Depth - grow, cy, r.X + grow, cy + h);
+                    path.AddLine(r.X + grow, cy + h, r.X + grow, cy - h);
+                }
+                path.CloseFigure();
+                return path;
+            }
 
             public override void DrawLines(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
             {

@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/09/23
-// Update Date: 2026/10/05
-// Version: v1.1
+// Update Date: 2026/10/12
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using System.Collections.Generic;
@@ -98,6 +98,13 @@ namespace Engine.Platform.WinForms
         {
             _clipStates.Push(Native.Save());
             Native.IntersectClip(bounds);
+        }
+
+        public void ExcludeClip(IGraphicsPath path)
+        {
+            _clipStates.Push(Native.Save());
+            using var region = new Region(((WinFormsGraphicsPath)path).Native);
+            Native.ExcludeClip(region);
         }
 
         public void ResetClip()

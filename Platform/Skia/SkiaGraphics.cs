@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/09/24
-// Update Date: 2026/10/05
-// Version: v1.1
+// Update Date: 2026/10/12
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using System;
@@ -330,6 +330,13 @@ namespace Engine.Platform.Skia
         {
             Native.Save();
             Native.ClipRect(ToSKRect(bounds));
+            _clipDepth++;
+        }
+
+        public void ExcludeClip(IGraphicsPath path)
+        {
+            Native.Save();
+            Native.ClipPath(((SkiaGraphicsPath)path).Native, SKClipOperation.Difference, true);
             _clipDepth++;
         }
 

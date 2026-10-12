@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/09/23
-// Update Date: 2026/09/23
-// Version: v1.0
+// Update Date: 2026/10/12
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -53,7 +53,14 @@ namespace Engine.Platform
         /// </summary>
         void SetClip(RectangleF bounds);
 
-        /// <summary>Undoes the most recent unmatched <see cref="SetClip"/>, restoring the clip that was in effect before it.</summary>
+        /// <summary>
+        /// Leaves <paramref name="path"/>'s area out of the clip already in effect (anti-aliased where the
+        /// backend can): nothing is drawn inside it. Nests like <see cref="SetClip"/> and is undone by
+        /// the matching <see cref="ResetClip"/> (one <see cref="ResetClip"/> per call of either).
+        /// </summary>
+        void ExcludeClip(IGraphicsPath path);
+
+        /// <summary>Undoes the most recent unmatched <see cref="SetClip"/> or <see cref="ExcludeClip"/>, restoring the clip that was in effect before it.</summary>
         void ResetClip();
 
         /// <summary>
