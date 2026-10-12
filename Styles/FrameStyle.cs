@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/12
 // Update Date: 2026/10/12
-// Version: v1.2
+// Version: v1.3
 /* ----- ----- ----- ----- */
 
 using System.Drawing;
@@ -45,17 +45,30 @@ namespace Engine.Styles
         /// <summary>How far inside the bounds the frame's outline is drawn (<see cref="EdgeMargin"/> plus what the strokes and glows need), so they stay within them.</summary>
         public abstract float Inset { get; }
 
-        /// <summary>Draws the frame.</summary>
+        /// <summary>Draws the frame: <see cref="DrawBackdrop"/> (fill and glow), then <see cref="DrawLines"/>.</summary>
         /// <param name="g">Where to draw.</param>
         /// <param name="bounds">The panel's bounds (absolute).</param>
         /// <param name="color">The frame's colour (its alpha is scaled by the style's own).</param>
         /// <param name="tail">The tail on the left edge, or null for none (the tail is in the same coordinates as <paramref name="bounds"/>).</param>
-        public abstract void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail);
+        public void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
+        {
+            DrawBackdrop(g, bounds, color, tail);
+            DrawLines(g, bounds, color, tail);
+        }
 
-        /// <summary>How far in from the right edge a <see cref="FrameGap"/> cuts (more than any style's outermost line and glow).</summary>
-        public const float GapReach = EdgeMargin + 18f;
+        /// <summary>The soft parts of the frame: the translucent fill and the glow (nothing for a style with neither). Never cut by an opening.</summary>
+        public virtual void DrawBackdrop(IGraphics g, RectangleF bounds, Color color, FrameTail? tail) { }
 
-        /// <summary>Draws the frame with an opening on its right edge (see <see cref="FrameGeometry.GapClipRects"/>); the rest is as <see cref="Draw(IGraphics, RectangleF, Color, FrameTail?)"/>.</summary>
+        /// <summary>The crisp lines of the frame (and a tail's point). The only part an opening cuts.</summary>
+        public abstract void DrawLines(IGraphics g, RectangleF bounds, Color color, FrameTail? tail);
+
+        /// <summary>How far in from the right edge the crisp lines reach (the part an opening must cut); the glow and fill reach no further out of it than this.</summary>
+        public virtual float LineReach => Inset + 4f;
+
+        /// <summary>
+        /// Draws the frame with an opening on its right edge (see <see cref="FrameGeometry.GapClipRects"/>):
+        /// only the crisp lines yield there; the fill and the glow are drawn right through it.
+        /// </summary>
         /// <param name="g">Where to draw.</param>
         /// <param name="bounds">The panel's bounds (absolute).</param>
         /// <param name="color">The frame's colour.</param>
@@ -69,12 +82,13 @@ namespace Engine.Styles
                 return;
             }
 
-            foreach (var rect in FrameGeometry.GapClipRects(bounds, opening, GapReach))
+            DrawBackdrop(g, bounds, color, tail);
+            foreach (var rect in FrameGeometry.GapClipRects(bounds, opening, LineReach))
             {
                 g.SetClip(rect);
                 try
                 {
-                    Draw(g, bounds, color, tail);
+                    DrawLines(g, bounds, color, tail);
                 }
                 finally
                 {

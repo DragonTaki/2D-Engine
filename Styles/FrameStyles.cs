@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/12
 // Update Date: 2026/10/12
-// Version: v1.2
+// Version: v1.3
 /* ----- ----- ----- ----- */
 
 using System;
@@ -77,7 +77,7 @@ namespace Engine.Styles
 
             protected override float CornerRadius => _radius;
 
-            public override void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
+            public override void DrawLines(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
             {
                 using var path = FrameGeometry.CreateOutline(Deflate(bounds, Inset), _radius, tail);
                 Stroke(g, path, Scaled(color, _alpha), _width);
@@ -95,7 +95,9 @@ namespace Engine.Styles
 
             protected override float CornerRadius => Radius;
 
-            public override void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
+            public override float LineReach => Inset + Gap + 3f;
+
+            public override void DrawLines(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
             {
                 var outer = Deflate(bounds, Inset);
                 using (var path = FrameGeometry.CreateOutline(outer, Radius, tail))
@@ -121,7 +123,7 @@ namespace Engine.Styles
                 return FrameGeometry.ClampTailCentre(r.Top, r.Height, arm, tail.HalfHeight + Stub, tail.CentreY);
             }
 
-            public override void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
+            public override void DrawLines(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
             {
                 var r = Deflate(bounds, Inset);
                 float arm = Math.Min(MaxArm, Math.Min(r.Width, r.Height) / 3f);
@@ -159,11 +161,16 @@ namespace Engine.Styles
 
             protected override float CornerRadius => Radius;
 
-            public override void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
+            public override void DrawBackdrop(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
             {
                 using var path = FrameGeometry.CreateOutline(Deflate(bounds, Inset), Radius, tail);
                 foreach (var (width, alpha) in Halo)
                     Stroke(g, path, Scaled(color, alpha), width);
+            }
+
+            public override void DrawLines(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
+            {
+                using var path = FrameGeometry.CreateOutline(Deflate(bounds, Inset), Radius, tail);
                 Stroke(g, path, Scaled(color, 0.95f), CoreWidth);
             }
         }
@@ -179,10 +186,15 @@ namespace Engine.Styles
 
             protected override float CornerRadius => Radius;
 
-            public override void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
+            public override void DrawBackdrop(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
             {
                 using var path = FrameGeometry.CreateOutline(Deflate(bounds, Inset), Radius, tail);
                 Fill(g, path, Scaled(color, 0.14f));
+            }
+
+            public override void DrawLines(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
+            {
+                using var path = FrameGeometry.CreateOutline(Deflate(bounds, Inset), Radius, tail);
                 Stroke(g, path, Scaled(color, 0.9f), Width);
             }
         }
@@ -199,12 +211,17 @@ namespace Engine.Styles
 
             protected override float CornerRadius => Radius;
 
-            public override void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
+            public override void DrawBackdrop(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
             {
                 using var path = FrameGeometry.CreateOutline(Deflate(bounds, Inset), Radius, tail);
                 Fill(g, path, Scaled(color, 0.14f));
                 foreach (var (width, alpha) in Halo)
                     Stroke(g, path, Scaled(color, alpha), width);
+            }
+
+            public override void DrawLines(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
+            {
+                using var path = FrameGeometry.CreateOutline(Deflate(bounds, Inset), Radius, tail);
                 Stroke(g, path, Scaled(color, 0.95f), CoreWidth);
             }
         }
@@ -216,7 +233,7 @@ namespace Engine.Styles
 
             public override float Inset => EdgeMargin;
 
-            public override void Draw(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
+            public override void DrawLines(IGraphics g, RectangleF bounds, Color color, FrameTail? tail)
             {
                 if (tail is not FrameTail t)
                     return;
