@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/12
 // Update Date: 2026/10/12
-// Version: v1.0
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -13,7 +13,8 @@ namespace Engine.Security
 {
     /// <summary>
     /// The <see cref="ICredentialStore"/> of a platform without a protected store (e.g. Linux for
-    /// now): keeps nothing, so the player logs in by hand every time. Secrets are never written
+    /// now): keeps nothing, so the player logs in by hand every time (reads and writes fail; a
+    /// delete succeeds, since nothing is held). Secrets are never written
     /// anywhere unprotected instead.
     /// </summary>
     public sealed class UnsupportedCredentialStore : ICredentialStore
@@ -41,7 +42,7 @@ namespace Engine.Security
         public bool Delete(string key)
         {
             ArgumentException.ThrowIfNullOrEmpty(key);
-            return false;
+            return true;  // Nothing is ever kept, so the store never holds it.
         }
     }
 }
