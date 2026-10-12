@@ -4,9 +4,10 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/02
 // Update Date: 2026/10/12
-// Version: v1.1
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
+using Engine.Platform;
 using Engine.UI.Constants.Components;
 using Engine.UI.Core.Bases;
 
@@ -52,6 +53,18 @@ namespace Engine.UI.Input
             if (char.IsControl(c) || !ValidateFocus())
                 return false;
             return Focused.HandleTextInput(c);
+        }
+
+        /// <summary>
+        /// Sends the text of <paramref name="clipboard"/> to the focused target as a paste (the
+        /// clipboard is only read when a target has the focus).
+        /// </summary>
+        /// <returns>Whether a target used it.</returns>
+        public bool OnPaste(IClipboard clipboard)
+        {
+            if (clipboard == null || !ValidateFocus())
+                return false;
+            return Focused.HandlePaste(clipboard.GetText());
         }
 
         /// <summary>

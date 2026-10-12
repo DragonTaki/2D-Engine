@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/16
-// Update Date: 2026/10/02
-// Version: v1.1
+// Update Date: 2026/10/12
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using System.Collections.Generic;
@@ -41,6 +41,9 @@ namespace Engine.UI.Input
         /// </summary>
         private readonly List<IInputHandler> _generalHandlers = new();
 
+        /// <summary>Where a paste (<see cref="OnPaste"/>) reads its text; null: pasting does nothing.</summary>
+        private readonly IClipboard _clipboard;
+
         #endregion
 
         #region Constructor
@@ -51,13 +54,15 @@ namespace Engine.UI.Input
         /// </summary>
         /// <param name="root">The root UIElement to route mouse events to.</param>
         /// <param name="scroll">Optional scroll input handler for drag/scroll support.</param>
-        public UIInputManager(UIElement root, IScrollInputHandler? scroll = null)
+        /// <param name="clipboard">The clipboard a paste reads (the launcher's registered <see cref="IClipboard"/>); null: no pasting.</param>
+        public UIInputManager(UIElement root, IScrollInputHandler? scroll = null, IClipboard? clipboard = null)
 #nullable disable
         {
             // Create the centralized mouse router. It is called directly below and owns the
             // scroll handler, so neither is registered as a general handler as well: that made
             // Root.EndFrame() run twice and the scroll handler's EndFrame three times a frame.
             MouseRouter = new MouseInputRouter(root, scroll);
+            _clipboard = clipboard;
         }
 
         #endregion
@@ -192,6 +197,13 @@ namespace Engine.UI.Input
         /// <summary>An editing key pressed (from the windowing backend): goes to the keyboard focus.</summary>
         /// <returns>Whether the focused target used it.</returns>
         public bool OnKeyDown(UIKey key) => Keyboard.OnKey(key);
+
+        /// <summary>
+        /// The paste shortcut was pressed (Ctrl+V; Cmd+V on macOS - the windowing backend decides):
+        /// the clipboard's text goes to the keyboard focus.
+        /// </summary>
+        /// <returns>Whether the focused target used it.</returns>
+        public bool OnPaste() => Keyboard.OnPaste(_clipboard);
 
         #endregion
 

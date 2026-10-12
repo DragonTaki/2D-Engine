@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/09/24
 // Update Date: 2026/10/12
-// Version: v1.2
+// Version: v1.3
 /* ----- ----- ----- ----- */
 
 using System.Windows.Forms;
@@ -19,7 +19,8 @@ namespace Engine.Platform.WinForms
     /// <see cref="MouseEventArgs"/> into an <see cref="IMouseEvent"/> before
     /// forwarding it. Wire this adapter's methods to <c>Control.MouseDown</c>
     /// etc. instead of the input manager directly. The keyboard: <c>KeyPress</c>
-    /// characters become text input, <c>KeyDown</c> editing keys become <see cref="UIKey"/>s.
+    /// characters become text input, <c>KeyDown</c> editing keys become <see cref="UIKey"/>s and
+    /// Ctrl+V a paste (<see cref="UIInputManager.OnPaste"/>).
     /// </summary>
     public sealed class WinFormsInputAdapter
     {
@@ -55,9 +56,20 @@ namespace Engine.Platform.WinForms
                 e.Handled = true;
         }
 
-        /// <summary>An editing key (see <see cref="UIKey"/>); other keys are left alone.</summary>
+        /// <summary>An editing key (see <see cref="UIKey"/>) or Ctrl+V (paste); other keys are left alone.</summary>
         public void ProcessKeyDown(object sender, KeyEventArgs e)
         {
+            // Ctrl+V without Alt (Ctrl+Alt is AltGr on many layouts, which types characters).
+            if (e.KeyCode == Keys.V && e.Control && !e.Alt)
+            {
+                if (_inputManager.OnPaste())
+                {
+                    e.Handled = true;
+                    e.SuppressKeyPress = true;
+                }
+                return;
+            }
+
             UIKey? key = e.KeyCode switch
             {
                 Keys.Back => UIKey.Backspace,

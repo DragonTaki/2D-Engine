@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/02
 // Update Date: 2026/10/12
-// Version: v1.2
+// Version: v1.3
 /* ----- ----- ----- ----- */
 
 using System;
@@ -14,13 +14,14 @@ using Engine.UI.Core.Bases;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Renderers;
 using Engine.UI.Input;
+using Engine.UI.Utils;
 
 namespace Engine.UI.Core.Handlers
 {
     /// <summary>
     /// Shared handler of <see cref="UITextInputElement{TElement, THandler, TRenderer}"/> fields
     /// (<see cref="UITextFieldHandler"/>, <see cref="UINumberFieldHandler"/>): the keyboard input target while the field has the
-    /// focus (typing, editing keys), and a click places the caret. A disabled field takes no input.
+    /// focus (typing, editing keys, pasting), and a click places the caret. A disabled field takes no input.
     /// </summary>
     public abstract class UITextInputHandler<TElement, THandler, TRenderer> : UIHandler<TElement, THandler, TRenderer>, IKeyboardInputTarget
         where TElement : UITextInputElement<TElement, THandler, TRenderer>
@@ -57,6 +58,24 @@ namespace Engine.UI.Core.Handlers
 
             int caret = Element.CaretIndex;
             SetText(text.Insert(caret, c.ToString()), caret + 1);
+            return true;
+        }
+
+        /// <summary>
+        /// Inserts the pasted <paramref name="text"/> at the caret (<see cref="TextPaste.Insert"/>):
+        /// control characters (line breaks ...) and characters <see cref="AcceptsChar"/> rejects are
+        /// dropped, and only as much as fits under the longest length goes in. A masked (password)
+        /// field takes a paste too. Nothing left to insert is no edit (no change is reported).
+        /// </summary>
+        public bool HandlePaste(string text)
+        {
+            if (!Element.IsEnabled)
+                return false;
+
+            var current = Element.Text;
+            var (pasted, caret) = TextPaste.Insert(current, Element.CaretIndex, text, Element.MaxLength, AcceptsChar);
+            if (pasted != current)
+                SetText(pasted, caret);
             return true;
         }
 

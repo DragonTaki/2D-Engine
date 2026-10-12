@@ -4,9 +4,10 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/09/24
 // Update Date: 2026/10/12
-// Version: v1.2
+// Version: v1.3
 /* ----- ----- ----- ----- */
 
+using System;
 using System.Numerics;
 
 using Silk.NET.Input;
@@ -24,7 +25,8 @@ namespace Engine.Platform.Skia
     /// <see cref="IMouseEvent"/> before forwarding it. Wire this adapter's
     /// methods to <c>IMouse</c> events instead of the input manager directly.
     /// An optional <see cref="IKeyboard"/>'s typed characters become text input and its
-    /// editing keys <see cref="UIKey"/>s.
+    /// editing keys <see cref="UIKey"/>s; the paste shortcut (Cmd+V on macOS, Ctrl+V elsewhere)
+    /// becomes <see cref="UIInputManager.OnPaste"/>.
     /// </summary>
     public sealed class SilkInputAdapter
     {
@@ -106,12 +108,19 @@ namespace Engine.Platform.Skia
 
         private void OnKeyChar(IKeyboard keyboard, char c)
         {
-            if (!char.IsControl(c))
+            // On macOS a Cmd shortcut (e.g. Cmd+V) never types its letter.
+            if (!char.IsControl(c) && !(OperatingSystem.IsMacOS() && IsCommandDown(keyboard)))
                 _inputManager.OnTextInput(c);
         }
 
         private void OnKeyDown(IKeyboard keyboard, Key key, int scancode)
         {
+            if (key == Key.V && IsPasteModifierDown(keyboard))
+            {
+                _inputManager.OnPaste();
+                return;
+            }
+
             UIKey? uiKey = key switch
             {
                 Key.Backspace => UIKey.Backspace,
@@ -128,6 +137,24 @@ namespace Engine.Platform.Skia
             };
             if (uiKey is UIKey k)
                 _inputManager.OnKeyDown(k);
+        }
+
+        /// <summary>Whether a Cmd (Super) key is held.</summary>
+        private static bool IsCommandDown(IKeyboard keyboard) =>
+            keyboard.IsKeyPressed(Key.SuperLeft) || keyboard.IsKeyPressed(Key.SuperRight);
+
+        /// <summary>
+        /// Whether the system's paste modifier is held, alone among Ctrl / Alt / Cmd: Cmd on macOS,
+        /// Ctrl elsewhere (Ctrl+Alt is AltGr on many Windows layouts, which types characters).
+        /// </summary>
+        private static bool IsPasteModifierDown(IKeyboard keyboard)
+        {
+            bool control = keyboard.IsKeyPressed(Key.ControlLeft) || keyboard.IsKeyPressed(Key.ControlRight);
+            bool alt = keyboard.IsKeyPressed(Key.AltLeft) || keyboard.IsKeyPressed(Key.AltRight);
+            bool command = IsCommandDown(keyboard);
+            return OperatingSystem.IsMacOS()
+                ? command && !control && !alt
+                : control && !alt && !command;
         }
     }
 }

@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/02
 // Update Date: 2026/10/12
-// Version: v1.1
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using Engine.UI.Core.Handlers;
@@ -15,7 +15,7 @@ namespace Engine.UI.Core.Elements
     /// <summary>
     /// A one-line editable text field. Pressing the mouse on it gives it the keyboard focus
     /// (<see cref="Input.KeyboardFocus"/>, through its handler, an
-    /// <see cref="Input.IKeyboardInputTarget"/>): typed characters are inserted at the caret,
+    /// <see cref="Input.IKeyboardInputTarget"/>): typed and pasted (Ctrl+V / Cmd+V) characters are inserted at the caret,
     /// Backspace / Delete / Left / Right / Home / End edit and move it, Enter confirms and
     /// Escape puts back the text the edit started with (both end the focus), Tab moves the focus
     /// to <c>NextFocus</c>; a click places the caret. The handler reports every change

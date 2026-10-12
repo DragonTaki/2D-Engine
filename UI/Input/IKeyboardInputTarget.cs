@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/02
 // Update Date: 2026/10/12
-// Version: v1.1
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using Engine.UI.Core.Bases;
@@ -37,5 +37,12 @@ namespace Engine.UI.Input
         /// after its name field); null (the default) keeps the focus here.
         /// </summary>
         IKeyboardInputTarget NextTarget => null;
+
+        /// <summary>
+        /// Pasted text (Ctrl+V / Cmd+V), as read from the clipboard: it may hold line breaks and other
+        /// control characters, which the target filters. Not pasting (the default) leaves it unused.
+        /// </summary>
+        /// <returns>Whether it was used.</returns>
+        bool HandlePaste(string text) => false;
     }
 }
