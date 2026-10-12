@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/12
 // Update Date: 2026/10/12
-// Version: v1.0
+// Version: v1.3
 /* ----- ----- ----- ----- */
 
 using System;
@@ -52,6 +52,91 @@ namespace Engine.UI.Utils
             if (float.IsNaN(offset))
                 return 0f;
             return Math.Clamp(offset, min, 0f);
+        }
+
+        /// <summary>
+        /// Applies a wheel <paramref name="change"/> to a scroll offset with rubber-band resistance:
+        /// inside the content range it moves freely, past an end the further out the offset is the
+        /// less a change that pushes it further moves it (nothing at <paramref name="overscrollLimit"/>),
+        /// and a change back toward the range moves it in full. Never leaves the overscroll range.
+        /// </summary>
+        public static float ApplyWheelChange(float offset, float change, float contentHeight, float viewportHeight, float overscrollLimit)
+        {
+            float limit = Math.Max(0f, overscrollLimit);
+            if (float.IsNaN(offset) || float.IsNaN(change))
+                return ClampOffsetWithOverscroll(offset, contentHeight, viewportHeight, limit);
+
+            float min = Math.Min(0f, viewportHeight - contentHeight);
+            offset = ClampOffsetWithOverscroll(offset, contentHeight, viewportHeight, limit);
+            float result = offset;
+            float remaining = change;
+
+            // Part of the change that moves within the range (or back into it) goes in full.
+            if (remaining > 0f)
+            {
+                if (result < 0f)
+                {
+                    float room = Math.Min(remaining, -result);
+                    result += room;
+                    remaining -= room;
+                }
+                result += Resist(result, remaining, 0f, limit, +1f);
+            }
+            else if (remaining < 0f)
+            {
+                if (result > min)
+                {
+                    float room = Math.Min(-remaining, result - min);
+                    result -= room;
+                    remaining += room;
+                }
+                result += Resist(result, remaining, min, limit, -1f);
+            }
+            return ClampOffsetWithOverscroll(result, contentHeight, viewportHeight, limit);
+        }
+
+        /// <summary>
+        /// One frame of the rebound of an overscrolled offset toward the nearest end of
+        /// <paramref name="minOffset"/>..0: exponential (time constant
+        /// <see cref="WheelOverscroll.ReboundTimeConstant"/>), so it is monotonic, frame-rate
+        /// independent and never crosses the end; an offset already inside the range is kept.
+        /// </summary>
+        public static float ReboundStep(float offset, float minOffset, float deltaSeconds)
+        {
+            float edge = Math.Clamp(offset, Math.Min(minOffset, 0f), 0f);
+            float distance = offset - edge;
+            if (Math.Abs(distance) <= WheelOverscroll.ReboundSnapDistance)
+                return edge;
+            return edge + distance * MathF.Exp(-Math.Max(0f, deltaSeconds) / WheelOverscroll.ReboundTimeConstant);
+        }
+
+        /// <summary>
+        /// The part of <paramref name="change"/> that is applied beyond an edge: scaled by the room
+        /// left before the limit at the starting offset, a change toward the range excluded
+        /// (<paramref name="side"/> is +1 for the top edge, -1 for the bottom one).
+        /// </summary>
+        private static float Resist(float offset, float change, float edge, float limit, float side)
+        {
+            if (change == 0f || limit <= 0f)
+                return 0f;
+            float over = Math.Max(0f, (offset - edge) * side);
+            if (change * side < 0f)
+                return change;
+            return change * Math.Max(0f, 1f - over / limit);
+        }
+
+        /// <summary>
+        /// Like <see cref="ClampOffset"/>, but lets the offset go <paramref name="overscrollLimit"/>
+        /// past either end (the edge spring pulls it back once the input stops), so a fast
+        /// spin never carries the content further than that.
+        /// </summary>
+        public static float ClampOffsetWithOverscroll(float offset, float contentHeight, float viewportHeight, float overscrollLimit)
+        {
+            float limit = Math.Max(0f, overscrollLimit);
+            float min = Math.Min(0f, viewportHeight - contentHeight) - limit;
+            if (float.IsNaN(offset))
+                return 0f;
+            return Math.Clamp(offset, min, limit);
         }
     }
 }

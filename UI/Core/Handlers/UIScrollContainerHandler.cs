@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/27
-// Update Date: 2026/10/05
-// Version: v1.1
+// Update Date: 2026/10/12
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using System;
@@ -158,6 +158,20 @@ namespace Engine.UI.Core.Handlers
         {
             bool gliding = StepInertia();
             ScrollContainer.ClampToOverscrollRange();
+
+            // While the wheel owns the position (events arriving, then its own rebound) the spring
+            // stays off and no motion is left over from an earlier one, so the two cannot fight.
+            float offset = ScrollContainer.ScrollY;
+            if (ScrollContainer.Wheel.Step(GlobalTime.Timer.DeltaTimeInSeconds, ref offset, ScrollContainer.MinNormalScrollY))
+            {
+                if (offset != ScrollContainer.ScrollY)
+                    ScrollContainer.ScrollY = offset;
+                Element.Physics.Position.HasTarget = false;
+                Element.Physics.Velocity.Current = Vector2F.Zero;
+                Element.Physics.Acceleration.Current = Vector2F.Zero;
+                Element.Physics.Acceleration.Target = Vector2F.Zero;
+                return;
+            }
 
             // Let the glide finish before the edge spring (below) pulls the content back.
             if (gliding)

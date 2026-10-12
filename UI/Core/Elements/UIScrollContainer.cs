@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/14
 // Update Date: 2026/10/12
-// Version: v1.4
+// Version: v1.7
 /* ----- ----- ----- ----- */
 
 using System;
@@ -237,10 +237,17 @@ namespace Engine.UI.Core.Elements
         protected override void OnChildrenArranged() => RefreshContentSize();
 
         /// <summary>
+        /// The wheel / trackpad overscroll state: owns the position while wheel events arrive
+        /// and rebounds it once they stop (see <see cref="WheelOverscroll"/>).
+        /// </summary>
+        public WheelOverscroll Wheel { get; } = new WheelOverscroll();
+
+        /// <summary>
         /// Maximum overscroll allowed at edges.
         /// </summary>
         /// <remarks>
-        /// Not what bounds overscroll: by design the content can be pulled until its far
+        /// Bounds the wheel's overscroll (see <see cref="ScrollMath.ClampOffsetWithOverscroll"/>). Not
+        /// what bounds a drag: by design the content can be pulled until its far
         /// edge meets the opposite viewport edge (see <see cref="ClampToOverscrollRange"/>).
         /// </remarks>
         public float OverscrollLimit { get; set; } = 40.0f;
@@ -401,9 +408,11 @@ namespace Engine.UI.Core.Elements
                 AllowWheel = true,
                 // Handler is bound after construction, hence the lazy lookups.
                 OnRelease = velocity => ScrollHandler?.StartInertia(velocity.Y),
-                OnPress = () => ScrollHandler?.StopInertia(),
-                // The wheel never overscrolls: it stays within the content range.
-                ClampWheelOffset = offset => ScrollMath.ClampOffset(offset, ContentHeight, Size.Y)
+                OnPress = () => { ScrollHandler?.StopInertia(); Wheel.Release(); },
+                // The wheel may overscroll by OverscrollLimit at most, with resistance; Wheel then
+                // glides the content back once the wheel has been idle.
+                ClampWheelOffset = (offset, change) => ScrollMath.ApplyWheelChange(offset, change, ContentHeight, Size.Y, OverscrollLimit),
+                OnWheel = () => Wheel.Touch()
             });
 
             Physics.Movement.CanSpring = true;

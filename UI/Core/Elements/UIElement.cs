@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/15
-// Update Date: 2026/10/04
-// Version: v1.3
+// Update Date: 2026/10/12
+// Version: v1.4
 /* ----- ----- ----- ----- */
 
 using System;
@@ -499,7 +499,9 @@ namespace Engine.UI.Core.Elements
         protected bool PropagateMouseEvent(IMouseEvent e, UIEventType eventName)
         {
             // A hidden or disabled element doesn't take input, and neither does its subtree.
-            if (!IsInteractable)
+            // A node (root, overlay layer) is never interactable itself but still passes events
+            // on to its children while it is shown, so e.g. the wheel reaches an open dropdown list.
+            if (this is UINode ? !(IsVisible && IsEnabled && IsDisplayed) : !IsInteractable)
                 return false;
 
             bool isInside = IsInteractable && GetCurrentAbsoluteBounds().Contains(e.Location);
