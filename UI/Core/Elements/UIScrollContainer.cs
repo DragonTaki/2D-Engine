@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/14
 // Update Date: 2026/10/12
-// Version: v1.7
+// Version: v1.8
 /* ----- ----- ----- ----- */
 
 using System;
@@ -237,8 +237,8 @@ namespace Engine.UI.Core.Elements
         protected override void OnChildrenArranged() => RefreshContentSize();
 
         /// <summary>
-        /// The wheel / trackpad overscroll state: owns the position while wheel events arrive
-        /// and rebounds it once they stop (see <see cref="WheelOverscroll"/>).
+        /// The wheel / trackpad scroll state: the target wheel events move and the easing of the
+        /// content toward it, including the rebound from an overscroll (see <see cref="WheelOverscroll"/>).
         /// </summary>
         public WheelOverscroll Wheel { get; } = new WheelOverscroll();
 
@@ -408,11 +408,15 @@ namespace Engine.UI.Core.Elements
                 AllowWheel = true,
                 // Handler is bound after construction, hence the lazy lookups.
                 OnRelease = velocity => ScrollHandler?.StartInertia(velocity.Y),
-                OnPress = () => { ScrollHandler?.StopInertia(); Wheel.Release(); },
-                // The wheel may overscroll by OverscrollLimit at most, with resistance; Wheel then
-                // glides the content back once the wheel has been idle.
-                ClampWheelOffset = (offset, change) => ScrollMath.ApplyWheelChange(offset, change, ContentHeight, Size.Y, OverscrollLimit),
-                OnWheel = () => Wheel.Touch()
+                OnPress = () => ScrollHandler?.StopInertia(),
+                // The wheel moves a target of its own (within the content range, or up to
+                // OverscrollLimit past an end with resistance); Wheel eases the content toward it
+                // and back to the range once the wheel has been idle.
+                ClampWheelOffset = (offset, change) =>
+                {
+                    Wheel.Push(offset, change, ContentHeight, Size.Y, OverscrollLimit);
+                    return offset;
+                }
             });
 
             Physics.Movement.CanSpring = true;

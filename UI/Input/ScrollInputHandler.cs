@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/15
 // Update Date: 2026/10/12
-// Version: v1.3
+// Version: v1.4
 /* ----- ----- ----- ----- */
 
 using System;
@@ -299,7 +299,6 @@ namespace Engine.UI.Input
                 : current + change;
             position.Current = new Vector2F(position.Current.X, position.Base.Y + offset);
             position.HasTarget = false;
-            target.Behavior.OnWheel?.Invoke();
             target.Physics.Velocity.Current = new Vector2F(target.Physics.Velocity.Current.X, 0f);
             return true;
         }
@@ -443,12 +442,10 @@ namespace Engine.UI.Input
 
             /// <summary>
             /// Maps the current scroll offset (relative to the base position) and the change the
-            /// wheel is about to apply to the offset to allow; null leaves the wheel unbounded.
+            /// wheel is about to apply to the offset to set now (a container that eases toward a
+            /// target of its own returns the current offset); null applies the change unbounded.
             /// </summary>
             public Func<float, float, float> ClampWheelOffset { get; set; }
-
-            /// <summary>Called after each wheel event was applied - e.g. to hold the edge spring while the wheel is active.</summary>
-            public Action OnWheel { get; set; }
         }
 
         #endregion

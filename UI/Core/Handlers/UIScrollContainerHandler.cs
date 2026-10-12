@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/27
 // Update Date: 2026/10/12
-// Version: v1.2
+// Version: v1.3
 /* ----- ----- ----- ----- */
 
 using System;
@@ -14,6 +14,7 @@ using Engine.Platform;
 using Engine.Timing;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Renderers;
+using Engine.UI.Utils;
 
 namespace Engine.UI.Core.Handlers
 {
@@ -161,6 +162,9 @@ namespace Engine.UI.Core.Handlers
 
             // While the wheel owns the position (events arriving, then its own rebound) the spring
             // stays off and no motion is left over from an earlier one, so the two cannot fight.
+            // A press (drag) takes the position back from the wheel.
+            if (ScrollContainer.InputHandler.IsDragging)
+                ScrollContainer.Wheel.Release();
             float offset = ScrollContainer.ScrollY;
             if (ScrollContainer.Wheel.Step(GlobalTime.Timer.DeltaTimeInSeconds, ref offset, ScrollContainer.MinNormalScrollY))
             {
@@ -178,6 +182,25 @@ namespace Engine.UI.Core.Handlers
             {
                 Element.Physics.Position.HasTarget = false;
                 return;
+            }
+
+            // Released outside the normal range: the same exponential rebound as the wheel's (smooth, no
+            // overshoot), instead of the physics spring, which is slow after a drag (the input handler
+            // zeroes its velocity every frame) and ends in a hard snap otherwise. While the pointer is
+            // still down, the spring below keeps pulling against the drag as before.
+            if (!ScrollContainer.InputHandler.IsDragging)
+            {
+                float current = ScrollContainer.ScrollY;
+                float next = ScrollMath.ReboundStep(current, ScrollContainer.MinNormalScrollY, GlobalTime.Timer.DeltaTimeInSeconds);
+                if (next != current)
+                {
+                    ScrollContainer.ScrollY = next;
+                    Element.Physics.Position.HasTarget = false;
+                    Element.Physics.Velocity.Current = Vector2F.Zero;
+                    Element.Physics.Acceleration.Current = Vector2F.Zero;
+                    Element.Physics.Acceleration.Target = Vector2F.Zero;
+                    return;
+                }
             }
 
             //Console.WriteLine($"ScrollY: {ScrollY}, gap: {-(ContentHeight - Size.Y)}, Physics.Position.Base: {Physics.Position.Base}, Physics.Position.Current: {Physics.Position.Current}, Physics.Position.Target: {Physics.Position.Target}");
