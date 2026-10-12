@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/24
-// Update Date: 2026/10/05
-// Version: v2.2
+// Update Date: 2026/10/12
+// Version: v2.3
 /* ----- ----- ----- ----- */
 
 using System.Drawing;
@@ -58,31 +58,43 @@ namespace Engine.UI.Core.Renderers
             _composite.Render(g, element);
         }
 
-        /// <summary>The menu panel's grey dashed outline (design, not a debug feature: no switch).</summary>
+        /// <summary>
+        /// Draws the menu panel's outline: by default a grey dashed rectangle (design, not a debug
+        /// feature: no switch). A menu with another frame overrides this.
+        /// </summary>
+        /// <param name="g">Where to draw.</param>
+        /// <param name="bounds">The panel's absolute bounds (the whole element unless PanelWidth is set).</param>
+        protected virtual void DrawOutline(IGraphics g, RectangleF bounds)
+        {
+            using (IPen debugPen = GraphicsBackend.Factory.CreatePen(Color.FromArgb(100, 128, 128, 128), 4))
+            {
+                debugPen.DashStyle = PenDashStyle.Dash;
+
+                // TODO: Make this outline margin configurable instead of a fixed 3 units.
+                float margin = 3.0f;
+                var rect = new RectangleF(
+                    bounds.X + margin,
+                    bounds.Y + margin,
+                    bounds.Width - margin * 2,
+                    bounds.Height - margin * 2
+                );
+
+                g.DrawRectangle(debugPen, rect.X, rect.Y, rect.Width, rect.Height);
+            }
+        }
+
+        /// <summary>The menu panel's outline part: <see cref="DrawOutline"/>, unless the menu's <see cref="IMenuPanel.DrawsOutline"/> is off.</summary>
         private class Outline : UIRenderer<TElement, THandler, TRenderer>
         {
             public Outline() { }
             public override void OnRender(IGraphics g, TElement element)
             {
-                using (IPen debugPen = GraphicsBackend.Factory.CreatePen(Color.FromArgb(100, 128, 128, 128), 4))
-                {
-                    debugPen.DashStyle = PenDashStyle.Dash;
+                var menu = (UIMenu<TElement, THandler, TRenderer>)element;
+                if (!menu.DrawsOutline)
+                    return;
 
-                    // The panel's absolute bounds (the whole element unless PanelWidth is set)
-                    var menu = (UIMenu<TElement, THandler, TRenderer>)element;
-                    var bounds = menu.GetPanelAbsoluteBounds();
-
-                    // TODO: Make this outline margin configurable instead of a fixed 3 units.
-                    float margin = 3.0f;
-                    var rect = new RectangleF(
-                        bounds.X + margin,
-                        bounds.Y + margin,
-                        bounds.Width - margin * 2,
-                        bounds.Height - margin * 2
-                    );
-
-                    g.DrawRectangle(debugPen, rect.X, rect.Y, rect.Width, rect.Height);
-                }
+                // The panel's absolute bounds (the whole element unless PanelWidth is set)
+                menu.Renderer.DrawOutline(g, menu.GetPanelAbsoluteBounds());
             }
         }
 

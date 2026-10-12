@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/05
-// Update Date: 2026/10/05
-// Version: v1.0
+// Update Date: 2026/10/12
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System.Collections.Generic;
@@ -35,6 +35,9 @@ namespace Engine.Diagnostics
         /// <summary>Whether text boxes get a grey layout outline (visual debugging; always drawn before the switch existed). Default: true</summary>
         public bool LayoutOutlines { get; set; } = true;
 
+        /// <summary>The frame style of the main menu's panel (picked by comparing them). Default: FilledPanel</summary>
+        public FrameStyleKind MenuFrameStyle { get; set; } = FrameStyleKind.FilledPanel;
+
         /// <summary>Whether the star background outlines each effect's area (visual debugging). Default: false</summary>
         public bool StarEffectFrames { get; set; } = false;
 
@@ -58,6 +61,8 @@ namespace Engine.Diagnostics
                 "視覺除錯：文字標籤後面畫半透明紅色背景（看出標籤的範圍；紀錄框的訊息跟著「除錯訊息」）。"),
             SettingsKey.Bool("debug", "layout_outlines", () => LayoutOutlines, v => LayoutOutlines = v, Default.LayoutOutlines,
                 "視覺除錯：文字框畫灰色實線外框（看出排版範圍；選單的虛線外框是設計，一律畫）。"),
+            SettingsKey.Enum("debug", "menu_frame_style", () => MenuFrameStyle, v => MenuFrameStyle = v, Default.MenuFrameStyle,
+                "視覺除錯：主選單外框的樣式（ThinLine、DoubleLine、Rounded、CornerBrackets、SoftGlow、FilledPanel、None）；僅供比較挑選。"),
             SettingsKey.Bool("debug", "star_effect_frames", () => StarEffectFrames, v => StarEffectFrames = v, Default.StarEffectFrames,
                 "視覺除錯：星空背景每個特效開始時，用特效的除錯顏色框出它的範圍。"),
             SettingsKey.Bool("debug", "show_fps", () => ShowFps, v => ShowFps = v, Default.ShowFps,
@@ -73,6 +78,7 @@ namespace Engine.Diagnostics
             DebugOptions.ConsoleTrace = ConsoleTrace;
             DebugOptions.LabelBackgrounds = LabelBackgrounds;
             DebugOptions.LayoutOutlines = LayoutOutlines;
+            DebugOptions.MenuFrameStyle = MenuFrameStyle;
             DebugOptions.StarEffectFrames = StarEffectFrames;
             DebugOptions.ShowFps = ShowFps;
             DebugOptions.ShowNetworkLatency = ShowNetworkLatency;

@@ -3,9 +3,11 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/04
-// Update Date: 2026/10/05
-// Version: v1.2
+// Update Date: 2026/10/12
+// Version: v1.3
 /* ----- ----- ----- ----- */
+
+using Engine.Configs;
 
 namespace Engine.Diagnostics
 {
@@ -50,6 +52,9 @@ namespace Engine.Diagnostics
 
         /// <summary>Whether the star background outlines the area of each effect it starts (in the effect's debug colour).</summary>
         public static bool StarEffectFrames { get; set; } = false;
+
+        /// <summary>Which frame the main menu's panel is drawn with (the author compares them to pick one; not a debug feature to switch off).</summary>
+        public static FrameStyleKind MenuFrameStyle { get; set; } = FrameStyleKind.FilledPanel;
 
         #endregion
 

@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/24
-// Update Date: 2026/10/04
-// Version: v1.2
+// Update Date: 2026/10/12
+// Version: v1.3
 /* ----- ----- ----- ----- */
 
 using System;
@@ -29,7 +29,7 @@ namespace Engine.UI.Core.Elements
     /// Engine-level generic Menu.
     /// </summary>
     public abstract class UIMenu<TElement, THandler, TRenderer>
-        : UIContainer<TElement, THandler, TRenderer>
+        : UIContainer<TElement, THandler, TRenderer>, IMenuPanel
         where TElement : UIMenu<TElement, THandler, TRenderer>
         where THandler : UIMenuHandler<TElement, THandler, TRenderer>
         where TRenderer : UIMenuRenderer<TElement, THandler, TRenderer>
@@ -49,6 +49,9 @@ namespace Engine.UI.Core.Elements
         /// content next to the panel. <c>null</c> (default): the panel is the whole element.
         /// </summary>
         public float? PanelWidth { get; set; }
+
+        /// <inheritdoc/>
+        public bool DrawsOutline { get; set; } = true;
 
         #endregion
 
