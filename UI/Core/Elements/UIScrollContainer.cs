@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/14
-// Update Date: 2026/09/30
-// Version: v1.3
+// Update Date: 2026/10/12
+// Version: v1.4
 /* ----- ----- ----- ----- */
 
 using System;
@@ -18,6 +18,7 @@ using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Renderers;
 using Engine.UI.Input;
 using Engine.UI.Models;
+using Engine.UI.Utils;
 using static Engine.UI.Input.ScrollInputHandler;
 
 namespace Engine.UI.Core.Elements
@@ -400,7 +401,9 @@ namespace Engine.UI.Core.Elements
                 AllowWheel = true,
                 // Handler is bound after construction, hence the lazy lookups.
                 OnRelease = velocity => ScrollHandler?.StartInertia(velocity.Y),
-                OnPress = () => ScrollHandler?.StopInertia()
+                OnPress = () => ScrollHandler?.StopInertia(),
+                // The wheel never overscrolls: it stays within the content range.
+                ClampWheelOffset = offset => ScrollMath.ClampOffset(offset, ContentHeight, Size.Y)
             });
 
             Physics.Movement.CanSpring = true;

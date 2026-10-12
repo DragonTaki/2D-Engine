@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/02
-// Update Date: 2026/10/05
-// Version: v1.1
+// Update Date: 2026/10/12
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using System;
@@ -15,6 +15,7 @@ using Engine.UI.Core.Bases;
 using Engine.UI.Core.Elements;
 using Engine.UI.Core.Renderers;
 using Engine.UI.Input;
+using Engine.UI.Utils;
 
 namespace Engine.UI.Core.Handlers
 {
@@ -65,7 +66,7 @@ namespace Engine.UI.Core.Handlers
                 return false;
 
             var layout = Element.ComputeLayout();
-            float notches = Math.Clamp(e.Delta / (float)DropdownDefaults.WheelNotchDelta, -1f, 1f);
+            float notches = ScrollMath.Notches(e.Delta);
             Element.Scroll = layout.ClampScroll(Element.Scroll - notches * layout.ItemHeight);
             Element.HoverIndex = layout.ItemIndexAt(e.X, e.Y, Element.Scroll);
             return true;

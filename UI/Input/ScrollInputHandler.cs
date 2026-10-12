@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/15
-// Update Date: 2026/10/05
-// Version: v1.1
+// Update Date: 2026/10/12
+// Version: v1.2
 /* ----- ----- ----- ----- */
 
 using System;
@@ -18,6 +18,7 @@ using Engine.Mathematics;
 using Engine.Physics;
 using Engine.Platform;
 using Engine.UI.Core.Bases;
+using Engine.UI.Utils;
 
 namespace Engine.UI.Input
 {
@@ -286,16 +287,18 @@ namespace Engine.UI.Input
 
             target.Behavior.OnPress?.Invoke();
 
-            // One event scrolls at most one notch. macOS accelerates wheel input (a fast
-            // spin reports several notches per event), which made the wheel scroll far
-            // faster than dragging; WinForms reports one notch (120) per event anyway.
-            float notches = Math.Clamp(e.Delta / (float)WheelNotchDelta, -1f, 1f);
-            target.Physics.Position.Current += new Vector2F(0, -notches * WheelStep);
+            // One event scrolls at most one notch (see ScrollMath.Notches). Wheel up (positive
+            // delta) moves the content down, as the drag does, and the result is clamped to the
+            // content range, so a fast spin never carries the content out of bounds.
+            var position = target.Physics.Position;
+            float offset = position.Current.Y - position.Base.Y + ScrollMath.OffsetChange(e.Delta, WheelStep);
+            if (target.Behavior.ClampWheelOffset != null)
+                offset = target.Behavior.ClampWheelOffset(offset);
+            position.Current = new Vector2F(position.Current.X, position.Base.Y + offset);
+            position.HasTarget = false;
+            target.Physics.Velocity.Current = new Vector2F(target.Physics.Velocity.Current.X, 0f);
             return true;
         }
-
-        /// <summary>Wheel delta of one notch (the WinForms convention, which the backends follow).</summary>
-        private const int WheelNotchDelta = 120;
 
         /// <summary>
         /// Scroll distance per wheel notch, in UI design units: the engine-wide
@@ -433,6 +436,12 @@ namespace Engine.UI.Input
             /// Called when this target is pressed or wheel-scrolled - e.g. to stop inertia.
             /// </summary>
             public Action OnPress { get; set; }
+
+            /// <summary>
+            /// Maps a scroll offset (relative to the base position) the wheel is about to apply
+            /// to the allowed one; null leaves the wheel unbounded.
+            /// </summary>
+            public Func<float, float> ClampWheelOffset { get; set; }
         }
 
         #endregion

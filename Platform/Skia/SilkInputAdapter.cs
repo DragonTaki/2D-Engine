@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/09/24
 // Update Date: 2026/10/12
-// Version: v1.3
+// Version: v1.4
 /* ----- ----- ----- ----- */
 
 using System;
@@ -14,6 +14,7 @@ using Silk.NET.Input;
 
 using Engine.Globals;
 using Engine.UI.Input;
+using Engine.UI.Utils;
 
 using SilkWindowInterface = Silk.NET.Windowing.IWindow;
 
@@ -34,7 +35,7 @@ namespace Engine.Platform.Skia
         // MouseEventArgs.Delta reports the same notch as +/-120. Scaling here
         // keeps ScrollInputHandler's tuning (which assumes the WinForms scale)
         // correct regardless of which backend is active.
-        private const int WheelNotchScale = 120;
+        // (ScrollMath.ToWheelDelta does that scaling; the sign is the same on both backends.)
 
         private readonly UIInputManager _inputManager;
         private readonly IMouse _mouse;
@@ -104,7 +105,7 @@ namespace Engine.Platform.Skia
             _inputManager.OnMouseClick(new SilkMouseEvent(ToContentSpace(position)));
 
         private void OnScroll(IMouse mouse, ScrollWheel wheel) =>
-            _inputManager.OnMouseWheel(new SilkMouseEvent(ToContentSpace(mouse.Position), (int)(wheel.Y * WheelNotchScale)));
+            _inputManager.OnMouseWheel(new SilkMouseEvent(ToContentSpace(mouse.Position), ScrollMath.ToWheelDelta(wheel.Y)));
 
         private void OnKeyChar(IKeyboard keyboard, char c)
         {
