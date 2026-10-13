@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/27
-// Update Date: 2026/10/12
-// Version: v2.2
+// Update Date: 2026/10/13
+// Version: v2.5
 /* ----- ----- ----- ----- */
 
 using System;
@@ -137,6 +137,18 @@ namespace Engine.UI.Core.Renderers
             {
                 RectangleF rect = element.GetCurrentAbsoluteBounds();
 
+                var background = Label.BackgroundProvider?.Invoke(rect);
+                if (background.HasValue)
+                {
+                    using var brush = GraphicsBackend.Factory.CreateSolidBrush(background.Value);
+                    g.FillRectangle(brush, rect);
+                }
+                if (Label.DebugFrame && DebugOptions.LabelBackgrounds)
+                {
+                    using var pen = GraphicsBackend.Factory.CreatePen(Color.FromArgb(180, Color.Red), 1f);
+                    g.DrawRectangle(pen, rect);
+                }
+
                 if (Label.Fragments != null && Label.Fragments.Count > 0)
                 {
                     DrawFragmentsInline(g, rect);
@@ -146,16 +158,6 @@ namespace Engine.UI.Core.Renderers
                 // Original plain-text mode (no fragments)
                 if (!string.IsNullOrEmpty(Label.Text))
                 {
-                    // Visual debugging only, for debug log lines only (ShowsDebugBackground; their DebugBackgroundSwitch, by default
-                    // DebugOptions.LabelBackgrounds): a semi-transparent red background showing
-                    // the label's bounds.
-                    if (Label.ShowsDebugBackground && (Label.DebugBackgroundSwitch?.Invoke() ?? DebugOptions.LabelBackgrounds))
-                    {
-                        using (var brush = GraphicsBackend.Factory.CreateSolidBrush(Color.FromArgb(128, Color.Red))) // Semi-transparent red (debug background behind the text)
-                        {
-                            g.FillRectangle(brush, rect);
-                        }
-                    }
                     g.DrawString(Label.Text, Label.Font, GetBrush(), rect, GetStringFormat(Label.TextAlign, Label.WordWrap));
                 }
             }

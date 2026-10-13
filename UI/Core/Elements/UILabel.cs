@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/19
-// Update Date: 2026/10/12
-// Version: v1.5
+// Update Date: 2026/10/13
+// Version: v1.8
 /* ----- ----- ----- ----- */
 
 using System;
@@ -125,19 +125,18 @@ namespace Engine.UI.Core.Elements
         /// </summary>
         public Color ForeColor { get; set; } = Color.Black;
 
+        /// <summary>Optional background color evaluated from current absolute bounds on every render.</summary>
+        public Func<RectangleF, Color?> BackgroundProvider { get; set; }
+
         /// <summary>
-        /// The switch that draws the semi-transparent red debug background behind the text
-        /// (plain-text mode); null for <see cref="Engine.Diagnostics.DebugOptions.LabelBackgrounds"/>.
-        /// A text box can give its lines another switch (<c>UITextBox.LineDebugBackgroundSwitch</c>).
+        /// Legacy background switch; backgrounds now use <see cref="BackgroundProvider"/>.
         /// </summary>
         public Func<bool> DebugBackgroundSwitch { get; set; }
 
         /// <summary>
-        /// Whether this label is a debug log line and so may get the red debug background (see
-        /// <see cref="DebugBackgroundSwitch"/>). False for every ordinary label, which never gets it
-        /// (author 2026-10-12); the log box's lines set it.
+        /// Marks DEBUG log content for a thin red frame; ordinary labels remain unmarked.
         /// </summary>
-        public bool ShowsDebugBackground { get; set; }
+        public bool DebugFrame { get; set; }
 
         /// <summary>
         /// Text alignment within the label bounds.

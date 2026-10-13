@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/05
-// Update Date: 2026/10/12
-// Version: v1.3
+// Update Date: 2026/10/13
+// Version: v1.6
 /* ----- ----- ----- ----- */
 
 using System.Collections.Generic;
@@ -23,13 +23,13 @@ namespace Engine.Diagnostics
     {
         private static readonly DebugSettings Default = new();
 
-        /// <summary>Whether DEBUG-level log lines are written (the log's verbosity); the game's log box draws its lines' red background with it. Default: true</summary>
+        /// <summary>Whether DEBUG-level log lines are written (the log's verbosity); all log backgrounds remain independent of this switch. Default: true</summary>
         public bool VerboseLog { get; set; } = true;
 
         /// <summary>Whether developer trace lines (UI init / menu selections / network status) are printed to the console. Default: true</summary>
         public bool ConsoleTrace { get; set; } = true;
 
-        /// <summary>Whether the debug log's labels get a semi-transparent red background (visual debugging; ordinary labels never do). Default: true</summary>
+        /// <summary>Whether DEBUG log content gets a thin red frame for visual debugging. Default: true</summary>
         public bool LabelBackgrounds { get; set; } = true;
 
         /// <summary>Whether text boxes get a grey layout outline (visual debugging; always drawn before the switch existed). Default: true</summary>
@@ -54,11 +54,11 @@ namespace Engine.Diagnostics
         {
             SettingsKey.Bool("debug", "verbose_log", () => VerboseLog, v => VerboseLog = v, Default.VerboseLog,
                 "── 除錯功能（設定畫面的 DEBUG 分頁；改了立即生效）──",
-                "紀錄：是否寫出 DEBUG 等級的紀錄（較詳細）；紀錄框的訊息同時畫紅色背景。"),
+                "紀錄：是否寫出 DEBUG 等級的紀錄（較詳細）；所有紀錄都有依目前顯示位置即時更新的漸變背景。"),
             SettingsKey.Bool("debug", "console_trace", () => ConsoleTrace, v => ConsoleTrace = v, Default.ConsoleTrace,
                 "紀錄：是否在主控台印出開發用的追蹤訊息（介面元件初始化、選單選擇、連線狀態；錯誤訊息不受影響，一律會印）。"),
             SettingsKey.Bool("debug", "label_backgrounds", () => LabelBackgrounds, v => LabelBackgrounds = v, Default.LabelBackgrounds,
-                "視覺除錯：除錯紀錄（紀錄框）的文字標籤後面畫半透明紅色背景（看出標籤的範圍；一般標籤不畫；紀錄框的訊息另跟著「除錯訊息」）。"),
+                "視覺除錯：標籤紅框；只有 DEBUG 等級紀錄內容畫 1 單位細紅框，正常紀錄、移動紀錄與一般標籤不畫。"),
             SettingsKey.Bool("debug", "layout_outlines", () => LayoutOutlines, v => LayoutOutlines = v, Default.LayoutOutlines,
                 "視覺除錯：文字框畫灰色實線外框（看出排版範圍；選單的虛線外框是設計，一律畫）。"),
             SettingsKey.Enum("debug", "menu_frame_style", () => MenuFrameStyle, v => MenuFrameStyle = v, Default.MenuFrameStyle,

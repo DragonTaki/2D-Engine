@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/24
-// Update Date: 2026/10/12
-// Version: v1.3
+// Update Date: 2026/10/13
+// Version: v1.6
 /* ----- ----- ----- ----- */
 
 using System;
@@ -18,6 +18,7 @@ using Engine.UI.Constants.Components;
 using Engine.UI.Core.Handlers;
 using Engine.UI.Core.Interfaces;
 using Engine.UI.Core.Renderers;
+using Engine.UI.Utils;
 
 namespace Engine.UI.Core.Elements
 {
@@ -34,9 +35,7 @@ namespace Engine.UI.Core.Elements
         public UIScrollContainer ScrollContainer { get; private set; }
 
         /// <summary>
-        /// The switch that draws the red debug background behind each line appended with
-        /// <see cref="AppendLine"/> (<see cref="UILabel.DebugBackgroundSwitch"/>); null for the
-        /// labels' default, <see cref="DebugOptions.LabelBackgrounds"/>. Applies to lines appended after it is set.
+        /// Legacy line background switch; explicit background providers are passed to <see cref="AppendLine"/>.
         /// </summary>
         public Func<bool> LineDebugBackgroundSwitch { get; set; }
 
@@ -135,7 +134,8 @@ namespace Engine.UI.Core.Elements
         /// <summary>
         /// Appends text to the box, one label per line; lines are split on '\n' and the whole text forms one paragraph.
         /// </summary>
-        public void AppendLine(string text, Color? color = null, bool bold = false, bool italic = false)
+        public void AppendLine(string text, Color? color = null, bool bold = false, bool italic = false,
+            Func<RectangleF, Color?> backgroundProvider = null, bool isDebugContent = false)
         {
             using var g = GraphicsBackend.Factory.CreateMeasurementContext();
 
@@ -170,8 +170,8 @@ namespace Engine.UI.Core.Elements
                 label.Layout = new Geometry.LayoutF(0, y, Size.X, size.Height);
                 label.WordWrap = false; // One Label per line
                 label.TextAlign = ContentAlign.MiddleLeft;
-                label.DebugBackgroundSwitch = LineDebugBackgroundSwitch;
-                label.ShowsDebugBackground = true;
+                label.BackgroundProvider = backgroundProvider ?? LogLineBackground.CreateProvider(GetAbsClipRect);
+                label.DebugFrame = isDebugContent;
 
                 label.LocalPosition.Current.Y = y;
 
@@ -217,6 +217,7 @@ namespace Engine.UI.Core.Elements
             label.WordWrap = false;
             label.TextAlign = ContentAlign.MiddleLeft;
             label.Handler.SetTextFragments(new List<TextFragment>(fragments));
+            label.BackgroundProvider = LogLineBackground.CreateProvider(GetAbsClipRect);
 
             ScrollContainer.AddChild(label);
             ScrollContainer.RefreshContentSize(forceAlignment: true);  // = y + height

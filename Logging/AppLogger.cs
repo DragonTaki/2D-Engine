@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/06
-// Update Date: 2026/10/05
-// Version: v1.0
+// Update Date: 2026/10/12
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
@@ -98,6 +98,9 @@ namespace Engine.Logging
             _externalLogger = callback;
         }
 
+        /// <summary>Publishes typed records to in-process sinks, on the logging thread.</summary>
+        public static event Action<LogRecord> RecordLogged;
+
         public static void Log(string message, LogLevel level = LogLevel.INFO)
         {
             if (level == LogLevel.DEBUG && !DebugOptions.VerboseLog)
@@ -105,6 +108,7 @@ namespace Engine.Logging
 
             var record = new LogRecord(message, level);
             Console.WriteLine(record.ToText());
+            RecordLogged?.Invoke(record);
 
             if (_externalLogger != null)
             {
