@@ -4,10 +4,12 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2026/10/12
 // Update Date: 2026/10/12
-// Version: v1.0
+// Version: v1.1
 /* ----- ----- ----- ----- */
 
 using System;
+using System.Diagnostics;
+using System.Threading;
 
 using Microsoft.Extensions.DependencyInjection;
 using Silk.NET.Input;
@@ -35,6 +37,9 @@ namespace Engine.UiGallery.Host
     {
         private readonly SilkWindow _window;
         private readonly ManualTimerProvider _timer = new();
+        private readonly FramePacer _renderPacer = new(TimerSettings.GameAnimationFPS, Stopwatch.Frequency);
+        private readonly FramePacer _updatePacer = new(TimerSettings.GameAnimationFPS, Stopwatch.Frequency);
+        private long _lastUpdateTimestamp;
         private ServiceProvider _services;
         private GalleryRoot _root;
         private UIInputManager _input;
@@ -53,9 +58,23 @@ namespace Engine.UiGallery.Host
             window.Render += Render;
             window.FramebufferResize += Resize;
             window.FocusChanged += FocusChanged;
-            window.FramesPerSecond = 60;
-            window.UpdatesPerSecond = 60;
+            window.ShouldSwapAutomatically = false;
+            ApplyFrameRate(TimerSettings.GameAnimationFPS);
+            ApplyVSync(TimerSettings.VSync);
+            TimerSettings.GameAnimationFpsChanged += ApplyFrameRate;
+            TimerSettings.VSyncChanged += ApplyVSync;
         }
+
+        private void ApplyFrameRate(int fps)
+        {
+            _window.FramesPerSecond = fps;
+            _window.UpdatesPerSecond = fps;
+            long now = Stopwatch.GetTimestamp();
+            _renderPacer.SetFrameRate(fps, now);
+            _updatePacer.SetFrameRate(fps, now);
+        }
+
+        private void ApplyVSync(bool enabled) => _window.VSync = enabled;
 
         private void Load()
         {
@@ -84,6 +103,9 @@ namespace Engine.UiGallery.Host
                 _inputAdapter = new SilkInputAdapter(_input, _inputContext.Mice[0], _window, keyboard);
             GlobalTime.Timer = _timer;
             _timer.OnAnimationFrame += Tick;
+            _lastUpdateTimestamp = Stopwatch.GetTimestamp();
+            _renderPacer.Reset(_lastUpdateTimestamp);
+            _updatePacer.Reset(_lastUpdateTimestamp);
             _timer.Start();
         }
 
@@ -94,7 +116,15 @@ namespace Engine.UiGallery.Host
             _input?.EndFrame();
         }
 
-        private void Update(double seconds) => _timer.Tick((float)seconds);
+        private void Update(double seconds)
+        {
+            long now = Stopwatch.GetTimestamp();
+            if (!_updatePacer.TryAdvance(now))
+                return;
+            float elapsed = (float)((now - _lastUpdateTimestamp) / (double)Stopwatch.Frequency);
+            _lastUpdateTimestamp = now;
+            _timer.Tick(elapsed);
+        }
 
         private void Resize(Silk.NET.Maths.Vector2D<int> size)
         {
@@ -117,6 +147,12 @@ namespace Engine.UiGallery.Host
             var size = _window.FramebufferSize;
             if (size.X <= 0 || size.Y <= 0 || _context == null)
                 return;
+            if (!_renderPacer.TryAdvance(Stopwatch.GetTimestamp()))
+            {
+                // Yield briefly while keeping window events responsive between frame deadlines.
+                Thread.Sleep(1);
+                return;
+            }
             var info = new GRGlFramebufferInfo((uint)_gl.GetInteger(GLEnum.FramebufferBinding), (uint)GLEnum.Rgba8);
             using var target = new GRBackendRenderTarget(size.X, size.Y, 0, 8, info);
             using var surface = SKSurface.Create(_context, target, GRSurfaceOrigin.BottomLeft, SKColorType.Rgba8888);
@@ -127,6 +163,7 @@ namespace Engine.UiGallery.Host
             finally { graphics.PopTransform(); }
             surface.Canvas.Flush();
             _context.Flush();
+            _window.GLContext.SwapBuffers();
         }
 
         public void Dispose()
@@ -138,6 +175,8 @@ namespace Engine.UiGallery.Host
             _window.Render -= Render;
             _window.FramebufferResize -= Resize;
             _window.FocusChanged -= FocusChanged;
+            TimerSettings.GameAnimationFpsChanged -= ApplyFrameRate;
+            TimerSettings.VSyncChanged -= ApplyVSync;
             _timer.Stop();
             _timer.OnAnimationFrame -= Tick;
             _input?.CancelInput();

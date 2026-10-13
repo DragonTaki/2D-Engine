@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/07
-// Update Date: 2026/10/02
-// Version: v2.1
+// Update Date: 2026/10/12
+// Version: v2.2
 /* ----- ----- ----- ----- */
 
 using System;
@@ -17,8 +17,8 @@ namespace Engine.Platform.WinForms
 {
     /// <summary>
     /// Timer manager that uses a Stopwatch and a Windows Forms Timer
-    /// to provide a fixed interval animation timer with delta time calculation.
-    /// The interval follows <see cref="TimerSettings.GameAnimationFPS"/> (also when it changes
+    /// to poll fractional frame deadlines with delta time calculation.
+    /// The frame schedule follows <see cref="TimerSettings.GameAnimationFPS"/> (also when it changes
     /// at runtime). A WinForms timer is driven by window messages and the system timer
     /// resolution (about 15.6 ms by default on Windows), so it rarely ticks faster than about
     /// 64 times per second whatever the setting; delta time is measured, so motion stays right.
@@ -28,6 +28,7 @@ namespace Engine.Platform.WinForms
         private Stopwatch _animationStopwatch;
         private Timer _animationTimer;
         private long _lastAnimationTimestamp;
+        private readonly FramePacer _framePacer;
 
         /// <summary>
         /// Gets the elapsed time in seconds since the last animation frame.
@@ -52,7 +53,8 @@ namespace Engine.Platform.WinForms
             _animationStopwatch = new Stopwatch();
             _lastAnimationTimestamp = 0;
 
-            _animationTimer = new Timer { Interval = TimerSettings.GameAnimationInterval };
+            _framePacer = new FramePacer(TimerSettings.GameAnimationFPS, Stopwatch.Frequency);
+            _animationTimer = new Timer { Interval = Math.Max(1, TimerSettings.GameAnimationInterval / 2) };
             TimerSettings.GameAnimationFpsChanged += OnGameAnimationFpsChanged;
             _animationTimer.Tick += (s, e) =>
             {
@@ -60,6 +62,7 @@ namespace Engine.Platform.WinForms
 
                 // Stopwatch ticks, not whole milliseconds, so dt isn't quantized to 15/16/31 ms.
                 long current = _animationStopwatch.ElapsedTicks;
+                if (!_framePacer.TryAdvance(current)) return;
                 float delta = (float)((current - _lastAnimationTimestamp) / (double)Stopwatch.Frequency);
                 DeltaTimeInSeconds = Math.Clamp(delta, 0f, TimerSettings.MaxDeltaTimeInSeconds);
                 _lastAnimationTimestamp = current;
@@ -71,7 +74,11 @@ namespace Engine.Platform.WinForms
         /// <summary>The player changed the frame rate: tick at the new interval (on the UI thread, where settings change).</summary>
         // Same CA1416 exemption as the WinForms input code (this file only runs in the WinForms launcher).
 #pragma warning disable CA1416
-        private void OnGameAnimationFpsChanged(int fps) => _animationTimer.Interval = TimerSettings.GameAnimationInterval;
+        private void OnGameAnimationFpsChanged(int fps)
+        {
+            _framePacer.SetFrameRate(fps, _animationStopwatch.ElapsedTicks);
+            _animationTimer.Interval = Math.Max(1, TimerSettings.GameAnimationInterval / 2);
+        }
 #pragma warning restore CA1416
 
         /// <summary>
@@ -91,6 +98,7 @@ namespace Engine.Platform.WinForms
         {
             _animationStopwatch.Restart();
             _lastAnimationTimestamp = 0;
+            _framePacer.Reset(0);
             _animationTimer.Start();
         }
 

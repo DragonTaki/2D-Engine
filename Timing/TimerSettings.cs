@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/07
-// Update Date: 2026/10/02
-// Version: v1.1
+// Update Date: 2026/10/12
+// Version: v1.3
 /* ----- ----- ----- ----- */
 
 using System;
@@ -53,14 +53,35 @@ namespace Engine.Timing
             }
         }
 
+        private static bool s_vSync = true;
+
+        /// <summary>Whether the current host supports GPU vertical synchronization.</summary>
+        public static bool SupportsVSync { get; set; }
+
+        /// <summary>Runtime vertical synchronization setting; GPU hosts follow changes immediately.</summary>
+        public static bool VSync
+        {
+            get => s_vSync;
+            set
+            {
+                if (value == s_vSync)
+                    return;
+                s_vSync = value;
+                VSyncChanged?.Invoke(value);
+            }
+        }
+
+        /// <summary>Raised after the vertical synchronization setting changes.</summary>
+        public static event Action<bool> VSyncChanged;
+
         /// <summary>Raised with the new value after <see cref="GameAnimationFPS"/> changed.</summary>
         public static event Action<int> GameAnimationFpsChanged;
 
         /// <summary>
         /// The timer interval in whole milliseconds for the game animation timer: 1000 ms divided
-        /// by <see cref="GameAnimationFPS"/> (integer division, as before; at least 1).
+        /// by <see cref="GameAnimationFPS"/>, rounded up so it never requests a faster rate.
         /// </summary>
-        public static int GameAnimationInterval => Math.Max(1, 1000 / GameAnimationFPS);
+        public static int GameAnimationInterval => Math.Max(1, (int)Math.Ceiling(1000.0 / GameAnimationFPS));
 
         /// <summary>
         /// Upper bound on a single frame's delta time, in seconds. A stall (window
