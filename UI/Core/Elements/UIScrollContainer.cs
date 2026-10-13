@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/14
-// Update Date: 2026/10/12
-// Version: v1.8
+// Update Date: 2026/10/13
+// Version: v1.9
 /* ----- ----- ----- ----- */
 
 using System;
@@ -253,6 +253,13 @@ namespace Engine.UI.Core.Elements
         public float OverscrollLimit { get; set; } = 40.0f;
 
         /// <summary>
+        /// How far the wheel may overscroll past an end: the same range a drag has (the content
+        /// can be pulled until its far edge meets the opposite viewport edge, one viewport height
+        /// past an end, see <see cref="ClampToOverscrollRange"/>).
+        /// </summary>
+        public float WheelOverscrollLimit => Size.Y;
+
+        /// <summary>
         /// Scroll offset at which content bottom meets the viewport bottom (0 if it fits).
         /// ScrollY between this and 0 is the normal, non-overscrolled range.
         /// </summary>
@@ -410,11 +417,11 @@ namespace Engine.UI.Core.Elements
                 OnRelease = velocity => ScrollHandler?.StartInertia(velocity.Y),
                 OnPress = () => ScrollHandler?.StopInertia(),
                 // The wheel moves a target of its own (within the content range, or up to
-                // OverscrollLimit past an end with resistance); Wheel eases the content toward it
+                // a viewport height past an end with resistance, as far as a drag); Wheel eases the content toward it
                 // and back to the range once the wheel has been idle.
                 ClampWheelOffset = (offset, change) =>
                 {
-                    Wheel.Push(offset, change, ContentHeight, Size.Y, OverscrollLimit);
+                    Wheel.Push(offset, change, ContentHeight, Size.Y, WheelOverscrollLimit);
                     return offset;
                 }
             });
