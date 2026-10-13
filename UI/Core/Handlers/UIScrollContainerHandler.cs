@@ -3,8 +3,8 @@
 // Do not distribute or modify
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/10/27
-// Update Date: 2026/10/12
-// Version: v1.3
+// Update Date: 2026/10/13
+// Version: v1.4
 /* ----- ----- ----- ----- */
 
 using System;
@@ -160,8 +160,7 @@ namespace Engine.UI.Core.Handlers
             bool gliding = StepInertia();
             ScrollContainer.ClampToOverscrollRange();
 
-            // While the wheel owns the position (events arriving, then its own rebound) the spring
-            // stays off and no motion is left over from an earlier one, so the two cannot fight.
+            // Only in-range wheel easing bypasses physics. Overscroll uses the drag spring.
             // A press (drag) takes the position back from the wheel.
             if (ScrollContainer.InputHandler.IsDragging)
                 ScrollContainer.Wheel.Release();
@@ -184,11 +183,11 @@ namespace Engine.UI.Core.Handlers
                 return;
             }
 
-            // Released outside the normal range: the same exponential rebound as the wheel's (smooth, no
+            // Released outside the normal range: exponential rebound (smooth, no
             // overshoot), instead of the physics spring, which is slow after a drag (the input handler
             // zeroes its velocity every frame) and ends in a hard snap otherwise. While the pointer is
             // still down, the spring below keeps pulling against the drag as before.
-            if (!ScrollContainer.InputHandler.IsDragging)
+            if (!ScrollContainer.InputHandler.IsDragging && !ScrollContainer.Wheel.IsOwner)
             {
                 float current = ScrollContainer.ScrollY;
                 float next = ScrollMath.ReboundStep(current, ScrollContainer.MinNormalScrollY, GlobalTime.Timer.DeltaTimeInSeconds);

@@ -4,7 +4,7 @@
 // Author: DragonTaki (https://github.com/DragonTaki)
 // Create Date: 2025/05/14
 // Update Date: 2026/10/13
-// Version: v1.9
+// Version: v1.10
 /* ----- ----- ----- ----- */
 
 using System;
@@ -238,7 +238,7 @@ namespace Engine.UI.Core.Elements
 
         /// <summary>
         /// The wheel / trackpad scroll state: the target wheel events move and the easing of the
-        /// content toward it, including the rebound from an overscroll (see <see cref="WheelOverscroll"/>).
+        /// content toward it inside the normal range (see <see cref="WheelOverscroll"/>).
         /// </summary>
         public WheelOverscroll Wheel { get; } = new WheelOverscroll();
 
@@ -246,18 +246,11 @@ namespace Engine.UI.Core.Elements
         /// Maximum overscroll allowed at edges.
         /// </summary>
         /// <remarks>
-        /// Bounds the wheel's overscroll (see <see cref="ScrollMath.ClampOffsetWithOverscroll"/>). Not
-        /// what bounds a drag: by design the content can be pulled until its far
+        /// Legacy optional limit; wheel and drag use <see cref="ClampToOverscrollRange"/>:
+        /// by design the content can be pulled until its far
         /// edge meets the opposite viewport edge (see <see cref="ClampToOverscrollRange"/>).
         /// </remarks>
         public float OverscrollLimit { get; set; } = 40.0f;
-
-        /// <summary>
-        /// How far the wheel may overscroll past an end: the same range a drag has (the content
-        /// can be pulled until its far edge meets the opposite viewport edge, one viewport height
-        /// past an end, see <see cref="ClampToOverscrollRange"/>).
-        /// </summary>
-        public float WheelOverscrollLimit => Size.Y;
 
         /// <summary>
         /// Scroll offset at which content bottom meets the viewport bottom (0 if it fits).
@@ -416,14 +409,9 @@ namespace Engine.UI.Core.Elements
                 // Handler is bound after construction, hence the lazy lookups.
                 OnRelease = velocity => ScrollHandler?.StartInertia(velocity.Y),
                 OnPress = () => ScrollHandler?.StopInertia(),
-                // The wheel moves a target of its own (within the content range, or up to
-                // a viewport height past an end with resistance, as far as a drag); Wheel eases the content toward it
-                // and back to the range once the wheel has been idle.
+                // In-range wheel motion is eased; overscroll displaces the same position as a drag.
                 ClampWheelOffset = (offset, change) =>
-                {
-                    Wheel.Push(offset, change, ContentHeight, Size.Y, WheelOverscrollLimit);
-                    return offset;
-                }
+                    Wheel.Push(offset, change, ContentHeight, Size.Y)
             });
 
             Physics.Movement.CanSpring = true;
